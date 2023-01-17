@@ -101,7 +101,7 @@ entity CORDICCalc is
         x   : in  std_logic_vector(15 downto 0);
         y   : in  std_logic_vector(15 downto 0);
 
-        f   : in  std_logic_vector(15 downto 0);
+        f   : in  std_logic_vector(4 downto 0);
 
         r   : out std_logic_vector(15 downto 0)
     );
@@ -117,9 +117,6 @@ architecture synth of CORDICCalc is
 
     signal x_shfts, y_shfts: calc_vector(0 to 15);
 
-    -- TODO: ROM of constants
-    signal consts: calc_vector(0 to 15);
-
     signal ds: control_vector(0 to 15);
 
     signal x_ext, y_ext: std_logic_vector(21 downto 0);
@@ -128,6 +125,27 @@ architecture synth of CORDICCalc is
     signal result: std_logic;
     signal vectoring: std_logic;
     signal composite: std_logic;
+
+    constant K: std_logic_vector(21 downto 0) :=
+        "0000100110110111010100";
+    constant consts: calc_vector(0 to 15) := (
+        "0000110010010000111111",
+        "0000011101101011000110",
+        "0000001111101011011100",
+        "0000000111111101010111",
+        "0000000011111111101011",
+        "0000000001111111111101",
+        "0000000001000000000000",
+        "0000000000100000000000",
+        "0000000000010000000000",
+        "0000000000001000000000",
+        "0000000000000100000000",
+        "0000000000000010000000",
+        "0000000000000001000000",
+        "0000000000000000100000",
+        "0000000000000000010000",
+        "0000000000000000001000"
+    );
 begin
 
     -- decode f
@@ -136,15 +154,16 @@ begin
     vectoring <= f(3);
     composite <= f(4);
 
+    -- ds(i) = 1 when the decision variable is non-negative
+    -- otherwise ds(i) = -1
     decisions: for i in ds'range generate
-        -- ds(i) = 1 when the decision variable is non-negative
-        -- otherwise ds(i) = -1
         ds(i) <= "01" when (zs(i)(zs(i)'high) = '0' and vectoring = '0') or
                            (ys(i)(ys(i)'high) = '0' and vectoring = '1') else
                  "10";
     end generate decisions;
 
     -- x_shfts(i) <= xs(i) >>> i
+    -- y_shfts(i) <= ys(i) >>> i
     -- where >>> is right arithmetic shift
     x_shfts(0) <= xs(0);
     y_shfts(0) <= ys(0);
@@ -186,4 +205,34 @@ begin
             );
     end generate slices;
 
+    r <= xs(xs'high)(19 downto 4) when result = '0' else
+         ys(ys'high)(19 downto 4);
+
 end architecture synth;
+
+
+library ieee;
+use ieee.std_logic_1164.all;
+
+entity CORDICCalc_TB is
+end entity CORDICCalc_TB;
+
+architecture testbench of CORDICCalc_TB is
+    signal clk: std_logic;
+    signal x: std_logic_vector(15 downto 0);
+    signal y: std_logic_vector(15 downto 0);
+    signal f: std_logic_vector(4 downto 0);
+    signal r: std_logic_vector(15 downto 0);
+begin
+    f <= "00001";
+    x <= "0011001001000100";
+
+    UUT: entity work.CORDICCalc
+        port map (
+                clk => clk,
+                x => x,
+                y => y,
+                f => f,
+                r => r
+            );
+end architecture testbench;
