@@ -74,8 +74,8 @@ begin
 
     AS1: entity work.AddSub
         port map (
-            a => x_shft,
-            b => y_prev,
+            a => y_prev,
+            b => x_shft,
             f => f1,
             r => y_next
         );
@@ -225,7 +225,7 @@ architecture testbench of CORDICCalc_TB is
     signal r: std_logic_vector(15 downto 0);
 begin
     f <= "00001";
-    x <= "0011001001000100";
+    x <= "0001111101000111";
 
     UUT: entity work.CORDICCalc
         port map (
@@ -235,4 +235,14 @@ begin
                 f => f,
                 r => r
             );
+
+    process
+    begin
+        clk <= '0';
+        wait for 10 ns;
+
+        clk <= '1';
+        wait for 10 ns;
+    end process;
+
 end architecture testbench;
