@@ -158,7 +158,7 @@ begin
     -- otherwise ds(i) = -1
     decisions: for i in ds'range generate
         ds(i) <= "01" when (zs(i)(zs(i)'high) = '0' and vectoring = '0') or
-                           (ys(i)(ys(i)'high) = '0' and vectoring = '1') else
+                           (ys(i)(ys(i)'high) = '1' and vectoring = '1') else
                  "10";
     end generate decisions;
 
@@ -224,8 +224,11 @@ architecture testbench of CORDICCalc_TB is
     signal f: std_logic_vector(4 downto 0);
     signal r: std_logic_vector(15 downto 0);
 begin
-    f <= "00001";
-    x <= "0001111101000111";
+    f <= "01101";
+    -- x <= "0001111101000111";
+    -- y <= "0001111101000111";
+    x <= "0010000000000000";
+    y <= "0011011101101101";
 
     UUT: entity work.CORDICCalc
         port map (
