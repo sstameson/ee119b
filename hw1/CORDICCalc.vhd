@@ -121,15 +121,19 @@ architecture synth of CORDICCalc is
 
     signal xs, ys, zs: calc_vector(0 to 16);
 
-    signal x_shfts, y_shfts: calc_vector(0 to 15);
-
     signal x1, y1, z1: std_logic_vector(21 downto 0);
 
-    signal K: std_logic_vector(21 downto 0);
+    signal x_shfts, y_shfts: calc_vector(0 to 15);
+
+    signal ds: control_vector(0 to 15);
 
     signal cs: calc_vector(0 to 15);
 
-    signal ds: control_vector(0 to 15);
+    signal K: std_logic_vector(21 downto 0);
+
+    signal x_reg: std_logic_vector(x'range);
+    signal y_reg: std_logic_vector(y'range);
+    signal f_reg: std_logic_vector(f'range);
 
     signal x_ext, y_ext: std_logic_vector(21 downto 0);
 
@@ -160,13 +164,21 @@ architecture synth of CORDICCalc is
     );
 begin
 
-    -- decode f
-    m         <= f(1 downto 0);
-    result    <= f(2);
-    vectoring <= f(3);
-    composite <= f(4);
+    -- store inputs in a DFF
+    process (clk)
+    begin
+        if rising_edge(clk) then
+            x_reg <= x;
+            y_reg <= y;
+            f_reg <= f;
+        end if;
+    end process;
 
-    -- TODO: store x, y, f in DFF
+    -- decode f
+    m         <= f_reg(1 downto 0);
+    result    <= f_reg(2);
+    vectoring <= f_reg(3);
+    composite <= f_reg(4);
 
     -- ds(i) = 1 when the decision variable is non-negative
     -- otherwise ds(i) = -1
@@ -188,6 +200,7 @@ begin
     -- pick K based on mode (circular, linear, or hyperbolic)
     K <= Ks(to_integer(unsigned(m)));
 
+    -- compute the following
     -- x_shfts(i) <= xs(i) >>> i
     -- y_shfts(i) <= ys(i) >>> i
     -- where >>> is right arithmetic shift
@@ -202,9 +215,9 @@ begin
             ys(i)(ys(i)'high downto i);
     end generate shifts;
 
-    -- TODO: make this more general
-    x_ext <= x(x'high) & x(x'high) & x & "0000";
-    y_ext <= y(y'high) & y(y'high) & y & "0000";
+    -- sign extend the input values
+    x_ext <= x_reg(x_reg'high) & x_reg(x_reg'high) & x_reg & "0000";
+    y_ext <= y_reg(y_reg'high) & y_reg(y_reg'high) & y_reg & "0000";
 
     xs(0) <= K when vectoring = '0' and (m = "01" or m = "10") else
              x_ext;
@@ -213,8 +226,12 @@ begin
     zs(0) <= x_ext  when vectoring = '0' and (m = "01" or m = "10") else
              y_ext  when vectoring = '0' else
              (others => '0');
+
     slices: for i in 1 to xs'high generate
-        -- skip the first iteration in hyperbolic mode
+
+        -- skip the first CORDIC slice in hyperbolic mode
+        -- must skip the first hyperbolic slice because the
+        -- constant arctanh(1) does not exist
         i1: if i = 1 generate
             slice1: entity work.CORDICSlice
                 port map (
@@ -239,6 +256,7 @@ begin
                      z1;
         end generate i1;
 
+        -- generate the remaining CORDIC slices
         iX: if i > 1 generate
             sliceX: entity work.CORDICSlice
                 port map (
@@ -255,11 +273,22 @@ begin
                     z_next => zs(i)
                 );
         end generate iX;
+
     end generate slices;
 
-    r <= xs(xs'high)(19 downto 4) when vectoring = '0' and result = '0' else
-         ys(ys'high)(19 downto 4) when vectoring = '0' and result = '1' else
-         zs(zs'high)(19 downto 4);
+    -- register the output
+    process (clk)
+    begin
+        if rising_edge(clk) then
+            if vectoring = '0' and result = '0' then
+                r <= xs(xs'high)(19 downto 4);
+            elsif vectoring = '0' and result = '1' then
+                r <= ys(ys'high)(19 downto 4);
+            else
+                r <= zs(zs'high)(19 downto 4);
+            end if;
+        end if;
+    end process;
 
 end architecture synth;
 
@@ -277,7 +306,7 @@ architecture testbench of CORDICCalc_TB is
     signal f: std_logic_vector(4 downto 0);
     signal r: std_logic_vector(15 downto 0);
 begin
-    f <= "01100";
+    f <= "00001";
     x <= "0001111101000111";
     y <= "0001111101000111";
     -- f <= "01101";
