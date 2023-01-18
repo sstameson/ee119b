@@ -46,6 +46,8 @@ end entity CORDICSlice;
 architecture synth of CORDICSlice is
     signal f0, f1, f2: std_logic_vector(1 downto 0);
 begin
+
+    --
     -- d can be -1 or 1
     -- m can be -1, 0, or 1
     -- "01" represents 1
@@ -55,6 +57,7 @@ begin
     -- f0 = -md
     -- f1 =  d
     -- f2 = -d
+    --
 
     f0 <= "01" when m = "10" and d = "01" else
           "10" when m = "01" and d = "01" else
@@ -93,6 +96,7 @@ end architecture synth;
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 entity CORDICCalc is
     port (
@@ -110,12 +114,16 @@ end entity CORDICCalc;
 architecture synth of CORDICCalc is
     type calc_vector    is array(natural range <>)
                         of std_logic_vector(21 downto 0);
+    type const_vector   is array(natural range <>, natural range <>)
+                        of std_logic_vector(21 downto 0);
     type control_vector is array(natural range <>)
                         of std_logic_vector(1 downto 0);
 
     signal xs, ys, zs: calc_vector(0 to 16);
 
     signal x_shfts, y_shfts: calc_vector(0 to 15);
+
+    signal cs: calc_vector(0 to 15);
 
     signal ds: control_vector(0 to 15);
 
@@ -126,25 +134,25 @@ architecture synth of CORDICCalc is
     signal vectoring: std_logic;
     signal composite: std_logic;
 
-    constant K: std_logic_vector(21 downto 0) :=
-        "0000100110110111010100";
-    constant consts: calc_vector(0 to 15) := (
-        "0000110010010000111111",
-        "0000011101101011000110",
-        "0000001111101011011100",
-        "0000000111111101010111",
-        "0000000011111111101011",
-        "0000000001111111111101",
-        "0000000001000000000000",
-        "0000000000100000000000",
-        "0000000000010000000000",
-        "0000000000001000000000",
-        "0000000000000100000000",
-        "0000000000000010000000",
-        "0000000000000001000000",
-        "0000000000000000100000",
-        "0000000000000000010000",
-        "0000000000000000001000"
+    constant K: calc_vector(0 to 2) :=
+        ("0001000000000000000000", "0000100110110111010100", "0001001101001000001111");
+    constant consts: const_vector(0 to 15, 0 to 2) := (
+        ("0001000000000000000000", "0000110010010000111111", "0000000000000000000000"),
+        ("0000100000000000000000", "0000011101101011000110", "0000100011001001111101"),
+        ("0000010000000000000000", "0000001111101011011100", "0000010000010110001011"),
+        ("0000001000000000000000", "0000000111111101010111", "0000001000000010101100"),
+        ("0000000100000000000000", "0000000011111111101011", "0000000100000000010101"),
+        ("0000000010000000000000", "0000000001111111111101", "0000000010000000000011"),
+        ("0000000001000000000000", "0000000001000000000000", "0000000001000000000000"),
+        ("0000000000100000000000", "0000000000100000000000", "0000000000100000000000"),
+        ("0000000000010000000000", "0000000000010000000000", "0000000000010000000000"),
+        ("0000000000001000000000", "0000000000001000000000", "0000000000001000000000"),
+        ("0000000000000100000000", "0000000000000100000000", "0000000000000100000000"),
+        ("0000000000000010000000", "0000000000000010000000", "0000000000000010000000"),
+        ("0000000000000001000000", "0000000000000001000000", "0000000000000001000000"),
+        ("0000000000000000100000", "0000000000000000100000", "0000000000000000100000"),
+        ("0000000000000000010000", "0000000000000000010000", "0000000000000000010000"),
+        ("0000000000000000001000", "0000000000000000001000", "0000000000000000001000")
     );
 begin
 
@@ -154,6 +162,8 @@ begin
     vectoring <= f(3);
     composite <= f(4);
 
+    -- TODO: store x, y, f in DFF
+
     -- ds(i) = 1 when the decision variable is non-negative
     -- otherwise ds(i) = -1
     decisions: for i in ds'range generate
@@ -161,6 +171,13 @@ begin
                            (ys(i)(ys(i)'high) = '1' and vectoring = '1') else
                  "10";
     end generate decisions;
+
+    -- cs(i) = constants(i, m)
+    -- the cs array must exist so that expressions in the port map
+    -- of the CORDIC slice are static
+    constants: for i in cs'range generate
+        cs(i) <= consts(i, to_integer(unsigned(m)));
+    end generate constants;
 
     -- x_shfts(i) <= xs(i) >>> i
     -- y_shfts(i) <= ys(i) >>> i
@@ -176,11 +193,11 @@ begin
             ys(i)(ys(i)'high downto i);
     end generate shifts;
 
-    -- TODO: Latch in DFF and make this more general
+    -- TODO: make this more general
     x_ext <= x(x'high) & x(x'high) & x & "0000";
     y_ext <= y(y'high) & y(y'high) & y & "0000";
 
-    xs(0) <= K when vectoring = '0' and (m = "01" or m = "10") else
+    xs(0) <= K(to_integer(unsigned(m))) when vectoring = '0' and (m = "01" or m = "10") else
              x_ext;
     ys(0) <= (others => '0') when vectoring = '0' else
              y_ext;
@@ -188,7 +205,6 @@ begin
              y_ext  when vectoring = '0' else
              (others => '0');
     slices: for i in 1 to xs'high generate
-        -- TODO select constants with m
         sliceX: entity work.CORDICSlice
             port map (
                 d      => ds(i - 1),
@@ -198,13 +214,14 @@ begin
                 y_prev => ys(i - 1),
                 y_shft => y_shfts(i - 1),
                 z_prev => zs(i - 1),
-                const  => consts(i - 1),
+                const  => cs(i - 1),
                 x_next => xs(i),
                 y_next => ys(i),
                 z_next => zs(i)
             );
     end generate slices;
 
+    -- TODO: make this more general
     r <= xs(xs'high)(19 downto 4) when result = '0' else
          ys(ys'high)(19 downto 4);
 
@@ -224,11 +241,12 @@ architecture testbench of CORDICCalc_TB is
     signal f: std_logic_vector(4 downto 0);
     signal r: std_logic_vector(15 downto 0);
 begin
-    f <= "01101";
-    -- x <= "0001111101000111";
-    -- y <= "0001111101000111";
-    x <= "0010000000000000";
-    y <= "0011011101101101";
+    f <= "00101";
+    x <= "0001111101000111";
+    y <= "0001111101000111";
+    -- f <= "01101";
+    -- x <= "0010000000000000";
+    -- y <= "0011011101101101";
 
     UUT: entity work.CORDICCalc
         port map (
