@@ -123,6 +123,10 @@ architecture synth of CORDICCalc is
 
     signal x_shfts, y_shfts: calc_vector(0 to 15);
 
+    signal x1, y1, z1: std_logic_vector(21 downto 0);
+
+    signal K: std_logic_vector(21 downto 0);
+
     signal cs: calc_vector(0 to 15);
 
     signal ds: control_vector(0 to 15);
@@ -134,7 +138,7 @@ architecture synth of CORDICCalc is
     signal vectoring: std_logic;
     signal composite: std_logic;
 
-    constant K: calc_vector(0 to 2) :=
+    constant Ks: calc_vector(0 to 2) :=
         ("0001000000000000000000", "0000100110110111010100", "0001001101001000001111");
     constant consts: const_vector(0 to 15, 0 to 2) := (
         ("0001000000000000000000", "0000110010010000111111", "0000000000000000000000"),
@@ -172,12 +176,17 @@ begin
                  "10";
     end generate decisions;
 
-    -- cs(i) = constants(i, m)
+    -- cs(i) = consts(i, m)
+    -- pick constants based on mode (circular, linear, or hyperbolic)
     -- the cs array must exist so that expressions in the port map
     -- of the CORDIC slice are static
     constants: for i in cs'range generate
         cs(i) <= consts(i, to_integer(unsigned(m)));
     end generate constants;
+
+    -- K = Ks(m)
+    -- pick K based on mode (circular, linear, or hyperbolic)
+    K <= Ks(to_integer(unsigned(m)));
 
     -- x_shfts(i) <= xs(i) >>> i
     -- y_shfts(i) <= ys(i) >>> i
@@ -197,7 +206,7 @@ begin
     x_ext <= x(x'high) & x(x'high) & x & "0000";
     y_ext <= y(y'high) & y(y'high) & y & "0000";
 
-    xs(0) <= K(to_integer(unsigned(m))) when vectoring = '0' and (m = "01" or m = "10") else
+    xs(0) <= K when vectoring = '0' and (m = "01" or m = "10") else
              x_ext;
     ys(0) <= (others => '0') when vectoring = '0' else
              y_ext;
@@ -205,25 +214,52 @@ begin
              y_ext  when vectoring = '0' else
              (others => '0');
     slices: for i in 1 to xs'high generate
-        sliceX: entity work.CORDICSlice
-            port map (
-                d      => ds(i - 1),
-                m      => m,
-                x_prev => xs(i - 1),
-                x_shft => x_shfts(i - 1),
-                y_prev => ys(i - 1),
-                y_shft => y_shfts(i - 1),
-                z_prev => zs(i - 1),
-                const  => cs(i - 1),
-                x_next => xs(i),
-                y_next => ys(i),
-                z_next => zs(i)
-            );
+        -- skip the first iteration in hyperbolic mode
+        i1: if i = 1 generate
+            slice1: entity work.CORDICSlice
+                port map (
+                    d      => ds(i - 1),
+                    m      => m,
+                    x_prev => xs(i - 1),
+                    x_shft => x_shfts(i - 1),
+                    y_prev => ys(i - 1),
+                    y_shft => y_shfts(i - 1),
+                    z_prev => zs(i - 1),
+                    const  => cs(i - 1),
+                    x_next => x1,
+                    y_next => y1,
+                    z_next => z1
+                );
+
+            xs(i) <= xs(i - 1) when m = "10" else
+                     x1;
+            ys(i) <= ys(i - 1) when m = "10" else
+                     y1;
+            zs(i) <= zs(i - 1) when m = "10" else
+                     z1;
+        end generate i1;
+
+        iX: if i > 1 generate
+            sliceX: entity work.CORDICSlice
+                port map (
+                    d      => ds(i - 1),
+                    m      => m,
+                    x_prev => xs(i - 1),
+                    x_shft => x_shfts(i - 1),
+                    y_prev => ys(i - 1),
+                    y_shft => y_shfts(i - 1),
+                    z_prev => zs(i - 1),
+                    const  => cs(i - 1),
+                    x_next => xs(i),
+                    y_next => ys(i),
+                    z_next => zs(i)
+                );
+        end generate iX;
     end generate slices;
 
-    -- TODO: make this more general
-    r <= xs(xs'high)(19 downto 4) when result = '0' else
-         ys(ys'high)(19 downto 4);
+    r <= xs(xs'high)(19 downto 4) when vectoring = '0' and result = '0' else
+         ys(ys'high)(19 downto 4) when vectoring = '0' and result = '1' else
+         zs(zs'high)(19 downto 4);
 
 end architecture synth;
 
@@ -241,7 +277,7 @@ architecture testbench of CORDICCalc_TB is
     signal f: std_logic_vector(4 downto 0);
     signal r: std_logic_vector(15 downto 0);
 begin
-    f <= "00101";
+    f <= "01100";
     x <= "0001111101000111";
     y <= "0001111101000111";
     -- f <= "01101";
