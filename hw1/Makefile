@@ -1,5 +1,6 @@
 default:
 	ghdl -a --std=93 CORDICCalc.vhd
+	ghdl -a --std=93 CORDICCalc_TB.vhd
 	ghdl -e CORDICCalc_TB
 	ghdl -r CORDICCalc_TB --stop-time=3000ns --wave=wave.ghw
 
