@@ -311,7 +311,7 @@ architecture testbench of CORDICCalc_TB is
         return result;
     end;
 
-    type const_vector is array(natural range <>)
+    type fixed_vector is array(natural range <>)
                       of std_logic_vector(15 downto 0);
     type control_vector is array(natural range<>) 
                         of std_logic_vector(4 downto 0);
@@ -325,7 +325,7 @@ architecture testbench of CORDICCalc_TB is
 
     constant NUM_TESTS: integer := 5;
 
-    constant test_xs: const_vector(0 to NUM_TESTS-1) := (
+    constant test_xs: fixed_vector(0 to NUM_TESTS-1) := (
         real2fixed(0.0),
         real2fixed(MATH_PI / 6.0),
         real2fixed(MATH_PI / 4.0),
@@ -333,7 +333,7 @@ architecture testbench of CORDICCalc_TB is
         real2fixed(MATH_PI / 2.0)
     );
 
-    constant test_ys: const_vector(0 to NUM_TESTS-1) := (
+    constant test_ys: fixed_vector(0 to NUM_TESTS-1) := (
         (others => 'X'),
         (others => 'X'),
         (others => 'X'),
@@ -350,10 +350,15 @@ architecture testbench of CORDICCalc_TB is
     );
 
     signal clk: std_logic;
-    signal x: std_logic_vector(15 downto 0);
-    signal y: std_logic_vector(15 downto 0);
+    signal x, y: std_logic_vector(15 downto 0);
     signal f: std_logic_vector(4 downto 0);
     signal r: std_logic_vector(15 downto 0);
+
+    signal x_reg, y_reg: fixed_vector(0 to 1);
+    signal f_reg: control_vector(0 to 1);
+
+    signal x_r, y_r: std_logic_vector(15 downto 0);
+    signal f_r: std_logic_vector(4 downto 0);
 
     signal idx: integer := 0;
 begin
@@ -373,6 +378,9 @@ begin
                 r => r
             );
 
+    x_r <= x_reg(0);
+    y_r <= y_reg(0);
+    f_r <= f_reg(0);
 
     process(clk)
     begin
@@ -381,7 +389,26 @@ begin
                 x <= test_xs(idx);
                 y <= test_ys(idx);
                 f <= test_fs(idx);
-                idx <= idx + 1;
+            else
+                -- TODO: assign random x, y, f
+            end if;
+
+            x_reg <= x_reg(1) & x;
+            y_reg <= y_reg(1) & y;
+            f_reg <= f_reg(1) & f;
+
+            idx <= idx + 1;
+
+        end if;
+    end process;
+
+
+    process(clk)
+    begin
+        if falling_edge(clk) then
+            if idx > 2 then
+                -- TODO: insert assertions
+                -- compute correct value use x_r, y_r, f_r
             end if;
         end if;
     end process;
