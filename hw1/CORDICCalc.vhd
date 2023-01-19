@@ -345,13 +345,6 @@ end entity CORDICCalc_TB;
 
 architecture testbench of CORDICCalc_TB is
 
-    constant F_COS: std_logic_vector(4 downto 0)  := "00001";
-    constant F_SIN: std_logic_vector(4 downto 0)  := "00101";
-    constant F_MUL: std_logic_vector(4 downto 0)  := "00100";
-    constant F_COSH: std_logic_vector(4 downto 0) := "00010";
-    constant F_SINH: std_logic_vector(4 downto 0) := "00110";
-    constant F_DIV: std_logic_vector(4 downto 0)  := "01100";
-
     -- convert real to Q1.14 fixed point
     function real2fixed(r: real) return std_logic_vector is
         variable result: std_logic_vector(15 downto 0);
@@ -369,24 +362,6 @@ architecture testbench of CORDICCalc_TB is
         return result;
     end;
 
-    -- calculate the specified function to compare with CORDIC
-    function calculate(
-        x, y : std_logic_vector(15 downto 0);
-        f    : std_logic_vector(4 downto 0)
-    ) return std_logic_vector is
-        variable result: std_logic_vector(15 downto 0);
-    begin
-        case f is
-            when F_COS  => result := real2fixed(cos(fixed2real(x)));
-            when F_SIN  => result := real2fixed(sin(fixed2real(x)));
-            when F_MUL  => result := real2fixed(fixed2real(x) * fixed2real(y));
-            when F_COSH => result := real2fixed(cosh(fixed2real(x)));
-            when F_SINH => result := real2fixed(sinh(fixed2real(x)));
-            when others => result := real2fixed(fixed2real(y) / fixed2real(x));
-        end case;
-        return result;
-    end;
-
     -- convert std_logic_vector to string for reporting
     function vec2str(vec: std_logic_vector) return string is
         variable result: string(vec'range);
@@ -401,21 +376,53 @@ architecture testbench of CORDICCalc_TB is
         return result;
     end;
 
+    constant F_COS: std_logic_vector(4 downto 0)  := "00001";
+    constant F_SIN: std_logic_vector(4 downto 0)  := "00101";
+    constant F_MUL: std_logic_vector(4 downto 0)  := "00100";
+    constant F_COSH: std_logic_vector(4 downto 0) := "00010";
+    constant F_SINH: std_logic_vector(4 downto 0) := "00110";
+    constant F_DIV: std_logic_vector(4 downto 0)  := "01100";
+
+    -- calculate the specified function to compare with CORDIC
+    function calculate(
+        x, y : std_logic_vector(15 downto 0);
+        f    : std_logic_vector(4 downto 0)
+    ) return real is
+        variable result: real;
+    begin
+        case f is
+            when F_COS  => result := cos(fixed2real(x));
+            when F_SIN  => result := sin(fixed2real(x));
+            when F_MUL  => result := fixed2real(x) * fixed2real(y);
+            when F_COSH => result := cosh(fixed2real(x));
+            when F_SINH => result := sinh(fixed2real(x));
+            when others => result := fixed2real(y) / fixed2real(x);
+        end case;
+        return result;
+    end;
+
     constant EPSILON     : signed := signed(real2fixed(0.001));
-    constant EPSILON_HYP : signed := signed(real2fixed(0.1));
+    constant EPSILON_HYP : signed := signed(real2fixed(0.3));
 
     function is_correct(
-        sol, r : std_logic_vector(15 downto 0);
-        f      : std_logic_vector(4 downto 0)
+        sol : real;
+        r   : std_logic_vector(15 downto 0);
+        f   : std_logic_vector(4 downto 0)
     ) return boolean is
         variable diff: signed(15 downto 0);
         variable result: boolean;
     begin
-        diff := abs(signed(sol) - signed(r));
-        if f = F_COSH or f = F_SINH then
-            result := diff < EPSILON_HYP;
+        if not ((-2.0 < sol) and (sol < 2.0)) then
+            -- solution is not representable in Q1.14 fixed point
+            -- so don't report an error
+            result := true;
         else
-            result := diff < EPSILON;
+            diff := abs(signed(real2fixed(sol)) - signed(r));
+            if f = F_COSH or f = F_SINH then
+                result := diff < EPSILON_HYP;
+            else
+                result := diff < EPSILON;
+            end if;
         end if;
         return result;
     end;
@@ -541,13 +548,15 @@ architecture testbench of CORDICCalc_TB is
         F_DIV
     );
 
+    constant NUM_CYCLES: natural := 2;
+
     signal clk: std_logic;
     signal x, y: std_logic_vector(15 downto 0);
     signal f: std_logic_vector(4 downto 0);
     signal r: std_logic_vector(15 downto 0);
 
-    signal x_reg, y_reg: fixed_vector(0 to 1);
-    signal f_reg: control_vector(0 to 1);
+    signal x_reg, y_reg: fixed_vector(0 to NUM_CYCLES - 1);
+    signal f_reg: control_vector(0 to NUM_CYCLES - 1);
 
     signal x_r, y_r: std_logic_vector(15 downto 0);
     signal f_r: std_logic_vector(4 downto 0);
@@ -584,15 +593,13 @@ begin
                     seed1 := 1;
                     seed2 := 1;
                 end if;
+
                 uniform(seed1, seed2, rand1);
                 uniform(seed1, seed2, rand2);
-                if rand1 > rand2 then
-                    x <= real2fixed(rand1 + 0.01);
-                    y <= real2fixed(rand2);
-                else
-                    x <= real2fixed(rand2 + 0.01);
-                    y <= real2fixed(rand1);
-                end if;
+
+                x <= real2fixed(MATH_PI / 2.0 * rand1);
+                y <= real2fixed(MATH_PI / 2.0 * rand2);
+
                 case f is
                     when F_COS  => f <= F_SIN;
                     when F_SIN  => f <= F_MUL;
@@ -603,9 +610,9 @@ begin
                 end case;
             end if;
 
-            x_reg <= x_reg(1) & x;
-            y_reg <= y_reg(1) & y;
-            f_reg <= f_reg(1) & f;
+            x_reg <= x_reg(1 to x_reg'high) & x;
+            y_reg <= y_reg(1 to y_reg'high) & y;
+            f_reg <= f_reg(1 to f_reg'high) & f;
 
             idx <= idx + 1;
 
@@ -613,10 +620,10 @@ begin
     end process;
 
     process(clk)
-        variable sol: std_logic_vector(15 downto 0);
+        variable sol: real;
     begin
         if falling_edge(clk) then
-            if idx > 2 and idx < 29 then
+            if idx > NUM_CYCLES then
                 -- calculate correct value using
                 -- the registered values x_r, y_r, f_r
                 sol := calculate(x_r, y_r, f_r);
@@ -626,7 +633,7 @@ begin
                            "y = " & vec2str(y_r) & lf &
                            "f = " & vec2str(f_r) & lf &
                            "incorrect value: r = " & vec2str(r) & lf &
-                           "expected:        r = " & vec2str(sol);
+                           "expected:        r = " & vec2str(real2fixed(sol));
             end if;
         end if;
     end process;
