@@ -1,5 +1,26 @@
 library ieee;
 use ieee.std_logic_1164.all;
+
+entity FullAdder is
+    port (
+        a   : in  std_logic;
+        b   : in  std_logic;
+        Cin : in  std_logic;
+
+        s    : out std_logic;
+        Cout : out std_logic
+    );
+end entity FullAdder;
+
+architecture synth of FullAdder is
+begin
+    s    <= a xor b xor Cin;
+    Cout <= (a and b) or (Cin and (a xor b));
+end architecture synth;
+
+
+library ieee;
+use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity AddSub is
@@ -7,6 +28,9 @@ entity AddSub is
         a : in  std_logic_vector(21 downto 0);
         b : in  std_logic_vector(21 downto 0);
 
+        -- f = 00 -- r <= a
+        -- f = 01 -- r <= a + b
+        -- f = 10 -- r <= a - b
         f : in  std_logic_vector(1 downto 0);
 
         r : out std_logic_vector(21 downto 0)
@@ -14,10 +38,26 @@ entity AddSub is
 end entity AddSub;
 
 architecture synth of AddSub is
+    signal b_op: std_logic_vector(a'range);
+    signal res: std_logic_vector(a'range);
+    signal carry: std_logic_vector(0 to a'high + 1);
 begin
-    -- TODO: replace this with a custom adder
-    r <= std_logic_vector(signed(a) + signed(b)) when f = "01" else
-         std_logic_vector(signed(a) - signed(b)) when f = "10" else
+    b_op <= b when carry(0) = '0' else
+            not b;
+
+    carry(0) <= f(1);
+    ripple: for i in a'range generate
+        FAx: entity work.FullAdder
+            port map (
+                a    => a(i),
+                b    => b_op(i),
+                Cin  => carry(i),
+                s    => res(i),
+                Cout => carry(i + 1)
+            );
+    end generate ripple;
+
+    r <= res when (f(1) xor f(0)) = '1' else
          a;
 end architecture synth;
 
@@ -546,7 +586,6 @@ begin
                            "f = " & vec2str(f_r) & lf &
                            "incorrect value: r = " & vec2str(r) & lf &
                            "expected:        r = " & vec2str(sol);
-
             end if;
         end if;
     end process;
