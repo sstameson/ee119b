@@ -571,6 +571,8 @@ begin
     f_r <= f_reg(0);
 
     process(clk)
+        variable seed1, seed2: positive;
+        variable rand1, rand2: real;
     begin
         if rising_edge(clk) then
             if idx < NUM_TESTS then
@@ -578,7 +580,27 @@ begin
                 y <= test_ys(idx);
                 f <= test_fs(idx);
             else
-                -- TODO: assign random x, y, f
+                if idx = NUM_TESTS then
+                    seed1 := 1;
+                    seed2 := 1;
+                end if;
+                uniform(seed1, seed2, rand1);
+                uniform(seed1, seed2, rand2);
+                if rand1 > rand2 then
+                    x <= real2fixed(rand1 + 0.01);
+                    y <= real2fixed(rand2);
+                else
+                    x <= real2fixed(rand2 + 0.01);
+                    y <= real2fixed(rand1);
+                end if;
+                case f is
+                    when F_COS  => f <= F_SIN;
+                    when F_SIN  => f <= F_MUL;
+                    when F_MUL  => f <= F_COSH;
+                    when F_COSH => f <= F_SINH;
+                    when F_SINH => f <= F_DIV;
+                    when others => f <= F_COS;
+                end case;
             end if;
 
             x_reg <= x_reg(1) & x;
