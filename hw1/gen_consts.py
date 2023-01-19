@@ -40,3 +40,5 @@ print(');')
 
 print(f'x = {float_to_fixed(0.5, NUM_FRAC=14, NUM_BITS=16)}')
 print(f'y = {float_to_fixed(0.86602, NUM_FRAC=14, NUM_BITS=16)}')
+
+print(f'y = {float_to_fixed(np.pi / 2, NUM_FRAC=14, NUM_BITS=16)}')

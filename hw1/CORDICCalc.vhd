@@ -295,20 +295,71 @@ end architecture synth;
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+use ieee.math_real.all;
 
 entity CORDICCalc_TB is
 end entity CORDICCalc_TB;
 
 architecture testbench of CORDICCalc_TB is
+
+    function real2fixed(r: real) return std_logic_vector is
+        variable result: std_logic_vector(15 downto 0);
+    begin
+        result := std_logic_vector(to_signed(integer(round(r * real(2**14))),
+                                             result'length));
+        return result;
+    end;
+
+    type const_vector is array(natural range <>)
+                      of std_logic_vector(15 downto 0);
+    type control_vector is array(natural range<>) 
+                        of std_logic_vector(4 downto 0);
+
+    constant F_COS: std_logic_vector(4 downto 0)  := "00001";
+    constant F_SIN: std_logic_vector(4 downto 0)  := "00101";
+    constant F_MUL: std_logic_vector(4 downto 0)  := "00100";
+    constant F_COSH: std_logic_vector(4 downto 0) := "00010";
+    constant F_SINH: std_logic_vector(4 downto 0) := "00110";
+    constant F_DIV: std_logic_vector(4 downto 0)  := "01100";
+
+    constant NUM_TESTS: integer := 5;
+
+    constant test_xs: const_vector(0 to NUM_TESTS-1) := (
+        real2fixed(0.0),
+        real2fixed(MATH_PI / 6.0),
+        real2fixed(MATH_PI / 4.0),
+        real2fixed(MATH_PI / 3.0),
+        real2fixed(MATH_PI / 2.0)
+    );
+
+    constant test_ys: const_vector(0 to NUM_TESTS-1) := (
+        (others => 'X'),
+        (others => 'X'),
+        (others => 'X'),
+        (others => 'X'),
+        (others => 'X')
+    );
+
+    constant test_fs: control_vector(0 to NUM_TESTS-1) := (
+        F_COS,
+        F_COS,
+        F_COS,
+        F_COS,
+        F_COS
+    );
+
     signal clk: std_logic;
     signal x: std_logic_vector(15 downto 0);
     signal y: std_logic_vector(15 downto 0);
     signal f: std_logic_vector(4 downto 0);
     signal r: std_logic_vector(15 downto 0);
+
+    signal idx: integer := 0;
 begin
-    f <= "00001";
-    x <= "0001111101000111";
-    y <= "0001111101000111";
+    -- f <= "00001";
+    -- x <= "0001111101000111";
+    -- y <= "0001111101000111";
     -- f <= "01101";
     -- x <= "0010000000000000";
     -- y <= "0011011101101101";
@@ -321,6 +372,19 @@ begin
                 f => f,
                 r => r
             );
+
+
+    process(clk)
+    begin
+        if rising_edge(clk) then
+            if idx < NUM_TESTS then
+                x <= test_xs(idx);
+                y <= test_ys(idx);
+                f <= test_fs(idx);
+                idx <= idx + 1;
+            end if;
+        end if;
+    end process;
 
     process
     begin
