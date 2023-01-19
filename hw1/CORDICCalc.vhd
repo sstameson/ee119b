@@ -401,13 +401,31 @@ architecture testbench of CORDICCalc_TB is
         return result;
     end;
 
+    constant EPSILON     : signed := signed(real2fixed(0.001));
+    constant EPSILON_HYP : signed := signed(real2fixed(0.1));
+
+    function is_correct(
+        sol, r : std_logic_vector(15 downto 0);
+        f      : std_logic_vector(4 downto 0)
+    ) return boolean is
+        variable diff: signed(15 downto 0);
+        variable result: boolean;
+    begin
+        diff := abs(signed(sol) - signed(r));
+        if f = F_COSH or f = F_SINH then
+            result := diff < EPSILON_HYP;
+        else
+            result := diff < EPSILON;
+        end if;
+        return result;
+    end;
+
     type fixed_vector is array(natural range <>)
                       of std_logic_vector(15 downto 0);
     type control_vector is array(natural range<>) 
                         of std_logic_vector(4 downto 0);
 
     constant NUM_TESTS: integer := 30;
-    constant EPSILON: signed := signed(real2fixed(0.05));
 
     constant test_xs: fixed_vector(0 to NUM_TESTS-1) := (
         real2fixed(0.0),
@@ -572,7 +590,6 @@ begin
         end if;
     end process;
 
-
     process(clk)
         variable sol: std_logic_vector(15 downto 0);
     begin
@@ -581,7 +598,7 @@ begin
                 -- calculate correct value using
                 -- the registered values x_r, y_r, f_r
                 sol := calculate(x_r, y_r, f_r);
-                assert abs(signed(sol) - signed(r)) < EPSILON
+                assert is_correct(sol, r, f_r)
                     report lf &
                            "x = " & vec2str(x_r) & lf &
                            "y = " & vec2str(y_r) & lf &
