@@ -21,7 +21,6 @@ end architecture synth;
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
 
 entity AddSub is
     port (
@@ -136,7 +135,6 @@ end architecture synth;
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
 
 entity CORDICCalc is
     port (
@@ -233,12 +231,16 @@ begin
     -- the cs array must exist so that expressions in the port map
     -- of the CORDIC slice are static
     constants: for i in cs'range generate
-        cs(i) <= consts(i, to_integer(unsigned(m)));
+        cs(i) <= consts(i, 0) when m = "00" else
+                 consts(i, 1) when m = "01" else
+                 consts(i, 2);
     end generate constants;
 
     -- K = Ks(m)
     -- pick K based on mode (circular, linear, or hyperbolic)
-    K <= Ks(to_integer(unsigned(m)));
+    K <= Ks(0) when m = "00" else
+         Ks(1) when m = "01" else
+         Ks(2);
 
     -- compute the following
     -- x_shfts(i) <= xs(i) >>> i
