@@ -303,6 +303,14 @@ end entity CORDICCalc_TB;
 
 architecture testbench of CORDICCalc_TB is
 
+    constant F_COS: std_logic_vector(4 downto 0)  := "00001";
+    constant F_SIN: std_logic_vector(4 downto 0)  := "00101";
+    constant F_MUL: std_logic_vector(4 downto 0)  := "00100";
+    constant F_COSH: std_logic_vector(4 downto 0) := "00010";
+    constant F_SINH: std_logic_vector(4 downto 0) := "00110";
+    constant F_DIV: std_logic_vector(4 downto 0)  := "01100";
+
+    -- convert real to Q1.14 fixed point
     function real2fixed(r: real) return std_logic_vector is
         variable result: std_logic_vector(15 downto 0);
     begin
@@ -311,26 +319,90 @@ architecture testbench of CORDICCalc_TB is
         return result;
     end;
 
+    -- convert Q1.14 fixed point to real
+    function fixed2real(x: std_logic_vector(15 downto 0)) return real is
+        variable result: real;
+    begin
+        result := real(to_integer(signed(x))) / real(2**14);
+        return result;
+    end;
+
+    -- calculate the specified function to compare with CORDIC
+    function calculate(
+        x, y : std_logic_vector(15 downto 0);
+        f    : std_logic_vector(4 downto 0)
+    ) return std_logic_vector is
+        variable result: std_logic_vector(15 downto 0);
+    begin
+        case f is
+            when F_COS  => result := real2fixed(cos(fixed2real(x)));
+            when F_SIN  => result := real2fixed(sin(fixed2real(x)));
+            when F_MUL  => result := real2fixed(fixed2real(x) * fixed2real(y));
+            when F_COSH => result := real2fixed(cosh(fixed2real(x)));
+            when F_SINH => result := real2fixed(sinh(fixed2real(x)));
+            when others => result := real2fixed(fixed2real(y) / fixed2real(x));
+        end case;
+        return result;
+    end;
+
+    -- convert std_logic_vector to string for reporting
+    function vec2str(vec: std_logic_vector) return string is
+        variable result: string(vec'range);
+    begin
+        for i in vec'range loop
+            case vec(i) is
+                when '1'    =>  result(i) := '1';
+                when '0'    =>  result(i) := '0';
+                when others =>  result(i) := 'X';
+            end case;
+        end loop;
+        return result;
+    end;
+
     type fixed_vector is array(natural range <>)
                       of std_logic_vector(15 downto 0);
     type control_vector is array(natural range<>) 
                         of std_logic_vector(4 downto 0);
 
-    constant F_COS: std_logic_vector(4 downto 0)  := "00001";
-    constant F_SIN: std_logic_vector(4 downto 0)  := "00101";
-    constant F_MUL: std_logic_vector(4 downto 0)  := "00100";
-    constant F_COSH: std_logic_vector(4 downto 0) := "00010";
-    constant F_SINH: std_logic_vector(4 downto 0) := "00110";
-    constant F_DIV: std_logic_vector(4 downto 0)  := "01100";
-
-    constant NUM_TESTS: integer := 5;
+    constant NUM_TESTS: integer := 30;
+    constant EPSILON: signed := signed(real2fixed(0.05));
 
     constant test_xs: fixed_vector(0 to NUM_TESTS-1) := (
         real2fixed(0.0),
         real2fixed(MATH_PI / 6.0),
         real2fixed(MATH_PI / 4.0),
         real2fixed(MATH_PI / 3.0),
-        real2fixed(MATH_PI / 2.0)
+        real2fixed(MATH_PI / 2.0),
+
+        real2fixed(0.0),
+        real2fixed(MATH_PI / 6.0),
+        real2fixed(MATH_PI / 4.0),
+        real2fixed(MATH_PI / 3.0),
+        real2fixed(MATH_PI / 2.0),
+
+        real2fixed(0.00),
+        real2fixed(0.25),
+        real2fixed(0.50),
+        real2fixed(0.75),
+        real2fixed(1.00),
+
+        real2fixed(0.00),
+        real2fixed(0.25),
+        real2fixed(0.50),
+        real2fixed(0.75),
+        real2fixed(1.00),
+
+        real2fixed(0.00),
+        real2fixed(0.25),
+        real2fixed(0.50),
+        real2fixed(0.75),
+        real2fixed(1.00),
+
+        real2fixed(1.00),
+        real2fixed(1.00),
+        real2fixed(0.75),
+        real2fixed(0.50),
+        real2fixed(1.75)
     );
 
     constant test_ys: fixed_vector(0 to NUM_TESTS-1) := (
@@ -338,7 +410,37 @@ architecture testbench of CORDICCalc_TB is
         (others => 'X'),
         (others => 'X'),
         (others => 'X'),
-        (others => 'X')
+        (others => 'X'),
+
+        (others => 'X'),
+        (others => 'X'),
+        (others => 'X'),
+        (others => 'X'),
+        (others => 'X'),
+
+        real2fixed(1.00),
+        real2fixed(0.75),
+        real2fixed(0.50),
+        real2fixed(0.25),
+        real2fixed(0.00),
+
+        (others => 'X'),
+        (others => 'X'),
+        (others => 'X'),
+        (others => 'X'),
+        (others => 'X'),
+
+        (others => 'X'),
+        (others => 'X'),
+        (others => 'X'),
+        (others => 'X'),
+        (others => 'X'),
+
+        real2fixed(0.00),
+        real2fixed(0.25),
+        real2fixed(0.50),
+        real2fixed(0.75),
+        real2fixed(1.00)
     );
 
     constant test_fs: control_vector(0 to NUM_TESTS-1) := (
@@ -346,7 +448,37 @@ architecture testbench of CORDICCalc_TB is
         F_COS,
         F_COS,
         F_COS,
-        F_COS
+        F_COS,
+
+        F_SIN,
+        F_SIN,
+        F_SIN,
+        F_SIN,
+        F_SIN,
+
+        F_MUL,
+        F_MUL,
+        F_MUL,
+        F_MUL,
+        F_MUL,
+
+        F_COSH,
+        F_COSH,
+        F_COSH,
+        F_COSH,
+        F_COSH,
+
+        F_SINH,
+        F_SINH,
+        F_SINH,
+        F_SINH,
+        F_SINH,
+
+        F_DIV,
+        F_DIV,
+        F_DIV,
+        F_DIV,
+        F_DIV
     );
 
     signal clk: std_logic;
@@ -360,14 +492,10 @@ architecture testbench of CORDICCalc_TB is
     signal x_r, y_r: std_logic_vector(15 downto 0);
     signal f_r: std_logic_vector(4 downto 0);
 
+    signal test: std_logic_vector(15 downto 0);
+
     signal idx: integer := 0;
 begin
-    -- f <= "00001";
-    -- x <= "0001111101000111";
-    -- y <= "0001111101000111";
-    -- f <= "01101";
-    -- x <= "0010000000000000";
-    -- y <= "0011011101101101";
 
     UUT: entity work.CORDICCalc
         port map (
@@ -404,11 +532,21 @@ begin
 
 
     process(clk)
+        variable sol: std_logic_vector(15 downto 0);
     begin
         if falling_edge(clk) then
-            if idx > 2 then
-                -- TODO: insert assertions
-                -- compute correct value use x_r, y_r, f_r
+            if idx > 2 and idx < 29 then
+                -- calculate correct value using
+                -- the registered values x_r, y_r, f_r
+                sol := calculate(x_r, y_r, f_r);
+                assert abs(signed(sol) - signed(r)) < EPSILON
+                    report lf &
+                           "x = " & vec2str(x_r) & lf &
+                           "y = " & vec2str(y_r) & lf &
+                           "f = " & vec2str(f_r) & lf &
+                           "incorrect value: r = " & vec2str(r) & lf &
+                           "expected:        r = " & vec2str(sol);
+
             end if;
         end if;
     end process;
