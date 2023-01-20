@@ -156,16 +156,22 @@ architecture synth of CORDICCalc is
                         of std_logic_vector(21 downto 0);
     type control_vector is array(natural range <>)
                         of std_logic_vector(1 downto 0);
+    type boolean_vector is array(natural range <>)
+                        of boolean;
 
     signal xs, ys, zs: calc_vector(0 to 16);
 
-    signal x1, y1, z1: std_logic_vector(21 downto 0);
+    signal xs_out, ys_out, zs_out: calc_vector(1 to 16);
 
     signal x_shfts, y_shfts: calc_vector(0 to 15);
 
     signal ds: control_vector(0 to 15);
 
     signal cs: calc_vector(0 to 15);
+
+    signal m: control_vector(0 to 15);
+    signal result: std_logic_vector(0 to 15);
+    signal vectoring: std_logic_vector(0 to 15);
 
     signal K: std_logic_vector(21 downto 0);
 
@@ -175,10 +181,24 @@ architecture synth of CORDICCalc is
 
     signal x_ext, y_ext: std_logic_vector(21 downto 0);
 
-    signal m: std_logic_vector(1 downto 0);
-    signal result: std_logic;
-    signal vectoring: std_logic;
-    signal composite: std_logic;
+    constant is_stage: boolean_vector(1 to 16) := (
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false
+    );
 
     constant Ks: calc_vector(0 to 2) :=
         ("0001000000000000000000", "0000100110110111010100", "0001001101001000001111");
@@ -212,17 +232,34 @@ begin
         end if;
     end process;
 
-    -- decode f
-    m         <= f_reg(1 downto 0);
-    result    <= f_reg(2);
-    vectoring <= f_reg(3);
-    composite <= f_reg(4);
+    -- decode f and store the pipelined control signals
+    m(0)         <= f_reg(1 downto 0);
+    result(0)    <= f_reg(2);
+    vectoring(0) <= f_reg(3);
+    controls: for i in 1 to m'high generate
+        dff: if is_stage(i) generate
+            process(clk)
+            begin
+                if rising_edge(clk) then
+                    m(i)         <= m(i - 1);
+                    result(i)    <= result(i - 1);
+                    vectoring(i) <= vectoring(i - 1);
+                end if;
+            end process;
+        end generate dff;
+
+        wire: if not is_stage(i) generate
+            m(i)         <= m(i - 1);
+            result(i)    <= result(i - 1);
+            vectoring(i) <= vectoring(i - 1);
+        end generate wire;
+    end generate controls;
 
     -- ds(i) = 1 when the decision variable is non-negative
     -- otherwise ds(i) = -1
     decisions: for i in ds'range generate
-        ds(i) <= "01" when (zs(i)(zs(i)'high) = '0' and vectoring = '0') or
-                           (ys(i)(ys(i)'high) = '1' and vectoring = '1') else
+        ds(i) <= "01" when (zs(i)(zs(i)'high) = '0' and vectoring(i) = '0') or
+                           (ys(i)(ys(i)'high) = '1' and vectoring(i) = '1') else
                  "10";
     end generate decisions;
 
@@ -231,16 +268,10 @@ begin
     -- the cs array must exist so that expressions in the port map
     -- of the CORDIC slice are static
     constants: for i in cs'range generate
-        cs(i) <= consts(i, 0) when m = "00" else
-                 consts(i, 1) when m = "01" else
+        cs(i) <= consts(i, 0) when m(i) = "00" else
+                 consts(i, 1) when m(i) = "01" else
                  consts(i, 2);
     end generate constants;
-
-    -- K = Ks(m)
-    -- pick K based on mode (circular, linear, or hyperbolic)
-    K <= Ks(0) when m = "00" else
-         Ks(1) when m = "01" else
-         Ks(2);
 
     -- compute the following
     -- x_shfts(i) <= xs(i) >>> i
@@ -257,63 +288,91 @@ begin
             ys(i)(ys(i)'high downto i);
     end generate shifts;
 
+    -- K = Ks(m)
+    -- pick K based on input mode (circular, linear, or hyperbolic)
+    K <= Ks(0) when m(0) = "00" else
+         Ks(1) when m(0) = "01" else
+         Ks(2);
+
     -- sign extend the input values
     x_ext <= x_reg(x_reg'high) & x_reg(x_reg'high) & x_reg & "0000";
     y_ext <= y_reg(y_reg'high) & y_reg(y_reg'high) & y_reg & "0000";
 
-    xs(0) <= K when vectoring = '0' and (m = "01" or m = "10") else
+    xs(0) <= K when vectoring(0) = '0' and (m(0) = "01" or m(0) = "10") else
              x_ext;
-    ys(0) <= (others => '0') when vectoring = '0' else
+    ys(0) <= (others => '0') when vectoring(0) = '0' else
              y_ext;
-    zs(0) <= x_ext  when vectoring = '0' and (m = "01" or m = "10") else
-             y_ext  when vectoring = '0' else
+    zs(0) <= x_ext  when vectoring(0) = '0' and (m(0) = "01" or m(0) = "10") else
+             y_ext  when vectoring(0) = '0' else
              (others => '0');
 
     slices: for i in 1 to xs'high generate
+
+        -- generate the CORDIC slices
+        sliceX: entity work.CORDICSlice
+            port map (
+                d      => ds(i - 1),
+                m      => m(i - 1),
+                x_prev => xs(i - 1),
+                x_shft => x_shfts(i - 1),
+                y_prev => ys(i - 1),
+                y_shft => y_shfts(i - 1),
+                z_prev => zs(i - 1),
+                const  => cs(i - 1),
+                x_next => xs_out(i),
+                y_next => ys_out(i),
+                z_next => zs_out(i)
+            );
 
         -- skip the first CORDIC slice in hyperbolic mode
         -- must skip the first hyperbolic slice because the
         -- constant arctanh(1) does not exist
         i1: if i = 1 generate
-            slice1: entity work.CORDICSlice
-                port map (
-                    d      => ds(i - 1),
-                    m      => m,
-                    x_prev => xs(i - 1),
-                    x_shft => x_shfts(i - 1),
-                    y_prev => ys(i - 1),
-                    y_shft => y_shfts(i - 1),
-                    z_prev => zs(i - 1),
-                    const  => cs(i - 1),
-                    x_next => x1,
-                    y_next => y1,
-                    z_next => z1
-                );
+            dff: if is_stage(i) generate
+                process(clk)
+                begin
+                    if rising_edge(clk) then
+                        if m(i - 1) = "10" then
+                            xs(i) <= xs(i - 1);
+                            ys(i) <= ys(i - 1);
+                            zs(i) <= zs(i - 1);
+                        else
+                            xs(i) <= xs_out(i);
+                            ys(i) <= ys_out(i);
+                            zs(i) <= zs_out(i);
+                        end if;
+                    end if;
+                end process;
+            end generate dff;
 
-            xs(i) <= xs(i - 1) when m = "10" else
-                     x1;
-            ys(i) <= ys(i - 1) when m = "10" else
-                     y1;
-            zs(i) <= zs(i - 1) when m = "10" else
-                     z1;
+            wire: if not is_stage(i) generate
+                xs(i) <= xs(i - 1) when m(i - 1) = "10" else
+                         xs_out(i);
+                ys(i) <= ys(i - 1) when m(i - 1) = "10" else
+                         ys_out(i);
+                zs(i) <= zs(i - 1) when m(i - 1) = "10" else
+                         zs_out(i);
+            end generate wire;
         end generate i1;
 
-        -- generate the remaining CORDIC slices
+        -- connect CORDIC slices for all i > 1
         iX: if i > 1 generate
-            sliceX: entity work.CORDICSlice
-                port map (
-                    d      => ds(i - 1),
-                    m      => m,
-                    x_prev => xs(i - 1),
-                    x_shft => x_shfts(i - 1),
-                    y_prev => ys(i - 1),
-                    y_shft => y_shfts(i - 1),
-                    z_prev => zs(i - 1),
-                    const  => cs(i - 1),
-                    x_next => xs(i),
-                    y_next => ys(i),
-                    z_next => zs(i)
-                );
+            dff: if is_stage(i) generate
+                process(clk)
+                begin
+                    if rising_edge(clk) then
+                        xs(i) <= xs_out(i);
+                        ys(i) <= ys_out(i);
+                        zs(i) <= zs_out(i);
+                    end if;
+                end process;
+            end generate dff;
+
+            wire: if not is_stage(i) generate
+                xs(i) <= xs_out(i);
+                ys(i) <= ys_out(i);
+                zs(i) <= zs_out(i);
+            end generate wire;
         end generate iX;
 
     end generate slices;
@@ -322,9 +381,9 @@ begin
     process (clk)
     begin
         if rising_edge(clk) then
-            if vectoring = '0' and result = '0' then
+            if vectoring(xs'high - 1) = '0' and result(xs'high - 1) = '0' then
                 r <= xs(xs'high)(19 downto 4);
-            elsif vectoring = '0' and result = '1' then
+            elsif vectoring(ys'high - 1) = '0' and result(ys'high - 1) = '1' then
                 r <= ys(ys'high)(19 downto 4);
             else
                 r <= zs(zs'high)(19 downto 4);

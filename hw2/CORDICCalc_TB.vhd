@@ -211,7 +211,7 @@ architecture testbench of CORDICCalc_TB is
         F_DIV
     );
 
-    constant NUM_CYCLES: natural := 2;
+    constant NUM_CYCLES: natural := 2 + 15;
 
     signal clk: std_logic;
     signal x, y: std_logic_vector(15 downto 0);
