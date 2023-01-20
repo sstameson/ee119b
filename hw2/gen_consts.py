@@ -29,7 +29,7 @@ print(f'"{float_to_fixed(K1)}", ', end="")
 print(f'"{float_to_fixed(K2)}");')
 
 print('constant consts: <T> := (')
-for i in range(16):
+for i in range(20):
     a = 1 / (1 << i)
     print('    (', end="")
     print(f'"{float_to_fixed(a)}", ', end="")

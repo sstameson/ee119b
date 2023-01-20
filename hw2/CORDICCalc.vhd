@@ -159,19 +159,19 @@ architecture synth of CORDICCalc is
     type boolean_vector is array(natural range <>)
                         of boolean;
 
-    signal xs, ys, zs: calc_vector(0 to 16);
+    signal xs, ys, zs: calc_vector(0 to 20);
 
-    signal xs_out, ys_out, zs_out: calc_vector(1 to 16);
+    signal xs_out, ys_out, zs_out: calc_vector(1 to 20);
 
-    signal x_shfts, y_shfts: calc_vector(0 to 15);
+    signal x_shfts, y_shfts: calc_vector(0 to 19);
 
-    signal ds: control_vector(0 to 15);
+    signal ds: control_vector(0 to 19);
 
-    signal cs: calc_vector(0 to 15);
+    signal cs: calc_vector(0 to 19);
 
-    signal m: control_vector(0 to 15);
-    signal result: std_logic_vector(0 to 15);
-    signal vectoring: std_logic_vector(0 to 15);
+    signal m: control_vector(0 to 19);
+    signal result: std_logic_vector(0 to 19);
+    signal vectoring: std_logic_vector(0 to 19);
 
     signal K: std_logic_vector(21 downto 0);
 
@@ -181,7 +181,7 @@ architecture synth of CORDICCalc is
 
     signal x_ext, y_ext: std_logic_vector(21 downto 0);
 
-    constant is_stage: boolean_vector(1 to 16) := (
+    constant is_stage: boolean_vector(1 to 20) := (
         false,
         false,
         false,
@@ -189,11 +189,15 @@ architecture synth of CORDICCalc is
         false,
         false,
         false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
         true,
         false,
         false,
-        false,
-        true,
         false,
         false,
         false,
@@ -202,7 +206,7 @@ architecture synth of CORDICCalc is
 
     constant Ks: calc_vector(0 to 2) :=
         ("0001000000000000000000", "0000100110110111010100", "0001001101001000001111");
-    constant consts: const_vector(0 to 15, 0 to 2) := (
+    constant consts: const_vector(0 to 19, 0 to 2) := (
         ("0001000000000000000000", "0000110010010000111111", "0000000000000000000000"),
         ("0000100000000000000000", "0000011101101011000110", "0000100011001001111101"),
         ("0000010000000000000000", "0000001111101011011100", "0000010000010110001011"),
@@ -218,7 +222,11 @@ architecture synth of CORDICCalc is
         ("0000000000000001000000", "0000000000000001000000", "0000000000000001000000"),
         ("0000000000000000100000", "0000000000000000100000", "0000000000000000100000"),
         ("0000000000000000010000", "0000000000000000010000", "0000000000000000010000"),
-        ("0000000000000000001000", "0000000000000000001000", "0000000000000000001000")
+        ("0000000000000000001000", "0000000000000000001000", "0000000000000000001000"),
+        ("0000000000000000000100", "0000000000000000000100", "0000000000000000000100"),
+        ("0000000000000000000010", "0000000000000000000010", "0000000000000000000010"),
+        ("0000000000000000000001", "0000000000000000000001", "0000000000000000000001"),
+        ("0000000000000000000000", "0000000000000000000000", "0000000000000000000001")
     );
 begin
 
