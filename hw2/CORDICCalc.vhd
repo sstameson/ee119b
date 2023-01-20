@@ -37,26 +37,28 @@ entity AddSub is
 end entity AddSub;
 
 architecture synth of AddSub is
-    signal b_op: std_logic_vector(a'range);
-    signal res: std_logic_vector(a'range);
-    signal carry: std_logic_vector(0 to a'high + 1);
+    signal x: std_logic_vector(a'range);
+    signal y: std_logic_vector(b'range);
+    signal s: std_logic_vector(r'range);
+    signal carry: std_logic_vector(a'high + 1 downto 0);
 begin
-    b_op <= b when carry(0) = '0' else
-            not b;
+    y <= a;
+    x <= b when carry(0) = '0' else
+         not b;
 
     carry(0) <= f(1);
     ripple: for i in a'range generate
         FAx: entity work.FullAdder
             port map (
-                a    => a(i),
-                b    => b_op(i),
+                a    => x(i),
+                b    => y(i),
                 Cin  => carry(i),
-                s    => res(i),
+                s    => s(i),
                 Cout => carry(i + 1)
             );
     end generate ripple;
 
-    r <= res when (f(1) xor f(0)) = '1' else
+    r <= s when (f(1) xor f(0)) = '1' else
          a;
 end architecture synth;
 
