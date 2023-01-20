@@ -1,5 +1,29 @@
+---------------------------------------------------------------------------
+--
+-- CORDIC Calculator
+--
+-- This file contains the implementation of a CORDIC calculator for
+-- computing sin, cos, sinh, cosh, multiplication, and division.
+-- The inputs and output of the calculator are stored in DFFs and the
+-- computation is fully parallel, so it takes 1 cycle of latency.
+-- All inputs and outputs are interpreted as Q1.14 fixed point numbers.
+-- The implemented algorithm works for only for non-negative inputs.
+--
+---------------------------------------------------------------------------
+
 library ieee;
 use ieee.std_logic_1164.all;
+
+--
+-- FullAdder entity declaration
+--
+-- This entity implements a 1-bit full adder
+-- a - the first 1-bit input
+-- b - the second 1-bit input
+-- Cin - the carry input
+-- s - the sum output
+-- Cout - the carry output
+--
 
 entity FullAdder is
     port (
@@ -18,6 +42,19 @@ begin
     Cout <= (a and b) or (Cin and (a xor b));
 end architecture synth;
 
+--
+-- AddSub entity declaration
+--
+-- This entity implements a 22-bit adder/subtractor for the intermediate
+-- CORDIC calculations
+-- a - the first input
+-- b - the second input
+-- f - the function to be computed
+--     f = 00 outputs the input a unchanged
+--     f = 01 preforms the addition a + b
+--     f = 10 performs the subtraction a - b
+-- r - the result of the computation
+--
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -62,6 +99,35 @@ begin
          a;
 end architecture synth;
 
+--
+-- CORDICSlice entity declaration
+--
+-- This entity implements one layer of the CORDIC calculation, which consists
+-- of three 21-bit add/sub/no-op operations selected by the control signals
+-- to compute the next x, y, z values for the next slice.
+-- d - the decision variable
+--     d can be -1 or 1
+--     "01" represents 1
+--     "10" represents -1
+--     d = 1 when z is positive in rotation mode or
+--                y is negative in vectoring mode
+--           otherwise d is -1
+-- m - the type of computation
+--     m can be 1, 0, or -1
+--     "01" represents 1 (circular)
+--     "00" represents 0 (linear)
+--     "10" represents -1 (hyperbolic)
+-- x_prev - the previous x
+-- x_shft - the previous x shifted by the layer depth
+-- y_prev - the previous y
+-- y_shft - the previous y shifted by the layer depth
+-- z_prev - the previous z
+-- z_shft - the previous z shifted by the layer depth
+-- const  - the constant used to compute z_next
+-- x_next - the x value for the next slice
+-- y_next - the y value for the next slice
+-- z_next - the z value for the next slice
+--
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -138,6 +204,29 @@ end architecture synth;
 library ieee;
 use ieee.std_logic_1164.all;
 
+--
+-- CORDICCalc entity declaration
+--
+-- This implements a CORDIC calculator for computing sin, cos, sinh, cosh,
+-- multiplication, and division. Inputs/outputs are stored in DFFs. The
+-- computation is fully parallel and completes in one cycle. All inputs and
+-- outputs are interpreted as Q1.14 fixed point numbers
+--
+-- clk - the clock for storage of inputs x, y, f, and output r
+-- x - the first input (see meaning below), must be a non-negative
+--     Q1.14 fixed point number
+-- y - the second input (see meaning below), must be a non-negative
+--     Q1.14 fixed point number
+-- f - the function to perform
+--     f = 00001 - computes cos(x)
+--     f = 00101 - computes sin(x)
+--     f = 00100 - computes x * y
+--     f = 00010 - computes cosh(x)
+--     f = 00110 - computes sinh(x)
+--     f = 01100 - computes y / x
+-- r - the result of the computation as a Q1.14 fixed point number
+--
+
 entity CORDICCalc is
     port (
         clk : in  std_logic;
@@ -159,31 +248,47 @@ architecture synth of CORDICCalc is
     type control_vector is array(natural range <>)
                         of std_logic_vector(1 downto 0);
 
+    -- intermediate x, y, and z values
     signal xs, ys, zs: calc_vector(0 to 20);
 
     signal x1, y1, z1: std_logic_vector(21 downto 0);
 
     signal x_shfts, y_shfts: calc_vector(0 to 19);
 
+    -- decision variables
     signal ds: control_vector(0 to 19);
 
+    -- constants (see below)
     signal cs: calc_vector(0 to 19);
 
     signal K: std_logic_vector(21 downto 0);
 
+    -- registered inputs
     signal x_reg: std_logic_vector(x'range);
     signal y_reg: std_logic_vector(y'range);
     signal f_reg: std_logic_vector(f'range);
 
+    -- sign-extended inputs to Q3.18 fixed point form
     signal x_ext, y_ext: std_logic_vector(21 downto 0);
 
+    -- control signals
     signal m: std_logic_vector(1 downto 0);
     signal result: std_logic;
     signal vectoring: std_logic;
     signal composite: std_logic;
 
+    -- pre-computed constants for the computation
+    -- all constants are in Q3.18 fixed point form
+
+    -- Ks(0) = 1
+    -- Ks(1) = 1/sqrt(1 + (1/2^i)^2)
+    -- Ks(2) = 1/sqrt(1 - (1/2^i)^2)
     constant Ks: calc_vector(0 to 2) :=
         ("0001000000000000000000", "0000100110110111010100", "0001001101001000001111");
+
+    -- consts(i, 0) = 1/2^i
+    -- consts(i, 1) = arctan(1/2^i)
+    -- consts(i, 2) = arctanh(1/2^i)
     constant consts: const_vector(0 to 19, 0 to 2) := (
         ("0001000000000000000000", "0000110010010000111111", "0000000000000000000000"),
         ("0000100000000000000000", "0000011101101011000110", "0000100011001001111101"),
