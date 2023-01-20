@@ -236,12 +236,6 @@ begin
                  consts(i, 2);
     end generate constants;
 
-    -- K = Ks(m)
-    -- pick K based on mode (circular, linear, or hyperbolic)
-    K <= Ks(0) when m = "00" else
-         Ks(1) when m = "01" else
-         Ks(2);
-
     -- compute the following
     -- x_shfts(i) <= xs(i) >>> i
     -- y_shfts(i) <= ys(i) >>> i
@@ -256,6 +250,12 @@ begin
            (ys(i)'high downto ys(i)'high - i + 1 => ys(i)(ys(i)'high)) &
             ys(i)(ys(i)'high downto i);
     end generate shifts;
+
+    -- K = Ks(m)
+    -- pick K based on mode (circular, linear, or hyperbolic)
+    K <= Ks(0) when m = "00" else
+         Ks(1) when m = "01" else
+         Ks(2);
 
     -- sign extend the input values
     x_ext <= x_reg(x_reg'high) & x_reg(x_reg'high) & x_reg & "0000";
