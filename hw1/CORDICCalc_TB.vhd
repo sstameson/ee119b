@@ -64,7 +64,7 @@ architecture testbench of CORDICCalc_TB is
         return result;
     end;
 
-    constant EPSILON     : signed := signed(real2fixed(0.001));
+    constant EPSILON     : signed := signed(real2fixed(0.0001));
     constant EPSILON_HYP : signed := signed(real2fixed(0.3));
 
     function is_correct(

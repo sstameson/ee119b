@@ -64,7 +64,7 @@ architecture testbench of CORDICCalc_TB is
         return result;
     end;
 
-    constant EPSILON     : signed := signed(real2fixed(0.001));
+    constant EPSILON     : signed := signed(real2fixed(0.0001));
     constant EPSILON_HYP : signed := signed(real2fixed(0.3));
 
     function is_correct(
@@ -211,7 +211,7 @@ architecture testbench of CORDICCalc_TB is
         F_DIV
     );
 
-    constant NUM_CYCLES: natural := 2 + 15;
+    constant NUM_CYCLES: natural := 2 + 3;
 
     signal clk: std_logic;
     signal x, y: std_logic_vector(15 downto 0);

@@ -182,21 +182,21 @@ architecture synth of CORDICCalc is
     signal x_ext, y_ext: std_logic_vector(21 downto 0);
 
     constant is_stage: boolean_vector(1 to 16) := (
+        false,
+        false,
+        false,
         true,
+        false,
+        false,
+        false,
         true,
+        false,
+        false,
+        false,
         true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
+        false,
+        false,
+        false,
         false
     );
 
