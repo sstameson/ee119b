@@ -275,7 +275,6 @@ architecture synth of CORDICCalc is
     signal m: std_logic_vector(1 downto 0);
     signal result: std_logic;
     signal vectoring: std_logic;
-    signal composite: std_logic;
 
     -- pre-computed constants for the computation
     -- all constants are in Q3.18 fixed point form
@@ -327,7 +326,6 @@ begin
     m         <= f_reg(1 downto 0);
     result    <= f_reg(2);
     vectoring <= f_reg(3);
-    composite <= f_reg(4);
 
     -- ds(i) = 1 when the decision variable is non-negative
     -- otherwise ds(i) = -1
