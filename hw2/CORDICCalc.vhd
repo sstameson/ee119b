@@ -5,7 +5,12 @@
 -- This file contains the implementation of a CORDIC calculator for
 -- computing sin, cos, sinh, cosh, multiplication, and division.
 -- The inputs and output of the calculator are stored in DFFs and the
--- computation is pipelined with a 4-cycle latency.
+-- computation is pipelined.
+--
+-- The calculator has a 4-cycle latency.
+-- The calculator has a maximum throughput of 1 calculation-per-clock
+-- (when the pipeline is full).
+--
 -- All inputs and outputs are interpreted as Q1.14 fixed point numbers.
 -- The implemented algorithm works for only for non-negative inputs.
 --
@@ -213,6 +218,10 @@ use ieee.std_logic_1164.all;
 -- multiplication, and division. Inputs/outputs are stored in DFFs. The
 -- computation is fully pipelined and completes in four cycles. All inputs and
 -- outputs are interpreted as Q1.14 fixed point numbers
+--
+-- The calculator has a 4-cycle latency.
+-- The calculator has a maximum throughput of 1 calculation-per-clock
+-- (when the pipeline is full).
 --
 -- clk - the clock for storage of inputs x, y, f, output r, and the
 --       intermediate pipeline stages
