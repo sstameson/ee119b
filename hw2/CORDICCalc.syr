@@ -1,0 +1,556 @@
+Release 14.7 - xst P.20131013 (nt64)
+Copyright (c) 1995-2013 Xilinx, Inc.  All rights reserved.
+--> Parameter TMPDIR set to xst/projnav.tmp
+
+
+Total REAL time to Xst completion: 0.00 secs
+Total CPU time to Xst completion: 0.08 secs
+ 
+--> Parameter xsthdpdir set to xst
+
+
+Total REAL time to Xst completion: 0.00 secs
+Total CPU time to Xst completion: 0.08 secs
+ 
+--> Reading design: CORDICCalc.prj
+
+TABLE OF CONTENTS
+  1) Synthesis Options Summary
+  2) HDL Compilation
+  3) Design Hierarchy Analysis
+  4) HDL Analysis
+  5) HDL Synthesis
+     5.1) HDL Synthesis Report
+  6) Advanced HDL Synthesis
+     6.1) Advanced HDL Synthesis Report
+  7) Low Level Synthesis
+  8) Partition Report
+  9) Final Report
+	9.1) Device utilization summary
+	9.2) Partition Resource Summary
+	9.3) TIMING REPORT
+
+
+=========================================================================
+*                      Synthesis Options Summary                        *
+=========================================================================
+---- Source Parameters
+Input File Name                    : "CORDICCalc.prj"
+Input Format                       : mixed
+Ignore Synthesis Constraint File   : NO
+
+---- Target Parameters
+Output File Name                   : "CORDICCalc"
+Output Format                      : NGC
+Target Device                      : xc3s1200e-4-fg320
+
+---- Source Options
+Top Module Name                    : CORDICCalc
+Automatic FSM Extraction           : YES
+FSM Encoding Algorithm             : Auto
+Safe Implementation                : No
+FSM Style                          : LUT
+RAM Extraction                     : Yes
+RAM Style                          : Auto
+ROM Extraction                     : Yes
+Mux Style                          : Auto
+Decoder Extraction                 : YES
+Priority Encoder Extraction        : Yes
+Shift Register Extraction          : YES
+Logical Shifter Extraction         : YES
+XOR Collapsing                     : YES
+ROM Style                          : Auto
+Mux Extraction                     : Yes
+Resource Sharing                   : YES
+Asynchronous To Synchronous        : NO
+Multiplier Style                   : Auto
+Automatic Register Balancing       : No
+
+---- Target Options
+Add IO Buffers                     : YES
+Global Maximum Fanout              : 500
+Add Generic Clock Buffer(BUFG)     : 24
+Register Duplication               : YES
+Slice Packing                      : YES
+Optimize Instantiated Primitives   : NO
+Use Clock Enable                   : Yes
+Use Synchronous Set                : Yes
+Use Synchronous Reset              : Yes
+Pack IO Registers into IOBs        : Auto
+Equivalent register Removal        : YES
+
+---- General Options
+Optimization Goal                  : Area
+Optimization Effort                : 1
+Keep Hierarchy                     : No
+Netlist Hierarchy                  : As_Optimized
+RTL Output                         : Yes
+Global Optimization                : AllClockNets
+Read Cores                         : YES
+Write Timing Constraints           : NO
+Cross Clock Analysis               : NO
+Hierarchy Separator                : /
+Bus Delimiter                      : <>
+Case Specifier                     : Maintain
+Slice Utilization Ratio            : 100
+BRAM Utilization Ratio             : 100
+Verilog 2001                       : YES
+Auto BRAM Packing                  : NO
+Slice Utilization Ratio Delta      : 5
+
+=========================================================================
+
+
+=========================================================================
+*                          HDL Compilation                              *
+=========================================================================
+Compiling vhdl file "C:/Users/sstameson/Documents/cordic-final/cordic-final/CORDICCalc.vhd" in Library work.
+Entity <fulladder> compiled.
+Entity <fulladder> (Architecture <synth>) compiled.
+Entity <addsub> compiled.
+Entity <addsub> (Architecture <synth>) compiled.
+Entity <cordicslice> compiled.
+Entity <cordicslice> (Architecture <synth>) compiled.
+Entity <cordiccalc> compiled.
+Entity <cordiccalc> (Architecture <synth>) compiled.
+
+=========================================================================
+*                     Design Hierarchy Analysis                         *
+=========================================================================
+Analyzing hierarchy for entity <CORDICCalc> in library <work> (architecture <synth>).
+
+Analyzing hierarchy for entity <CORDICSlice> in library <work> (architecture <synth>).
+
+Analyzing hierarchy for entity <AddSub> in library <work> (architecture <synth>).
+
+Analyzing hierarchy for entity <FullAdder> in library <work> (architecture <synth>).
+
+
+=========================================================================
+*                            HDL Analysis                               *
+=========================================================================
+Analyzing Entity <CORDICCalc> in library <work> (Architecture <synth>).
+Entity <CORDICCalc> analyzed. Unit <CORDICCalc> generated.
+
+Analyzing Entity <CORDICSlice> in library <work> (Architecture <synth>).
+Entity <CORDICSlice> analyzed. Unit <CORDICSlice> generated.
+
+Analyzing Entity <AddSub> in library <work> (Architecture <synth>).
+Entity <AddSub> analyzed. Unit <AddSub> generated.
+
+Analyzing Entity <FullAdder> in library <work> (Architecture <synth>).
+Entity <FullAdder> analyzed. Unit <FullAdder> generated.
+
+
+=========================================================================
+*                           HDL Synthesis                               *
+=========================================================================
+
+Performing bidirectional port resolution...
+
+Synthesizing Unit <FullAdder>.
+    Related source file is "C:/Users/sstameson/Documents/cordic-final/cordic-final/CORDICCalc.vhd".
+    Found 1-bit xor2 for signal <s>.
+    Found 1-bit xor2 for signal <Cout$xor0000> created at line 42.
+Unit <FullAdder> synthesized.
+
+
+Synthesizing Unit <AddSub>.
+    Related source file is "C:/Users/sstameson/Documents/cordic-final/cordic-final/CORDICCalc.vhd".
+WARNING:Xst:646 - Signal <carry<22>> is assigned but never used. This unconnected signal will be trimmed during the optimization process.
+    Found 1-bit xor2 for signal <r$xor0000> created at line 99.
+Unit <AddSub> synthesized.
+
+
+Synthesizing Unit <CORDICSlice>.
+    Related source file is "C:/Users/sstameson/Documents/cordic-final/cordic-final/CORDICCalc.vhd".
+Unit <CORDICSlice> synthesized.
+
+
+Synthesizing Unit <CORDICCalc>.
+    Related source file is "C:/Users/sstameson/Documents/cordic-final/cordic-final/CORDICCalc.vhd".
+WARNING:Xst:646 - Signal <zs<20><21:20>> is assigned but never used. This unconnected signal will be trimmed during the optimization process.
+WARNING:Xst:646 - Signal <zs<20><3:0>> is assigned but never used. This unconnected signal will be trimmed during the optimization process.
+WARNING:Xst:646 - Signal <ys<20><21:20>> is assigned but never used. This unconnected signal will be trimmed during the optimization process.
+WARNING:Xst:646 - Signal <ys<20><3:0>> is assigned but never used. This unconnected signal will be trimmed during the optimization process.
+WARNING:Xst:646 - Signal <xs<20><21:20>> is assigned but never used. This unconnected signal will be trimmed during the optimization process.
+WARNING:Xst:646 - Signal <xs<20><3:0>> is assigned but never used. This unconnected signal will be trimmed during the optimization process.
+WARNING:Xst:646 - Signal <f_reg<4>> is assigned but never used. This unconnected signal will be trimmed during the optimization process.
+    Found 16-bit register for signal <r>.
+    Found 5-bit register for signal <f_reg>.
+    Found 2-bit register for signal <m<4>>.
+    Found 2-bit register for signal <m<9>>.
+    Found 2-bit register for signal <m<14>>.
+    Found 1-bit register for signal <result<4>>.
+    Found 1-bit register for signal <result<9>>.
+    Found 1-bit register for signal <result<14>>.
+    Found 1-bit register for signal <vectoring<4>>.
+    Found 1-bit register for signal <vectoring<9>>.
+    Found 1-bit register for signal <vectoring<14>>.
+    Found 16-bit register for signal <x_reg>.
+    Found 22-bit register for signal <xs<4>>.
+    Found 22-bit register for signal <xs<9>>.
+    Found 22-bit register for signal <xs<14>>.
+    Found 16-bit register for signal <y_reg>.
+    Found 22-bit register for signal <ys<4>>.
+    Found 22-bit register for signal <ys<9>>.
+    Found 22-bit register for signal <ys<14>>.
+    Found 22-bit register for signal <zs<4>>.
+    Found 22-bit register for signal <zs<9>>.
+    Found 22-bit register for signal <zs<14>>.
+    Summary:
+	inferred 263 D-type flip-flop(s).
+Unit <CORDICCalc> synthesized.
+
+
+=========================================================================
+HDL Synthesis Report
+
+Macro Statistics
+# Registers                                            : 22
+ 1-bit register                                        : 6
+ 16-bit register                                       : 3
+ 2-bit register                                        : 3
+ 22-bit register                                       : 9
+ 5-bit register                                        : 1
+# Xors                                                 : 2700
+ 1-bit xor2                                            : 2700
+
+=========================================================================
+
+=========================================================================
+*                       Advanced HDL Synthesis                          *
+=========================================================================
+
+WARNING:Xst:1290 - Hierarchical block <ripple[21].FAx> is unconnected in block <AS0>.
+   It will be removed from the design.
+WARNING:Xst:1290 - Hierarchical block <ripple[20].FAx> is unconnected in block <AS0>.
+   It will be removed from the design.
+WARNING:Xst:1290 - Hierarchical block <ripple[21].FAx> is unconnected in block <AS1>.
+   It will be removed from the design.
+WARNING:Xst:1290 - Hierarchical block <ripple[20].FAx> is unconnected in block <AS1>.
+   It will be removed from the design.
+WARNING:Xst:1290 - Hierarchical block <ripple[21].FAx> is unconnected in block <AS2>.
+   It will be removed from the design.
+WARNING:Xst:1290 - Hierarchical block <ripple[20].FAx> is unconnected in block <AS2>.
+   It will be removed from the design.
+WARNING:Xst:2677 - Node <f_reg_4> of sequential type is unconnected in block <CORDICCalc>.
+WARNING:Xst:2677 - Node <f_reg_4> of sequential type is unconnected in block <CORDICCalc>.
+
+=========================================================================
+Advanced HDL Synthesis Report
+
+Macro Statistics
+# Registers                                            : 262
+ Flip-Flops                                            : 262
+# Xors                                                 : 2700
+ 1-bit xor2                                            : 2700
+
+=========================================================================
+
+=========================================================================
+*                         Low Level Synthesis                           *
+=========================================================================
+
+Optimizing unit <CORDICCalc> ...
+
+Optimizing unit <AddSub> ...
+
+Optimizing unit <CORDICSlice> ...
+
+Mapping all equations...
+Building and optimizing final netlist ...
+Found area constraint ratio of 100 (+ 5) on block CORDICCalc, actual ratio is 18.
+
+Final Macro Processing ...
+
+Processing Unit <CORDICCalc> :
+	Found 2-bit shift register for signal <result_14>.
+Unit <CORDICCalc> processed.
+
+=========================================================================
+Final Register Report
+
+Macro Statistics
+# Registers                                            : 257
+ Flip-Flops                                            : 257
+# Shift Registers                                      : 1
+ 2-bit shift register                                  : 1
+
+=========================================================================
+
+=========================================================================
+*                           Partition Report                            *
+=========================================================================
+
+Partition Implementation Status
+-------------------------------
+
+  No Partitions were found in this design.
+
+-------------------------------
+
+=========================================================================
+*                            Final Report                               *
+=========================================================================
+Final Results
+RTL Top Level Output File Name     : CORDICCalc.ngr
+Top Level Output File Name         : CORDICCalc
+Output Format                      : NGC
+Optimization Goal                  : Area
+Keep Hierarchy                     : No
+
+Design Statistics
+# IOs                              : 54
+
+Cell Usage :
+# BELS                             : 2841
+#      GND                         : 1
+#      INV                         : 1
+#      LUT2                        : 29
+#      LUT3                        : 420
+#      LUT4                        : 2249
+#      MUXF5                       : 140
+#      VCC                         : 1
+# FlipFlops/Latches                : 258
+#      FD                          : 242
+#      FDS                         : 16
+# Shift Registers                  : 1
+#      SRL16                       : 1
+# Clock Buffers                    : 1
+#      BUFGP                       : 1
+# IO Buffers                       : 52
+#      IBUF                        : 36
+#      OBUF                        : 16
+=========================================================================
+
+Device utilization summary:
+---------------------------
+
+Selected Device : 3s1200efg320-4 
+
+ Number of Slices:                     1531  out of   8672    17%  
+ Number of Slice Flip Flops:            206  out of  17344     1%  
+ Number of 4 input LUTs:               2700  out of  17344    15%  
+    Number used as logic:              2699
+    Number used as Shift registers:       1
+ Number of IOs:                          54
+ Number of bonded IOBs:                  53  out of    250    21%  
+    IOB Flip Flops:                      52
+ Number of GCLKs:                         1  out of     24     4%  
+
+---------------------------
+Partition Resource Summary:
+---------------------------
+
+  No Partitions were found in this design.
+
+---------------------------
+
+
+=========================================================================
+TIMING REPORT
+
+NOTE: THESE TIMING NUMBERS ARE ONLY A SYNTHESIS ESTIMATE.
+      FOR ACCURATE TIMING INFORMATION PLEASE REFER TO THE TRACE REPORT
+      GENERATED AFTER PLACE-and-ROUTE.
+
+Clock Information:
+------------------
+-----------------------------------+------------------------+-------+
+Clock Signal                       | Clock buffer(FF name)  | Load  |
+-----------------------------------+------------------------+-------+
+clk                                | BUFGP                  | 259   |
+-----------------------------------+------------------------+-------+
+
+Asynchronous Control Signals Information:
+----------------------------------------
+No asynchronous control signals found in this design
+
+Timing Summary:
+---------------
+Speed Grade: -4
+
+   Minimum period: 125.770ns (Maximum Frequency: 7.951MHz)
+   Minimum input arrival time before clock: 1.946ns
+   Maximum output required time after clock: 4.283ns
+   Maximum combinational path delay: No path found
+
+Timing Detail:
+--------------
+All values displayed in nanoseconds (ns)
+
+=========================================================================
+Timing constraint: Default period analysis for Clock 'clk'
+  Clock period: 125.770ns (frequency: 7.951MHz)
+  Total number of paths / destination ports: 806629469565 / 239
+-------------------------------------------------------------------------
+Delay:               125.770ns (Levels of Logic = 101)
+  Source:            vectoring_4 (FF)
+  Destination:       xs_9_21 (FF)
+  Source Clock:      clk rising
+  Destination Clock: clk rising
+
+  Data Path: vectoring_4 to xs_9_21
+                                Gate     Net
+    Cell:in->out      fanout   Delay   Delay  Logical Name (Net Name)
+    ----------------------------------------  ------------
+     FD:C->Q              78   0.591   1.312  vectoring_4 (vectoring_4)
+     LUT3:I2->O           49   0.704   1.347  ds_4_or00001 (ds<4><0>)
+     LUT4:I1->O            1   0.704   0.000  slices[5].sliceX/AS1/ripple[1].FAx/Cout_F (N840)
+     MUXF5:I0->O           2   0.321   0.482  slices[5].sliceX/AS1/ripple[1].FAx/Cout (slices[5].sliceX/AS1/carry<2>)
+     LUT3:I2->O            2   0.704   0.482  slices[5].sliceX/AS1/ripple[2].FAx/Cout1 (slices[5].sliceX/AS1/carry<3>)
+     LUT3:I2->O            2   0.704   0.482  slices[5].sliceX/AS1/ripple[3].FAx/Cout1 (slices[5].sliceX/AS1/carry<4>)
+     LUT3:I2->O            2   0.704   0.482  slices[5].sliceX/AS1/ripple[4].FAx/Cout1 (slices[5].sliceX/AS1/carry<5>)
+     LUT3:I2->O            2   0.704   0.482  slices[5].sliceX/AS1/ripple[5].FAx/Cout1 (slices[5].sliceX/AS1/carry<6>)
+     LUT3:I2->O            3   0.704   0.566  slices[5].sliceX/AS1/ripple[6].FAx/Cout1 (slices[5].sliceX/AS1/carry<7>)
+     LUT3:I2->O            2   0.704   0.482  slices[5].sliceX/AS1/ripple[7].FAx/Cout1 (slices[5].sliceX/AS1/carry<8>)
+     LUT3:I2->O            2   0.704   0.482  slices[5].sliceX/AS1/ripple[8].FAx/Cout1 (slices[5].sliceX/AS1/carry<9>)
+     LUT3:I2->O            2   0.704   0.482  slices[5].sliceX/AS1/ripple[9].FAx/Cout1 (slices[5].sliceX/AS1/carry<10>)
+     LUT3:I2->O            3   0.704   0.566  slices[5].sliceX/AS1/ripple[10].FAx/Cout1 (slices[5].sliceX/AS1/carry<11>)
+     LUT3:I2->O            3   0.704   0.566  slices[5].sliceX/AS1/ripple[11].FAx/Cout1 (slices[5].sliceX/AS1/carry<12>)
+     LUT3:I2->O            2   0.704   0.451  slices[5].sliceX/AS1/ripple[12].FAx/Cout1 (slices[5].sliceX/AS1/carry<13>)
+     LUT4:I3->O            2   0.704   0.451  slices[5].sliceX/AS1/ripple[13].FAx/Cout1 (slices[5].sliceX/AS1/carry<14>)
+     LUT4:I3->O            2   0.704   0.451  slices[5].sliceX/AS1/ripple[14].FAx/Cout1 (slices[5].sliceX/AS1/carry<15>)
+     LUT4:I3->O            2   0.704   0.451  slices[5].sliceX/AS1/ripple[15].FAx/Cout1 (slices[5].sliceX/AS1/carry<16>)
+     LUT4:I3->O            4   0.704   0.591  slices[5].sliceX/AS1/ripple[16].FAx/Cout1 (slices[5].sliceX/AS1/carry<17>)
+     LUT4:I3->O            3   0.704   0.535  slices[5].sliceX/AS1/ripple[18].FAx/Cout1 (slices[5].sliceX/AS1/carry<19>)
+     LUT4:I3->O            3   0.704   0.535  slices[5].sliceX/AS1/ripple[19].FAx/Cout1 (slices[5].sliceX/AS1/carry<20>)
+     LUT4:I3->O           20   0.704   1.137  slices[5].sliceX/AS1/r<21>1 (ys_out<5><21>)
+     LUT3:I2->O           33   0.704   1.342  ds_5_or00001 (ds<5><0>)
+     LUT4:I1->O            1   0.704   0.000  slices[6].sliceX/AS1/ripple[1].FAx/Cout_F (N832)
+     MUXF5:I0->O           2   0.321   0.482  slices[6].sliceX/AS1/ripple[1].FAx/Cout (slices[6].sliceX/AS1/carry<2>)
+     LUT3:I2->O            2   0.704   0.482  slices[6].sliceX/AS1/ripple[2].FAx/Cout1 (slices[6].sliceX/AS1/carry<3>)
+     LUT3:I2->O            2   0.704   0.482  slices[6].sliceX/AS1/ripple[3].FAx/Cout1 (slices[6].sliceX/AS1/carry<4>)
+     LUT3:I2->O            2   0.704   0.482  slices[6].sliceX/AS1/ripple[4].FAx/Cout1 (slices[6].sliceX/AS1/carry<5>)
+     LUT3:I2->O            2   0.704   0.482  slices[6].sliceX/AS1/ripple[5].FAx/Cout1 (slices[6].sliceX/AS1/carry<6>)
+     LUT3:I2->O            2   0.704   0.482  slices[6].sliceX/AS1/ripple[6].FAx/Cout1 (slices[6].sliceX/AS1/carry<7>)
+     LUT3:I2->O            2   0.704   0.482  slices[6].sliceX/AS1/ripple[7].FAx/Cout1 (slices[6].sliceX/AS1/carry<8>)
+     LUT3:I2->O            3   0.704   0.566  slices[6].sliceX/AS1/ripple[8].FAx/Cout1 (slices[6].sliceX/AS1/carry<9>)
+     LUT3:I2->O            2   0.704   0.482  slices[6].sliceX/AS1/ripple[9].FAx/Cout1 (slices[6].sliceX/AS1/carry<10>)
+     LUT3:I2->O            2   0.704   0.482  slices[6].sliceX/AS1/ripple[10].FAx/Cout1 (slices[6].sliceX/AS1/carry<11>)
+     LUT3:I2->O            2   0.704   0.482  slices[6].sliceX/AS1/ripple[11].FAx/Cout1 (slices[6].sliceX/AS1/carry<12>)
+     LUT3:I2->O            2   0.704   0.451  slices[6].sliceX/AS1/ripple[12].FAx/Cout1 (slices[6].sliceX/AS1/carry<13>)
+     LUT4:I3->O            2   0.704   0.451  slices[6].sliceX/AS1/ripple[13].FAx/Cout1 (slices[6].sliceX/AS1/carry<14>)
+     LUT4:I3->O            2   0.704   0.451  slices[6].sliceX/AS1/ripple[14].FAx/Cout1 (slices[6].sliceX/AS1/carry<15>)
+     LUT4:I3->O            4   0.704   0.591  slices[6].sliceX/AS1/ripple[15].FAx/Cout1 (slices[6].sliceX/AS1/carry<16>)
+     LUT4:I3->O            4   0.704   0.591  slices[6].sliceX/AS1/ripple[17].FAx/Cout1 (slices[6].sliceX/AS1/carry<18>)
+     LUT4:I3->O            3   0.704   0.535  slices[6].sliceX/AS1/ripple[19].FAx/Cout1 (slices[6].sliceX/AS1/carry<20>)
+     LUT4:I3->O           20   0.704   1.137  slices[6].sliceX/AS1/r<21>1 (ys_out<6><21>)
+     LUT3:I2->O           32   0.704   1.341  ds_6_or00001 (slices[7].sliceX/AS2/carry<12>)
+     LUT4:I1->O            1   0.704   0.000  slices[7].sliceX/AS1/ripple[1].FAx/Cout_F (N834)
+     MUXF5:I0->O           2   0.321   0.482  slices[7].sliceX/AS1/ripple[1].FAx/Cout (slices[7].sliceX/AS1/carry<2>)
+     LUT3:I2->O            2   0.704   0.482  slices[7].sliceX/AS1/ripple[2].FAx/Cout1 (slices[7].sliceX/AS1/carry<3>)
+     LUT3:I2->O            2   0.704   0.482  slices[7].sliceX/AS1/ripple[3].FAx/Cout1 (slices[7].sliceX/AS1/carry<4>)
+     LUT3:I2->O            2   0.704   0.482  slices[7].sliceX/AS1/ripple[4].FAx/Cout1 (slices[7].sliceX/AS1/carry<5>)
+     LUT3:I2->O            2   0.704   0.482  slices[7].sliceX/AS1/ripple[5].FAx/Cout1 (slices[7].sliceX/AS1/carry<6>)
+     LUT3:I2->O            2   0.704   0.482  slices[7].sliceX/AS1/ripple[6].FAx/Cout1 (slices[7].sliceX/AS1/carry<7>)
+     LUT3:I2->O            2   0.704   0.482  slices[7].sliceX/AS1/ripple[7].FAx/Cout1 (slices[7].sliceX/AS1/carry<8>)
+     LUT3:I2->O            2   0.704   0.482  slices[7].sliceX/AS1/ripple[8].FAx/Cout1 (slices[7].sliceX/AS1/carry<9>)
+     LUT3:I2->O            3   0.704   0.566  slices[7].sliceX/AS1/ripple[9].FAx/Cout1 (slices[7].sliceX/AS1/carry<10>)
+     LUT3:I2->O            3   0.704   0.566  slices[7].sliceX/AS1/ripple[10].FAx/Cout1 (slices[7].sliceX/AS1/carry<11>)
+     LUT3:I2->O            3   0.704   0.566  slices[7].sliceX/AS1/ripple[11].FAx/Cout1 (slices[7].sliceX/AS1/carry<12>)
+     LUT3:I2->O            2   0.704   0.451  slices[7].sliceX/AS1/ripple[12].FAx/Cout1 (slices[7].sliceX/AS1/carry<13>)
+     LUT4:I3->O            2   0.704   0.451  slices[7].sliceX/AS1/ripple[13].FAx/Cout1 (slices[7].sliceX/AS1/carry<14>)
+     LUT4:I3->O            3   0.704   0.535  slices[7].sliceX/AS1/ripple[14].FAx/Cout1 (slices[7].sliceX/AS1/carry<15>)
+     LUT4:I3->O            4   0.704   0.591  slices[7].sliceX/AS1/ripple[16].FAx/Cout1 (slices[7].sliceX/AS1/carry<17>)
+     LUT4:I3->O            3   0.704   0.535  slices[7].sliceX/AS1/ripple[18].FAx/Cout1 (slices[7].sliceX/AS1/carry<19>)
+     LUT4:I3->O            3   0.704   0.535  slices[7].sliceX/AS1/ripple[19].FAx/Cout1 (slices[7].sliceX/AS1/carry<20>)
+     LUT4:I3->O           21   0.704   1.163  slices[7].sliceX/AS1/r<21>1 (ys_out<7><21>)
+     LUT3:I2->O           31   0.704   1.341  ds_7_or00001 (slices[8].sliceX/AS2/carry<11>)
+     LUT4:I1->O            1   0.704   0.000  slices[8].sliceX/AS1/ripple[1].FAx/Cout_F (N836)
+     MUXF5:I0->O           2   0.321   0.482  slices[8].sliceX/AS1/ripple[1].FAx/Cout (slices[8].sliceX/AS1/carry<2>)
+     LUT3:I2->O            2   0.704   0.482  slices[8].sliceX/AS1/ripple[2].FAx/Cout1 (slices[8].sliceX/AS1/carry<3>)
+     LUT3:I2->O            2   0.704   0.482  slices[8].sliceX/AS1/ripple[3].FAx/Cout1 (slices[8].sliceX/AS1/carry<4>)
+     LUT3:I2->O            2   0.704   0.482  slices[8].sliceX/AS1/ripple[4].FAx/Cout1 (slices[8].sliceX/AS1/carry<5>)
+     LUT3:I2->O            2   0.704   0.482  slices[8].sliceX/AS1/ripple[5].FAx/Cout1 (slices[8].sliceX/AS1/carry<6>)
+     LUT3:I2->O            2   0.704   0.482  slices[8].sliceX/AS1/ripple[6].FAx/Cout1 (slices[8].sliceX/AS1/carry<7>)
+     LUT3:I2->O            2   0.704   0.482  slices[8].sliceX/AS1/ripple[7].FAx/Cout1 (slices[8].sliceX/AS1/carry<8>)
+     LUT3:I2->O            2   0.704   0.482  slices[8].sliceX/AS1/ripple[8].FAx/Cout1 (slices[8].sliceX/AS1/carry<9>)
+     LUT3:I2->O            2   0.704   0.482  slices[8].sliceX/AS1/ripple[9].FAx/Cout1 (slices[8].sliceX/AS1/carry<10>)
+     LUT3:I2->O            2   0.704   0.482  slices[8].sliceX/AS1/ripple[10].FAx/Cout1 (slices[8].sliceX/AS1/carry<11>)
+     LUT3:I2->O            2   0.704   0.482  slices[8].sliceX/AS1/ripple[11].FAx/Cout1 (slices[8].sliceX/AS1/carry<12>)
+     LUT3:I2->O            2   0.704   0.451  slices[8].sliceX/AS1/ripple[12].FAx/Cout1 (slices[8].sliceX/AS1/carry<13>)
+     LUT4:I3->O            3   0.704   0.535  slices[8].sliceX/AS1/ripple[13].FAx/Cout1 (slices[8].sliceX/AS1/carry<14>)
+     LUT4:I3->O            3   0.704   0.535  slices[8].sliceX/AS1/ripple[15].FAx/Cout1 (slices[8].sliceX/AS1/carry<16>)
+     LUT4:I3->O            3   0.704   0.535  slices[8].sliceX/AS1/ripple[17].FAx/Cout1 (slices[8].sliceX/AS1/carry<18>)
+     LUT4:I3->O            2   0.704   0.451  slices[8].sliceX/AS1/ripple[19].FAx/Cout1 (slices[8].sliceX/AS1/carry<20>)
+     LUT4:I3->O           21   0.704   1.163  slices[8].sliceX/AS1/r<21>1 (ys_out<8><21>)
+     LUT3:I2->O           38   0.704   1.299  ds_8_or00001 (slices[9].sliceX/AS2/carry<10>)
+     LUT3:I2->O            8   0.704   0.932  slices[9].sliceX/f0<1>1 (slices[9].sliceX/f0<1>)
+     LUT4:I0->O            1   0.704   0.000  slices[9].sliceX/AS0/ripple[1].FAx/Cout_G (N789)
+     MUXF5:I1->O           2   0.321   0.482  slices[9].sliceX/AS0/ripple[1].FAx/Cout (slices[9].sliceX/AS0/carry<2>)
+     LUT3:I2->O            2   0.704   0.482  slices[9].sliceX/AS0/ripple[2].FAx/Cout1 (slices[9].sliceX/AS0/carry<3>)
+     LUT3:I2->O            2   0.704   0.482  slices[9].sliceX/AS0/ripple[3].FAx/Cout1 (slices[9].sliceX/AS0/carry<4>)
+     LUT3:I2->O            2   0.704   0.482  slices[9].sliceX/AS0/ripple[4].FAx/Cout1 (slices[9].sliceX/AS0/carry<5>)
+     LUT3:I2->O            2   0.704   0.482  slices[9].sliceX/AS0/ripple[5].FAx/Cout1 (slices[9].sliceX/AS0/carry<6>)
+     LUT3:I2->O            2   0.704   0.482  slices[9].sliceX/AS0/ripple[6].FAx/Cout1 (slices[9].sliceX/AS0/carry<7>)
+     LUT3:I2->O            2   0.704   0.482  slices[9].sliceX/AS0/ripple[7].FAx/Cout1 (slices[9].sliceX/AS0/carry<8>)
+     LUT3:I2->O            2   0.704   0.482  slices[9].sliceX/AS0/ripple[8].FAx/Cout1 (slices[9].sliceX/AS0/carry<9>)
+     LUT3:I2->O            2   0.704   0.482  slices[9].sliceX/AS0/ripple[9].FAx/Cout1 (slices[9].sliceX/AS0/carry<10>)
+     LUT3:I2->O            2   0.704   0.482  slices[9].sliceX/AS0/ripple[10].FAx/Cout1 (slices[9].sliceX/AS0/carry<11>)
+     LUT3:I2->O            2   0.704   0.482  slices[9].sliceX/AS0/ripple[11].FAx/Cout1 (slices[9].sliceX/AS0/carry<12>)
+     LUT3:I2->O            3   0.704   0.535  slices[9].sliceX/AS0/ripple[12].FAx/Cout1 (slices[9].sliceX/AS0/carry<13>)
+     LUT4:I3->O            3   0.704   0.535  slices[9].sliceX/AS0/ripple[14].FAx/Cout1 (slices[9].sliceX/AS0/carry<15>)
+     LUT4:I3->O            3   0.704   0.535  slices[9].sliceX/AS0/ripple[16].FAx/Cout1 (slices[9].sliceX/AS0/carry<17>)
+     LUT4:I3->O            2   0.704   0.451  slices[9].sliceX/AS0/ripple[18].FAx/Cout1 (slices[9].sliceX/AS0/carry<19>)
+     LUT4:I3->O            2   0.704   0.451  slices[9].sliceX/AS0/ripple[19].FAx/Cout1 (slices[9].sliceX/AS0/carry<20>)
+     LUT4:I3->O            1   0.704   0.424  slices[9].sliceX/AS0/r<21>1_SW0 (N712)
+     LUT4:I3->O            1   0.704   0.000  slices[9].sliceX/AS0/r<21>1 (xs_out<9><21>)
+     FD:D                      0.308          xs_9_21
+    ----------------------------------------
+    Total                    125.770ns (70.088ns logic, 55.682ns route)
+                                       (55.7% logic, 44.3% route)
+
+=========================================================================
+Timing constraint: Default OFFSET IN BEFORE for Clock 'clk'
+  Total number of paths / destination ports: 36 / 36
+-------------------------------------------------------------------------
+Offset:              1.946ns (Levels of Logic = 1)
+  Source:            x<0> (PAD)
+  Destination:       x_reg_0 (FF)
+  Destination Clock: clk rising
+
+  Data Path: x<0> to x_reg_0
+                                Gate     Net
+    Cell:in->out      fanout   Delay   Delay  Logical Name (Net Name)
+    ----------------------------------------  ------------
+     IBUF:I->O             1   1.218   0.420  x_0_IBUF (x_0_IBUF)
+     FD:D                      0.308          x_reg_0
+    ----------------------------------------
+    Total                      1.946ns (1.526ns logic, 0.420ns route)
+                                       (78.4% logic, 21.6% route)
+
+=========================================================================
+Timing constraint: Default OFFSET OUT AFTER for Clock 'clk'
+  Total number of paths / destination ports: 16 / 16
+-------------------------------------------------------------------------
+Offset:              4.283ns (Levels of Logic = 1)
+  Source:            r_15 (FF)
+  Destination:       r<15> (PAD)
+  Source Clock:      clk rising
+
+  Data Path: r_15 to r<15>
+                                Gate     Net
+    Cell:in->out      fanout   Delay   Delay  Logical Name (Net Name)
+    ----------------------------------------  ------------
+     FDS:C->Q              1   0.591   0.420  r_15 (r_15)
+     OBUF:I->O                 3.272          r_15_OBUF (r<15>)
+    ----------------------------------------
+    Total                      4.283ns (3.863ns logic, 0.420ns route)
+                                       (90.2% logic, 9.8% route)
+
+=========================================================================
+
+
+Total REAL time to Xst completion: 20.00 secs
+Total CPU time to Xst completion: 19.50 secs
+ 
+--> 
+
+Total memory usage is 4678556 kilobytes
+
+Number of errors   :    0 (   0 filtered)
+Number of warnings :   16 (   0 filtered)
+Number of infos    :    0 (   0 filtered)
+
