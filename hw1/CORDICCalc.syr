@@ -1,0 +1,772 @@
+Release 14.7 - xst P.20131013 (nt64)
+Copyright (c) 1995-2013 Xilinx, Inc.  All rights reserved.
+--> Parameter TMPDIR set to xst/projnav.tmp
+
+
+Total REAL time to Xst completion: 0.00 secs
+Total CPU time to Xst completion: 0.33 secs
+ 
+--> Parameter xsthdpdir set to xst
+
+
+Total REAL time to Xst completion: 0.00 secs
+Total CPU time to Xst completion: 0.33 secs
+ 
+--> Reading design: CORDICCalc.prj
+
+TABLE OF CONTENTS
+  1) Synthesis Options Summary
+  2) HDL Compilation
+  3) Design Hierarchy Analysis
+  4) HDL Analysis
+  5) HDL Synthesis
+     5.1) HDL Synthesis Report
+  6) Advanced HDL Synthesis
+     6.1) Advanced HDL Synthesis Report
+  7) Low Level Synthesis
+  8) Partition Report
+  9) Final Report
+	9.1) Device utilization summary
+	9.2) Partition Resource Summary
+	9.3) TIMING REPORT
+
+
+=========================================================================
+*                      Synthesis Options Summary                        *
+=========================================================================
+---- Source Parameters
+Input File Name                    : "CORDICCalc.prj"
+Input Format                       : mixed
+Ignore Synthesis Constraint File   : NO
+
+---- Target Parameters
+Output File Name                   : "CORDICCalc"
+Output Format                      : NGC
+Target Device                      : xc3s1200e-4-fg320
+
+---- Source Options
+Top Module Name                    : CORDICCalc
+Automatic FSM Extraction           : YES
+FSM Encoding Algorithm             : Auto
+Safe Implementation                : No
+FSM Style                          : LUT
+RAM Extraction                     : Yes
+RAM Style                          : Auto
+ROM Extraction                     : Yes
+Mux Style                          : Auto
+Decoder Extraction                 : YES
+Priority Encoder Extraction        : Yes
+Shift Register Extraction          : YES
+Logical Shifter Extraction         : YES
+XOR Collapsing                     : YES
+ROM Style                          : Auto
+Mux Extraction                     : Yes
+Resource Sharing                   : YES
+Asynchronous To Synchronous        : NO
+Multiplier Style                   : Auto
+Automatic Register Balancing       : No
+
+---- Target Options
+Add IO Buffers                     : YES
+Global Maximum Fanout              : 500
+Add Generic Clock Buffer(BUFG)     : 24
+Register Duplication               : YES
+Slice Packing                      : YES
+Optimize Instantiated Primitives   : NO
+Use Clock Enable                   : Yes
+Use Synchronous Set                : Yes
+Use Synchronous Reset              : Yes
+Pack IO Registers into IOBs        : Auto
+Equivalent register Removal        : YES
+
+---- General Options
+Optimization Goal                  : Area
+Optimization Effort                : 1
+Keep Hierarchy                     : No
+Netlist Hierarchy                  : As_Optimized
+RTL Output                         : Yes
+Global Optimization                : AllClockNets
+Read Cores                         : YES
+Write Timing Constraints           : NO
+Cross Clock Analysis               : NO
+Hierarchy Separator                : /
+Bus Delimiter                      : <>
+Case Specifier                     : Maintain
+Slice Utilization Ratio            : 100
+BRAM Utilization Ratio             : 100
+Verilog 2001                       : YES
+Auto BRAM Packing                  : NO
+Slice Utilization Ratio Delta      : 5
+
+=========================================================================
+
+
+=========================================================================
+*                          HDL Compilation                              *
+=========================================================================
+Compiling vhdl file "C:/Users/sstameson/Documents/cordic-final/cordic-final/CORDICCalc.vhd" in Library work.
+Entity <FullAdder> compiled.
+Entity <FullAdder> (Architecture <synth>) compiled.
+Entity <AddSub> compiled.
+Entity <AddSub> (Architecture <synth>) compiled.
+Entity <CORDICSlice> compiled.
+Entity <CORDICSlice> (Architecture <synth>) compiled.
+Entity <CORDICCalc> compiled.
+Entity <CORDICCalc> (Architecture <synth>) compiled.
+
+=========================================================================
+*                     Design Hierarchy Analysis                         *
+=========================================================================
+Analyzing hierarchy for entity <CORDICCalc> in library <work> (architecture <synth>).
+
+Analyzing hierarchy for entity <CORDICSlice> in library <work> (architecture <synth>).
+
+Analyzing hierarchy for entity <AddSub> in library <work> (architecture <synth>).
+
+Analyzing hierarchy for entity <FullAdder> in library <work> (architecture <synth>).
+
+
+=========================================================================
+*                            HDL Analysis                               *
+=========================================================================
+Analyzing Entity <CORDICCalc> in library <work> (Architecture <synth>).
+Entity <CORDICCalc> analyzed. Unit <CORDICCalc> generated.
+
+Analyzing Entity <CORDICSlice> in library <work> (Architecture <synth>).
+Entity <CORDICSlice> analyzed. Unit <CORDICSlice> generated.
+
+Analyzing Entity <AddSub> in library <work> (Architecture <synth>).
+Entity <AddSub> analyzed. Unit <AddSub> generated.
+
+Analyzing Entity <FullAdder> in library <work> (Architecture <synth>).
+Entity <FullAdder> analyzed. Unit <FullAdder> generated.
+
+
+=========================================================================
+*                           HDL Synthesis                               *
+=========================================================================
+
+Performing bidirectional port resolution...
+
+Synthesizing Unit <FullAdder>.
+    Related source file is "C:/Users/sstameson/Documents/cordic-final/cordic-final/CORDICCalc.vhd".
+    Found 1-bit xor2 for signal <s>.
+    Found 1-bit xor2 for signal <Cout$xor0000> created at line 42.
+Unit <FullAdder> synthesized.
+
+
+Synthesizing Unit <AddSub>.
+    Related source file is "C:/Users/sstameson/Documents/cordic-final/cordic-final/CORDICCalc.vhd".
+WARNING:Xst:646 - Signal <carry<22>> is assigned but never used. This unconnected signal will be trimmed during the optimization process.
+    Found 1-bit xor2 for signal <r$xor0000> created at line 98.
+Unit <AddSub> synthesized.
+
+
+Synthesizing Unit <CORDICSlice>.
+    Related source file is "C:/Users/sstameson/Documents/cordic-final/cordic-final/CORDICCalc.vhd".
+Unit <CORDICSlice> synthesized.
+
+
+Synthesizing Unit <CORDICCalc>.
+    Related source file is "C:/Users/sstameson/Documents/cordic-final/cordic-final/CORDICCalc.vhd".
+WARNING:Xst:646 - Signal <zs<20><21:20>> is assigned but never used. This unconnected signal will be trimmed during the optimization process.
+WARNING:Xst:646 - Signal <zs<20><3:0>> is assigned but never used. This unconnected signal will be trimmed during the optimization process.
+WARNING:Xst:646 - Signal <ys<20><21:20>> is assigned but never used. This unconnected signal will be trimmed during the optimization process.
+WARNING:Xst:646 - Signal <ys<20><3:0>> is assigned but never used. This unconnected signal will be trimmed during the optimization process.
+WARNING:Xst:646 - Signal <xs<20><21:20>> is assigned but never used. This unconnected signal will be trimmed during the optimization process.
+WARNING:Xst:646 - Signal <xs<20><3:0>> is assigned but never used. This unconnected signal will be trimmed during the optimization process.
+WARNING:Xst:646 - Signal <f_reg<4>> is assigned but never used. This unconnected signal will be trimmed during the optimization process.
+    Found 16-bit register for signal <r>.
+    Found 5-bit register for signal <f_reg>.
+    Found 16-bit register for signal <x_reg>.
+    Found 16-bit register for signal <y_reg>.
+    Summary:
+	inferred  53 D-type flip-flop(s).
+Unit <CORDICCalc> synthesized.
+
+
+=========================================================================
+HDL Synthesis Report
+
+Macro Statistics
+# Registers                                            : 4
+ 16-bit register                                       : 3
+ 5-bit register                                        : 1
+# Xors                                                 : 2700
+ 1-bit xor2                                            : 2700
+
+=========================================================================
+
+=========================================================================
+*                       Advanced HDL Synthesis                          *
+=========================================================================
+
+WARNING:Xst:1290 - Hierarchical block <ripple[21].FAx> is unconnected in block <AS0>.
+   It will be removed from the design.
+WARNING:Xst:1290 - Hierarchical block <ripple[20].FAx> is unconnected in block <AS0>.
+   It will be removed from the design.
+WARNING:Xst:1290 - Hierarchical block <ripple[21].FAx> is unconnected in block <AS1>.
+   It will be removed from the design.
+WARNING:Xst:1290 - Hierarchical block <ripple[20].FAx> is unconnected in block <AS1>.
+   It will be removed from the design.
+WARNING:Xst:1290 - Hierarchical block <ripple[21].FAx> is unconnected in block <AS2>.
+   It will be removed from the design.
+WARNING:Xst:1290 - Hierarchical block <ripple[20].FAx> is unconnected in block <AS2>.
+   It will be removed from the design.
+WARNING:Xst:2677 - Node <f_reg_4> of sequential type is unconnected in block <CORDICCalc>.
+WARNING:Xst:2677 - Node <f_reg_4> of sequential type is unconnected in block <CORDICCalc>.
+
+=========================================================================
+Advanced HDL Synthesis Report
+
+Macro Statistics
+# Registers                                            : 52
+ Flip-Flops                                            : 52
+# Xors                                                 : 2700
+ 1-bit xor2                                            : 2700
+
+=========================================================================
+
+=========================================================================
+*                         Low Level Synthesis                           *
+=========================================================================
+
+Optimizing unit <CORDICCalc> ...
+
+Optimizing unit <AddSub> ...
+
+Optimizing unit <CORDICSlice> ...
+
+Mapping all equations...
+Building and optimizing final netlist ...
+Found area constraint ratio of 100 (+ 5) on block CORDICCalc, actual ratio is 18.
+
+Final Macro Processing ...
+
+=========================================================================
+Final Register Report
+
+Macro Statistics
+# Registers                                            : 52
+ Flip-Flops                                            : 52
+
+=========================================================================
+
+=========================================================================
+*                           Partition Report                            *
+=========================================================================
+
+Partition Implementation Status
+-------------------------------
+
+  No Partitions were found in this design.
+
+-------------------------------
+
+=========================================================================
+*                            Final Report                               *
+=========================================================================
+Final Results
+RTL Top Level Output File Name     : CORDICCalc.ngr
+Top Level Output File Name         : CORDICCalc
+Output Format                      : NGC
+Optimization Goal                  : Area
+Keep Hierarchy                     : No
+
+Design Statistics
+# IOs                              : 54
+
+Cell Usage :
+# BELS                             : 2828
+#      GND                         : 1
+#      LUT2                        : 25
+#      LUT3                        : 862
+#      LUT4                        : 1847
+#      MUXF5                       : 92
+#      VCC                         : 1
+# FlipFlops/Latches                : 52
+#      FD                          : 36
+#      FDS                         : 16
+# Clock Buffers                    : 1
+#      BUFGP                       : 1
+# IO Buffers                       : 52
+#      IBUF                        : 36
+#      OBUF                        : 16
+=========================================================================
+
+Device utilization summary:
+---------------------------
+
+Selected Device : 3s1200efg320-4 
+
+ Number of Slices:                     1546  out of   8672    17%  
+ Number of 4 input LUTs:               2734  out of  17344    15%  
+ Number of IOs:                          54
+ Number of bonded IOBs:                  53  out of    250    21%  
+    IOB Flip Flops:                      52
+ Number of GCLKs:                         1  out of     24     4%  
+
+---------------------------
+Partition Resource Summary:
+---------------------------
+
+  No Partitions were found in this design.
+
+---------------------------
+
+
+=========================================================================
+TIMING REPORT
+
+NOTE: THESE TIMING NUMBERS ARE ONLY A SYNTHESIS ESTIMATE.
+      FOR ACCURATE TIMING INFORMATION PLEASE REFER TO THE TRACE REPORT
+      GENERATED AFTER PLACE-and-ROUTE.
+
+Clock Information:
+------------------
+-----------------------------------+------------------------+-------+
+Clock Signal                       | Clock buffer(FF name)  | Load  |
+-----------------------------------+------------------------+-------+
+clk                                | BUFGP                  | 52    |
+-----------------------------------+------------------------+-------+
+
+Asynchronous Control Signals Information:
+----------------------------------------
+No asynchronous control signals found in this design
+
+Timing Summary:
+---------------
+Speed Grade: -4
+
+   Minimum period: 432.450ns (Maximum Frequency: 2.312MHz)
+   Minimum input arrival time before clock: 1.946ns
+   Maximum output required time after clock: 4.283ns
+   Maximum combinational path delay: No path found
+
+Timing Detail:
+--------------
+All values displayed in nanoseconds (ns)
+
+=========================================================================
+Timing constraint: Default period analysis for Clock 'clk'
+  Clock period: 432.450ns (frequency: 2.312MHz)
+  Total number of paths / destination ports: 3107936812945827600000000000000000000 / 32
+-------------------------------------------------------------------------
+Delay:               432.450ns (Levels of Logic = 350)
+  Source:            f_reg_3 (FF)
+  Destination:       r_15 (FF)
+  Source Clock:      clk rising
+  Destination Clock: clk rising
+
+  Data Path: f_reg_3 to r_15
+                                Gate     Net
+    Cell:in->out      fanout   Delay   Delay  Logical Name (Net Name)
+    ----------------------------------------  ------------
+     FD:C->Q             361   0.591   1.541  f_reg_3 (f_reg_3)
+     LUT3:I0->O           19   0.704   1.089  xs_0_and00001 (xs<0><2>)
+     LUT4:I3->O           27   0.704   1.265  zs<0><19>1 (zs<0><19>)
+     LUT4:I3->O            2   0.704   0.622  slices[1].i1.slice1/AS1/r<3>111 (slices[1].i1.slice1/AS1/N56)
+     LUT3:I0->O            2   0.704   0.451  slices[1].i1.slice1/AS1/ripple[3].FAx/Cout1 (slices[1].i1.slice1/AS1/carry<4>)
+     LUT4:I3->O            2   0.704   0.451  slices[1].i1.slice1/AS1/ripple[4].FAx/Cout1 (slices[1].i1.slice1/AS1/carry<5>)
+     LUT4:I3->O            2   0.704   0.451  slices[1].i1.slice1/AS1/ripple[5].FAx/Cout1 (slices[1].i1.slice1/AS1/carry<6>)
+     LUT4:I3->O            2   0.704   0.451  slices[1].i1.slice1/AS1/ripple[6].FAx/Cout1 (slices[1].i1.slice1/AS1/carry<7>)
+     LUT4:I3->O            2   0.704   0.451  slices[1].i1.slice1/AS1/ripple[7].FAx/Cout1 (slices[1].i1.slice1/AS1/carry<8>)
+     LUT4:I3->O            2   0.704   0.451  slices[1].i1.slice1/AS1/ripple[8].FAx/Cout1 (slices[1].i1.slice1/AS1/carry<9>)
+     LUT4:I3->O            2   0.704   0.451  slices[1].i1.slice1/AS1/ripple[9].FAx/Cout1 (slices[1].i1.slice1/AS1/carry<10>)
+     LUT4:I3->O            2   0.704   0.451  slices[1].i1.slice1/AS1/ripple[10].FAx/Cout1 (slices[1].i1.slice1/AS1/carry<11>)
+     LUT4:I3->O            2   0.704   0.451  slices[1].i1.slice1/AS1/ripple[11].FAx/Cout1 (slices[1].i1.slice1/AS1/carry<12>)
+     LUT4:I3->O            2   0.704   0.451  slices[1].i1.slice1/AS1/ripple[12].FAx/Cout1 (slices[1].i1.slice1/AS1/carry<13>)
+     LUT4:I3->O            2   0.704   0.451  slices[1].i1.slice1/AS1/ripple[13].FAx/Cout1 (slices[1].i1.slice1/AS1/carry<14>)
+     LUT4:I3->O            2   0.704   0.451  slices[1].i1.slice1/AS1/ripple[14].FAx/Cout1 (slices[1].i1.slice1/AS1/carry<15>)
+     LUT4:I3->O            2   0.704   0.451  slices[1].i1.slice1/AS1/ripple[15].FAx/Cout1 (slices[1].i1.slice1/AS1/carry<16>)
+     LUT4:I3->O            2   0.704   0.451  slices[1].i1.slice1/AS1/ripple[16].FAx/Cout1 (slices[1].i1.slice1/AS1/carry<17>)
+     LUT4:I3->O            2   0.704   0.451  slices[1].i1.slice1/AS1/ripple[17].FAx/Cout1 (slices[1].i1.slice1/AS1/carry<18>)
+     LUT4:I3->O            3   0.704   0.535  slices[1].i1.slice1/AS1/ripple[18].FAx/Cout1 (slices[1].i1.slice1/AS1/carry<19>)
+     LUT4:I3->O            2   0.704   0.451  slices[1].i1.slice1/AS1/r<21>111 (slices[1].i1.slice1/AS1/N61)
+     LUT4:I3->O           28   0.704   1.265  ys_1_mux0000<21> (ys<1><21>)
+     LUT4:I3->O            2   0.704   0.482  slices[2].iX.sliceX/AS1/r<2>111 (slices[2].iX.sliceX/AS1/N58)
+     LUT3:I2->O            2   0.704   0.482  slices[2].iX.sliceX/AS1/ripple[2].FAx/Cout1 (slices[2].iX.sliceX/AS1/carry<3>)
+     LUT3:I2->O            2   0.704   0.482  slices[2].iX.sliceX/AS1/ripple[3].FAx/Cout1 (slices[2].iX.sliceX/AS1/carry<4>)
+     LUT3:I2->O            2   0.704   0.482  slices[2].iX.sliceX/AS1/ripple[4].FAx/Cout1 (slices[2].iX.sliceX/AS1/carry<5>)
+     LUT3:I2->O            2   0.704   0.482  slices[2].iX.sliceX/AS1/ripple[5].FAx/Cout1 (slices[2].iX.sliceX/AS1/carry<6>)
+     LUT3:I2->O            2   0.704   0.482  slices[2].iX.sliceX/AS1/ripple[6].FAx/Cout1 (slices[2].iX.sliceX/AS1/carry<7>)
+     LUT3:I2->O            2   0.704   0.482  slices[2].iX.sliceX/AS1/ripple[7].FAx/Cout1 (slices[2].iX.sliceX/AS1/carry<8>)
+     LUT3:I2->O            2   0.704   0.482  slices[2].iX.sliceX/AS1/ripple[8].FAx/Cout1 (slices[2].iX.sliceX/AS1/carry<9>)
+     LUT3:I2->O            2   0.704   0.482  slices[2].iX.sliceX/AS1/ripple[9].FAx/Cout1 (slices[2].iX.sliceX/AS1/carry<10>)
+     LUT3:I2->O            2   0.704   0.482  slices[2].iX.sliceX/AS1/ripple[10].FAx/Cout1 (slices[2].iX.sliceX/AS1/carry<11>)
+     LUT3:I2->O            2   0.704   0.482  slices[2].iX.sliceX/AS1/ripple[11].FAx/Cout1 (slices[2].iX.sliceX/AS1/carry<12>)
+     LUT3:I2->O            2   0.704   0.482  slices[2].iX.sliceX/AS1/ripple[12].FAx/Cout1 (slices[2].iX.sliceX/AS1/carry<13>)
+     LUT3:I2->O            2   0.704   0.482  slices[2].iX.sliceX/AS1/ripple[13].FAx/Cout1 (slices[2].iX.sliceX/AS1/carry<14>)
+     LUT3:I2->O            2   0.704   0.482  slices[2].iX.sliceX/AS1/ripple[14].FAx/Cout1 (slices[2].iX.sliceX/AS1/carry<15>)
+     LUT3:I2->O            2   0.704   0.482  slices[2].iX.sliceX/AS1/ripple[15].FAx/Cout1 (slices[2].iX.sliceX/AS1/carry<16>)
+     LUT3:I2->O            2   0.704   0.482  slices[2].iX.sliceX/AS1/ripple[16].FAx/Cout1 (slices[2].iX.sliceX/AS1/carry<17>)
+     LUT3:I2->O            2   0.704   0.482  slices[2].iX.sliceX/AS1/ripple[17].FAx/Cout1 (slices[2].iX.sliceX/AS1/carry<18>)
+     LUT3:I2->O            2   0.704   0.482  slices[2].iX.sliceX/AS1/ripple[18].FAx/Cout1 (slices[2].iX.sliceX/AS1/carry<19>)
+     LUT3:I2->O            3   0.704   0.535  slices[2].iX.sliceX/AS1/ripple[19].FAx/Cout1 (slices[2].iX.sliceX/AS1/carry<20>)
+     LUT4:I3->O           27   0.704   1.296  slices[2].iX.sliceX/AS1/r<21>1 (ys<2><21>)
+     LUT3:I2->O           33   0.704   1.342  ds_2_or00001 (ds<2><0>)
+     LUT4:I1->O            1   0.704   0.000  slices[3].iX.sliceX/AS1/ripple[1].FAx/Cout_F (N905)
+     MUXF5:I0->O           2   0.321   0.482  slices[3].iX.sliceX/AS1/ripple[1].FAx/Cout (slices[3].iX.sliceX/AS1/carry<2>)
+     LUT3:I2->O            2   0.704   0.482  slices[3].iX.sliceX/AS1/ripple[2].FAx/Cout1 (slices[3].iX.sliceX/AS1/carry<3>)
+     LUT3:I2->O            2   0.704   0.482  slices[3].iX.sliceX/AS1/ripple[3].FAx/Cout1 (slices[3].iX.sliceX/AS1/carry<4>)
+     LUT3:I2->O            2   0.704   0.482  slices[3].iX.sliceX/AS1/ripple[4].FAx/Cout1 (slices[3].iX.sliceX/AS1/carry<5>)
+     LUT3:I2->O            2   0.704   0.482  slices[3].iX.sliceX/AS1/ripple[5].FAx/Cout1 (slices[3].iX.sliceX/AS1/carry<6>)
+     LUT3:I2->O            2   0.704   0.482  slices[3].iX.sliceX/AS1/ripple[6].FAx/Cout1 (slices[3].iX.sliceX/AS1/carry<7>)
+     LUT3:I2->O            2   0.704   0.482  slices[3].iX.sliceX/AS1/ripple[7].FAx/Cout1 (slices[3].iX.sliceX/AS1/carry<8>)
+     LUT3:I2->O            2   0.704   0.482  slices[3].iX.sliceX/AS1/ripple[8].FAx/Cout1 (slices[3].iX.sliceX/AS1/carry<9>)
+     LUT3:I2->O            2   0.704   0.482  slices[3].iX.sliceX/AS1/ripple[9].FAx/Cout1 (slices[3].iX.sliceX/AS1/carry<10>)
+     LUT3:I2->O            2   0.704   0.482  slices[3].iX.sliceX/AS1/ripple[10].FAx/Cout1 (slices[3].iX.sliceX/AS1/carry<11>)
+     LUT3:I2->O            2   0.704   0.482  slices[3].iX.sliceX/AS1/ripple[11].FAx/Cout1 (slices[3].iX.sliceX/AS1/carry<12>)
+     LUT3:I2->O            2   0.704   0.482  slices[3].iX.sliceX/AS1/ripple[12].FAx/Cout1 (slices[3].iX.sliceX/AS1/carry<13>)
+     LUT3:I2->O            2   0.704   0.482  slices[3].iX.sliceX/AS1/ripple[13].FAx/Cout1 (slices[3].iX.sliceX/AS1/carry<14>)
+     LUT3:I2->O            2   0.704   0.482  slices[3].iX.sliceX/AS1/ripple[14].FAx/Cout1 (slices[3].iX.sliceX/AS1/carry<15>)
+     LUT3:I2->O            2   0.704   0.482  slices[3].iX.sliceX/AS1/ripple[15].FAx/Cout1 (slices[3].iX.sliceX/AS1/carry<16>)
+     LUT3:I2->O            2   0.704   0.482  slices[3].iX.sliceX/AS1/ripple[16].FAx/Cout1 (slices[3].iX.sliceX/AS1/carry<17>)
+     LUT3:I2->O            2   0.704   0.482  slices[3].iX.sliceX/AS1/ripple[17].FAx/Cout1 (slices[3].iX.sliceX/AS1/carry<18>)
+     LUT3:I2->O            3   0.704   0.566  slices[3].iX.sliceX/AS1/ripple[18].FAx/Cout1 (slices[3].iX.sliceX/AS1/carry<19>)
+     LUT3:I2->O            1   0.704   0.424  slices[3].iX.sliceX/AS1/ripple[19].FAx/Cout1 (slices[3].iX.sliceX/AS1/carry<20>)
+     LUT4:I3->O           26   0.704   1.295  slices[3].iX.sliceX/AS1/r<21>1 (ys<3><21>)
+     LUT3:I2->O           33   0.704   1.342  ds_3_or00001 (ds<3><0>)
+     LUT4:I1->O            1   0.704   0.000  slices[4].iX.sliceX/AS1/ripple[1].FAx/Cout_F (N907)
+     MUXF5:I0->O           2   0.321   0.482  slices[4].iX.sliceX/AS1/ripple[1].FAx/Cout (slices[4].iX.sliceX/AS1/carry<2>)
+     LUT3:I2->O            2   0.704   0.482  slices[4].iX.sliceX/AS1/ripple[2].FAx/Cout1 (slices[4].iX.sliceX/AS1/carry<3>)
+     LUT3:I2->O            2   0.704   0.482  slices[4].iX.sliceX/AS1/ripple[3].FAx/Cout1 (slices[4].iX.sliceX/AS1/carry<4>)
+     LUT3:I2->O            2   0.704   0.482  slices[4].iX.sliceX/AS1/ripple[4].FAx/Cout1 (slices[4].iX.sliceX/AS1/carry<5>)
+     LUT3:I2->O            2   0.704   0.482  slices[4].iX.sliceX/AS1/ripple[5].FAx/Cout1 (slices[4].iX.sliceX/AS1/carry<6>)
+     LUT3:I2->O            2   0.704   0.482  slices[4].iX.sliceX/AS1/ripple[6].FAx/Cout1 (slices[4].iX.sliceX/AS1/carry<7>)
+     LUT3:I2->O            2   0.704   0.482  slices[4].iX.sliceX/AS1/ripple[7].FAx/Cout1 (slices[4].iX.sliceX/AS1/carry<8>)
+     LUT3:I2->O            2   0.704   0.482  slices[4].iX.sliceX/AS1/ripple[8].FAx/Cout1 (slices[4].iX.sliceX/AS1/carry<9>)
+     LUT3:I2->O            2   0.704   0.482  slices[4].iX.sliceX/AS1/ripple[9].FAx/Cout1 (slices[4].iX.sliceX/AS1/carry<10>)
+     LUT3:I2->O            2   0.704   0.482  slices[4].iX.sliceX/AS1/ripple[10].FAx/Cout1 (slices[4].iX.sliceX/AS1/carry<11>)
+     LUT3:I2->O            2   0.704   0.482  slices[4].iX.sliceX/AS1/ripple[11].FAx/Cout1 (slices[4].iX.sliceX/AS1/carry<12>)
+     LUT3:I2->O            2   0.704   0.482  slices[4].iX.sliceX/AS1/ripple[12].FAx/Cout1 (slices[4].iX.sliceX/AS1/carry<13>)
+     LUT3:I2->O            2   0.704   0.482  slices[4].iX.sliceX/AS1/ripple[13].FAx/Cout1 (slices[4].iX.sliceX/AS1/carry<14>)
+     LUT3:I2->O            2   0.704   0.482  slices[4].iX.sliceX/AS1/ripple[14].FAx/Cout1 (slices[4].iX.sliceX/AS1/carry<15>)
+     LUT3:I2->O            2   0.704   0.482  slices[4].iX.sliceX/AS1/ripple[15].FAx/Cout1 (slices[4].iX.sliceX/AS1/carry<16>)
+     LUT3:I2->O            2   0.704   0.482  slices[4].iX.sliceX/AS1/ripple[16].FAx/Cout1 (slices[4].iX.sliceX/AS1/carry<17>)
+     LUT3:I2->O            3   0.704   0.535  slices[4].iX.sliceX/AS1/ripple[17].FAx/Cout1 (slices[4].iX.sliceX/AS1/carry<18>)
+     LUT4:I3->O            2   0.704   0.451  slices[4].iX.sliceX/AS1/ripple[19].FAx/Cout1 (slices[4].iX.sliceX/AS1/carry<20>)
+     LUT4:I3->O           21   0.704   1.163  slices[4].iX.sliceX/AS1/r<21>1_SW0 (N785)
+     LUT3:I2->O           36   0.704   1.342  ds_4_or00001 (ds<4><0>)
+     LUT4:I1->O            1   0.704   0.000  slices[5].iX.sliceX/AS1/ripple[1].FAx/Cout_F (N909)
+     MUXF5:I0->O           2   0.321   0.482  slices[5].iX.sliceX/AS1/ripple[1].FAx/Cout (slices[5].iX.sliceX/AS1/carry<2>)
+     LUT3:I2->O            2   0.704   0.482  slices[5].iX.sliceX/AS1/ripple[2].FAx/Cout1 (slices[5].iX.sliceX/AS1/carry<3>)
+     LUT3:I2->O            2   0.704   0.482  slices[5].iX.sliceX/AS1/ripple[3].FAx/Cout1 (slices[5].iX.sliceX/AS1/carry<4>)
+     LUT3:I2->O            2   0.704   0.482  slices[5].iX.sliceX/AS1/ripple[4].FAx/Cout1 (slices[5].iX.sliceX/AS1/carry<5>)
+     LUT3:I2->O            2   0.704   0.482  slices[5].iX.sliceX/AS1/ripple[5].FAx/Cout1 (slices[5].iX.sliceX/AS1/carry<6>)
+     LUT3:I2->O            2   0.704   0.482  slices[5].iX.sliceX/AS1/ripple[6].FAx/Cout1 (slices[5].iX.sliceX/AS1/carry<7>)
+     LUT3:I2->O            2   0.704   0.482  slices[5].iX.sliceX/AS1/ripple[7].FAx/Cout1 (slices[5].iX.sliceX/AS1/carry<8>)
+     LUT3:I2->O            2   0.704   0.482  slices[5].iX.sliceX/AS1/ripple[8].FAx/Cout1 (slices[5].iX.sliceX/AS1/carry<9>)
+     LUT3:I2->O            2   0.704   0.482  slices[5].iX.sliceX/AS1/ripple[9].FAx/Cout1 (slices[5].iX.sliceX/AS1/carry<10>)
+     LUT3:I2->O            2   0.704   0.482  slices[5].iX.sliceX/AS1/ripple[10].FAx/Cout1 (slices[5].iX.sliceX/AS1/carry<11>)
+     LUT3:I2->O            2   0.704   0.482  slices[5].iX.sliceX/AS1/ripple[11].FAx/Cout1 (slices[5].iX.sliceX/AS1/carry<12>)
+     LUT3:I2->O            2   0.704   0.482  slices[5].iX.sliceX/AS1/ripple[12].FAx/Cout1 (slices[5].iX.sliceX/AS1/carry<13>)
+     LUT3:I2->O            2   0.704   0.482  slices[5].iX.sliceX/AS1/ripple[13].FAx/Cout1 (slices[5].iX.sliceX/AS1/carry<14>)
+     LUT3:I2->O            2   0.704   0.482  slices[5].iX.sliceX/AS1/ripple[14].FAx/Cout1 (slices[5].iX.sliceX/AS1/carry<15>)
+     LUT3:I2->O            2   0.704   0.482  slices[5].iX.sliceX/AS1/ripple[15].FAx/Cout1 (slices[5].iX.sliceX/AS1/carry<16>)
+     LUT3:I2->O            3   0.704   0.535  slices[5].iX.sliceX/AS1/ripple[16].FAx/Cout1 (slices[5].iX.sliceX/AS1/carry<17>)
+     LUT4:I3->O            3   0.704   0.535  slices[5].iX.sliceX/AS1/ripple[18].FAx/Cout1 (slices[5].iX.sliceX/AS1/carry<19>)
+     LUT4:I3->O           22   0.704   1.199  slices[5].iX.sliceX/AS1/r<21>1 (ys<5><21>)
+     LUT3:I2->O           35   0.704   1.342  ds_5_or00001 (ds<5><0>)
+     LUT4:I1->O            1   0.704   0.000  slices[6].iX.sliceX/AS1/ripple[1].FAx/Cout_F (N911)
+     MUXF5:I0->O           2   0.321   0.482  slices[6].iX.sliceX/AS1/ripple[1].FAx/Cout (slices[6].iX.sliceX/AS1/carry<2>)
+     LUT3:I2->O            2   0.704   0.482  slices[6].iX.sliceX/AS1/ripple[2].FAx/Cout1 (slices[6].iX.sliceX/AS1/carry<3>)
+     LUT3:I2->O            2   0.704   0.482  slices[6].iX.sliceX/AS1/ripple[3].FAx/Cout1 (slices[6].iX.sliceX/AS1/carry<4>)
+     LUT3:I2->O            2   0.704   0.482  slices[6].iX.sliceX/AS1/ripple[4].FAx/Cout1 (slices[6].iX.sliceX/AS1/carry<5>)
+     LUT3:I2->O            2   0.704   0.482  slices[6].iX.sliceX/AS1/ripple[5].FAx/Cout1 (slices[6].iX.sliceX/AS1/carry<6>)
+     LUT3:I2->O            2   0.704   0.482  slices[6].iX.sliceX/AS1/ripple[6].FAx/Cout1 (slices[6].iX.sliceX/AS1/carry<7>)
+     LUT3:I2->O            2   0.704   0.482  slices[6].iX.sliceX/AS1/ripple[7].FAx/Cout1 (slices[6].iX.sliceX/AS1/carry<8>)
+     LUT3:I2->O            2   0.704   0.482  slices[6].iX.sliceX/AS1/ripple[8].FAx/Cout1 (slices[6].iX.sliceX/AS1/carry<9>)
+     LUT3:I2->O            2   0.704   0.482  slices[6].iX.sliceX/AS1/ripple[9].FAx/Cout1 (slices[6].iX.sliceX/AS1/carry<10>)
+     LUT3:I2->O            2   0.704   0.482  slices[6].iX.sliceX/AS1/ripple[10].FAx/Cout1 (slices[6].iX.sliceX/AS1/carry<11>)
+     LUT3:I2->O            2   0.704   0.482  slices[6].iX.sliceX/AS1/ripple[11].FAx/Cout1 (slices[6].iX.sliceX/AS1/carry<12>)
+     LUT3:I2->O            2   0.704   0.482  slices[6].iX.sliceX/AS1/ripple[12].FAx/Cout1 (slices[6].iX.sliceX/AS1/carry<13>)
+     LUT3:I2->O            2   0.704   0.482  slices[6].iX.sliceX/AS1/ripple[13].FAx/Cout1 (slices[6].iX.sliceX/AS1/carry<14>)
+     LUT3:I2->O            2   0.704   0.482  slices[6].iX.sliceX/AS1/ripple[14].FAx/Cout1 (slices[6].iX.sliceX/AS1/carry<15>)
+     LUT3:I2->O            3   0.704   0.535  slices[6].iX.sliceX/AS1/ripple[15].FAx/Cout1 (slices[6].iX.sliceX/AS1/carry<16>)
+     LUT4:I3->O            3   0.704   0.535  slices[6].iX.sliceX/AS1/ripple[17].FAx/Cout1 (slices[6].iX.sliceX/AS1/carry<18>)
+     LUT4:I3->O            2   0.704   0.451  slices[6].iX.sliceX/AS1/ripple[19].FAx/Cout1 (slices[6].iX.sliceX/AS1/carry<20>)
+     LUT4:I3->O           17   0.704   1.086  slices[6].iX.sliceX/AS1/r<21>1_SW0 (N783)
+     LUT3:I2->O           35   0.704   1.342  ds_6_or00001 (slices[7].iX.sliceX/AS2/carry<12>)
+     LUT4:I1->O            1   0.704   0.000  slices[7].iX.sliceX/AS1/ripple[1].FAx/Cout_F (N913)
+     MUXF5:I0->O           2   0.321   0.482  slices[7].iX.sliceX/AS1/ripple[1].FAx/Cout (slices[7].iX.sliceX/AS1/carry<2>)
+     LUT3:I2->O            2   0.704   0.482  slices[7].iX.sliceX/AS1/ripple[2].FAx/Cout1 (slices[7].iX.sliceX/AS1/carry<3>)
+     LUT3:I2->O            2   0.704   0.482  slices[7].iX.sliceX/AS1/ripple[3].FAx/Cout1 (slices[7].iX.sliceX/AS1/carry<4>)
+     LUT3:I2->O            2   0.704   0.482  slices[7].iX.sliceX/AS1/ripple[4].FAx/Cout1 (slices[7].iX.sliceX/AS1/carry<5>)
+     LUT3:I2->O            2   0.704   0.482  slices[7].iX.sliceX/AS1/ripple[5].FAx/Cout1 (slices[7].iX.sliceX/AS1/carry<6>)
+     LUT3:I2->O            2   0.704   0.482  slices[7].iX.sliceX/AS1/ripple[6].FAx/Cout1 (slices[7].iX.sliceX/AS1/carry<7>)
+     LUT3:I2->O            2   0.704   0.482  slices[7].iX.sliceX/AS1/ripple[7].FAx/Cout1 (slices[7].iX.sliceX/AS1/carry<8>)
+     LUT3:I2->O            2   0.704   0.482  slices[7].iX.sliceX/AS1/ripple[8].FAx/Cout1 (slices[7].iX.sliceX/AS1/carry<9>)
+     LUT3:I2->O            2   0.704   0.482  slices[7].iX.sliceX/AS1/ripple[9].FAx/Cout1 (slices[7].iX.sliceX/AS1/carry<10>)
+     LUT3:I2->O            2   0.704   0.482  slices[7].iX.sliceX/AS1/ripple[10].FAx/Cout1 (slices[7].iX.sliceX/AS1/carry<11>)
+     LUT3:I2->O            2   0.704   0.482  slices[7].iX.sliceX/AS1/ripple[11].FAx/Cout1 (slices[7].iX.sliceX/AS1/carry<12>)
+     LUT3:I2->O            2   0.704   0.482  slices[7].iX.sliceX/AS1/ripple[12].FAx/Cout1 (slices[7].iX.sliceX/AS1/carry<13>)
+     LUT3:I2->O            2   0.704   0.482  slices[7].iX.sliceX/AS1/ripple[13].FAx/Cout1 (slices[7].iX.sliceX/AS1/carry<14>)
+     LUT3:I2->O            3   0.704   0.535  slices[7].iX.sliceX/AS1/ripple[14].FAx/Cout1 (slices[7].iX.sliceX/AS1/carry<15>)
+     LUT4:I3->O            3   0.704   0.535  slices[7].iX.sliceX/AS1/ripple[16].FAx/Cout1 (slices[7].iX.sliceX/AS1/carry<17>)
+     LUT4:I3->O            3   0.704   0.535  slices[7].iX.sliceX/AS1/ripple[18].FAx/Cout1 (slices[7].iX.sliceX/AS1/carry<19>)
+     LUT4:I3->O           17   0.704   1.086  slices[7].iX.sliceX/AS1/r<21>1 (ys<7><21>)
+     LUT3:I2->O           37   0.704   1.343  ds_7_or00001 (slices[8].iX.sliceX/AS2/carry<11>)
+     LUT4:I1->O            1   0.704   0.000  slices[8].iX.sliceX/AS1/ripple[1].FAx/Cout_F (N915)
+     MUXF5:I0->O           2   0.321   0.482  slices[8].iX.sliceX/AS1/ripple[1].FAx/Cout (slices[8].iX.sliceX/AS1/carry<2>)
+     LUT3:I2->O            2   0.704   0.482  slices[8].iX.sliceX/AS1/ripple[2].FAx/Cout1 (slices[8].iX.sliceX/AS1/carry<3>)
+     LUT3:I2->O            2   0.704   0.482  slices[8].iX.sliceX/AS1/ripple[3].FAx/Cout1 (slices[8].iX.sliceX/AS1/carry<4>)
+     LUT3:I2->O            2   0.704   0.482  slices[8].iX.sliceX/AS1/ripple[4].FAx/Cout1 (slices[8].iX.sliceX/AS1/carry<5>)
+     LUT3:I2->O            2   0.704   0.482  slices[8].iX.sliceX/AS1/ripple[5].FAx/Cout1 (slices[8].iX.sliceX/AS1/carry<6>)
+     LUT3:I2->O            2   0.704   0.482  slices[8].iX.sliceX/AS1/ripple[6].FAx/Cout1 (slices[8].iX.sliceX/AS1/carry<7>)
+     LUT3:I2->O            2   0.704   0.482  slices[8].iX.sliceX/AS1/ripple[7].FAx/Cout1 (slices[8].iX.sliceX/AS1/carry<8>)
+     LUT3:I2->O            2   0.704   0.482  slices[8].iX.sliceX/AS1/ripple[8].FAx/Cout1 (slices[8].iX.sliceX/AS1/carry<9>)
+     LUT3:I2->O            2   0.704   0.482  slices[8].iX.sliceX/AS1/ripple[9].FAx/Cout1 (slices[8].iX.sliceX/AS1/carry<10>)
+     LUT3:I2->O            2   0.704   0.482  slices[8].iX.sliceX/AS1/ripple[10].FAx/Cout1 (slices[8].iX.sliceX/AS1/carry<11>)
+     LUT3:I2->O            2   0.704   0.482  slices[8].iX.sliceX/AS1/ripple[11].FAx/Cout1 (slices[8].iX.sliceX/AS1/carry<12>)
+     LUT3:I2->O            2   0.704   0.482  slices[8].iX.sliceX/AS1/ripple[12].FAx/Cout1 (slices[8].iX.sliceX/AS1/carry<13>)
+     LUT3:I2->O            3   0.704   0.535  slices[8].iX.sliceX/AS1/ripple[13].FAx/Cout1 (slices[8].iX.sliceX/AS1/carry<14>)
+     LUT4:I3->O            3   0.704   0.535  slices[8].iX.sliceX/AS1/ripple[15].FAx/Cout1 (slices[8].iX.sliceX/AS1/carry<16>)
+     LUT4:I3->O            3   0.704   0.535  slices[8].iX.sliceX/AS1/ripple[17].FAx/Cout1 (slices[8].iX.sliceX/AS1/carry<18>)
+     LUT4:I3->O            2   0.704   0.451  slices[8].iX.sliceX/AS1/ripple[19].FAx/Cout1 (slices[8].iX.sliceX/AS1/carry<20>)
+     LUT4:I3->O           15   0.704   1.052  slices[8].iX.sliceX/AS1/r<21>1_SW0 (N781)
+     LUT3:I2->O           37   0.704   1.343  ds_8_or00001 (slices[9].iX.sliceX/AS2/carry<10>)
+     LUT4:I1->O            1   0.704   0.000  slices[9].iX.sliceX/AS1/ripple[1].FAx/Cout_F (N883)
+     MUXF5:I0->O           2   0.321   0.482  slices[9].iX.sliceX/AS1/ripple[1].FAx/Cout (slices[9].iX.sliceX/AS1/carry<2>)
+     LUT3:I2->O            2   0.704   0.482  slices[9].iX.sliceX/AS1/ripple[2].FAx/Cout1 (slices[9].iX.sliceX/AS1/carry<3>)
+     LUT3:I2->O            2   0.704   0.482  slices[9].iX.sliceX/AS1/ripple[3].FAx/Cout1 (slices[9].iX.sliceX/AS1/carry<4>)
+     LUT3:I2->O            2   0.704   0.482  slices[9].iX.sliceX/AS1/ripple[4].FAx/Cout1 (slices[9].iX.sliceX/AS1/carry<5>)
+     LUT3:I2->O            2   0.704   0.482  slices[9].iX.sliceX/AS1/ripple[5].FAx/Cout1 (slices[9].iX.sliceX/AS1/carry<6>)
+     LUT3:I2->O            2   0.704   0.482  slices[9].iX.sliceX/AS1/ripple[6].FAx/Cout1 (slices[9].iX.sliceX/AS1/carry<7>)
+     LUT3:I2->O            2   0.704   0.482  slices[9].iX.sliceX/AS1/ripple[7].FAx/Cout1 (slices[9].iX.sliceX/AS1/carry<8>)
+     LUT3:I2->O            2   0.704   0.482  slices[9].iX.sliceX/AS1/ripple[8].FAx/Cout1 (slices[9].iX.sliceX/AS1/carry<9>)
+     LUT3:I2->O            2   0.704   0.482  slices[9].iX.sliceX/AS1/ripple[9].FAx/Cout1 (slices[9].iX.sliceX/AS1/carry<10>)
+     LUT3:I2->O            2   0.704   0.482  slices[9].iX.sliceX/AS1/ripple[10].FAx/Cout1 (slices[9].iX.sliceX/AS1/carry<11>)
+     LUT3:I2->O            2   0.704   0.482  slices[9].iX.sliceX/AS1/ripple[11].FAx/Cout1 (slices[9].iX.sliceX/AS1/carry<12>)
+     LUT3:I2->O            3   0.704   0.535  slices[9].iX.sliceX/AS1/ripple[12].FAx/Cout1 (slices[9].iX.sliceX/AS1/carry<13>)
+     LUT4:I3->O            3   0.704   0.535  slices[9].iX.sliceX/AS1/ripple[14].FAx/Cout1 (slices[9].iX.sliceX/AS1/carry<15>)
+     LUT4:I3->O            3   0.704   0.535  slices[9].iX.sliceX/AS1/ripple[16].FAx/Cout1 (slices[9].iX.sliceX/AS1/carry<17>)
+     LUT4:I3->O            3   0.704   0.535  slices[9].iX.sliceX/AS1/ripple[18].FAx/Cout1 (slices[9].iX.sliceX/AS1/carry<19>)
+     LUT4:I3->O           15   0.704   1.052  slices[9].iX.sliceX/AS1/r<21>1 (ys<9><21>)
+     LUT3:I2->O           39   0.704   1.343  ds_9_or00001 (slices[10].iX.sliceX/AS2/carry<9>)
+     LUT4:I1->O            1   0.704   0.000  slices[10].iX.sliceX/AS1/ripple[1].FAx/Cout_F (N903)
+     MUXF5:I0->O           2   0.321   0.482  slices[10].iX.sliceX/AS1/ripple[1].FAx/Cout (slices[10].iX.sliceX/AS1/carry<2>)
+     LUT3:I2->O            2   0.704   0.482  slices[10].iX.sliceX/AS1/ripple[2].FAx/Cout1 (slices[10].iX.sliceX/AS1/carry<3>)
+     LUT3:I2->O            2   0.704   0.482  slices[10].iX.sliceX/AS1/ripple[3].FAx/Cout1 (slices[10].iX.sliceX/AS1/carry<4>)
+     LUT3:I2->O            2   0.704   0.482  slices[10].iX.sliceX/AS1/ripple[4].FAx/Cout1 (slices[10].iX.sliceX/AS1/carry<5>)
+     LUT3:I2->O            2   0.704   0.482  slices[10].iX.sliceX/AS1/ripple[5].FAx/Cout1 (slices[10].iX.sliceX/AS1/carry<6>)
+     LUT3:I2->O            2   0.704   0.482  slices[10].iX.sliceX/AS1/ripple[6].FAx/Cout1 (slices[10].iX.sliceX/AS1/carry<7>)
+     LUT3:I2->O            2   0.704   0.482  slices[10].iX.sliceX/AS1/ripple[7].FAx/Cout1 (slices[10].iX.sliceX/AS1/carry<8>)
+     LUT3:I2->O            2   0.704   0.482  slices[10].iX.sliceX/AS1/ripple[8].FAx/Cout1 (slices[10].iX.sliceX/AS1/carry<9>)
+     LUT3:I2->O            2   0.704   0.482  slices[10].iX.sliceX/AS1/ripple[9].FAx/Cout1 (slices[10].iX.sliceX/AS1/carry<10>)
+     LUT3:I2->O            2   0.704   0.482  slices[10].iX.sliceX/AS1/ripple[10].FAx/Cout1 (slices[10].iX.sliceX/AS1/carry<11>)
+     LUT3:I2->O            3   0.704   0.535  slices[10].iX.sliceX/AS1/ripple[11].FAx/Cout1 (slices[10].iX.sliceX/AS1/carry<12>)
+     LUT4:I3->O            3   0.704   0.535  slices[10].iX.sliceX/AS1/ripple[13].FAx/Cout1 (slices[10].iX.sliceX/AS1/carry<14>)
+     LUT4:I3->O            3   0.704   0.535  slices[10].iX.sliceX/AS1/ripple[15].FAx/Cout1 (slices[10].iX.sliceX/AS1/carry<16>)
+     LUT4:I3->O            3   0.704   0.535  slices[10].iX.sliceX/AS1/ripple[17].FAx/Cout1 (slices[10].iX.sliceX/AS1/carry<18>)
+     LUT4:I3->O            2   0.704   0.451  slices[10].iX.sliceX/AS1/ripple[19].FAx/Cout1 (slices[10].iX.sliceX/AS1/carry<20>)
+     LUT4:I3->O           13   0.704   1.018  slices[10].iX.sliceX/AS1/r<21>1_SW0 (N795)
+     LUT3:I2->O           39   0.704   1.343  ds_10_or00001 (slices[11].iX.sliceX/AS2/carry<8>)
+     LUT4:I1->O            1   0.704   0.000  slices[11].iX.sliceX/AS1/ripple[1].FAx/Cout_F (N901)
+     MUXF5:I0->O           2   0.321   0.482  slices[11].iX.sliceX/AS1/ripple[1].FAx/Cout (slices[11].iX.sliceX/AS1/carry<2>)
+     LUT3:I2->O            2   0.704   0.482  slices[11].iX.sliceX/AS1/ripple[2].FAx/Cout1 (slices[11].iX.sliceX/AS1/carry<3>)
+     LUT3:I2->O            2   0.704   0.482  slices[11].iX.sliceX/AS1/ripple[3].FAx/Cout1 (slices[11].iX.sliceX/AS1/carry<4>)
+     LUT3:I2->O            2   0.704   0.482  slices[11].iX.sliceX/AS1/ripple[4].FAx/Cout1 (slices[11].iX.sliceX/AS1/carry<5>)
+     LUT3:I2->O            2   0.704   0.482  slices[11].iX.sliceX/AS1/ripple[5].FAx/Cout1 (slices[11].iX.sliceX/AS1/carry<6>)
+     LUT3:I2->O            2   0.704   0.482  slices[11].iX.sliceX/AS1/ripple[6].FAx/Cout1 (slices[11].iX.sliceX/AS1/carry<7>)
+     LUT3:I2->O            2   0.704   0.482  slices[11].iX.sliceX/AS1/ripple[7].FAx/Cout1 (slices[11].iX.sliceX/AS1/carry<8>)
+     LUT3:I2->O            2   0.704   0.482  slices[11].iX.sliceX/AS1/ripple[8].FAx/Cout1 (slices[11].iX.sliceX/AS1/carry<9>)
+     LUT3:I2->O            2   0.704   0.482  slices[11].iX.sliceX/AS1/ripple[9].FAx/Cout1 (slices[11].iX.sliceX/AS1/carry<10>)
+     LUT3:I2->O            3   0.704   0.535  slices[11].iX.sliceX/AS1/ripple[10].FAx/Cout1 (slices[11].iX.sliceX/AS1/carry<11>)
+     LUT4:I3->O            3   0.704   0.535  slices[11].iX.sliceX/AS1/ripple[12].FAx/Cout1 (slices[11].iX.sliceX/AS1/carry<13>)
+     LUT4:I3->O            3   0.704   0.535  slices[11].iX.sliceX/AS1/ripple[14].FAx/Cout1 (slices[11].iX.sliceX/AS1/carry<15>)
+     LUT4:I3->O            3   0.704   0.535  slices[11].iX.sliceX/AS1/ripple[16].FAx/Cout1 (slices[11].iX.sliceX/AS1/carry<17>)
+     LUT4:I3->O            3   0.704   0.535  slices[11].iX.sliceX/AS1/ripple[18].FAx/Cout1 (slices[11].iX.sliceX/AS1/carry<19>)
+     LUT4:I3->O           13   0.704   1.018  slices[11].iX.sliceX/AS1/r<21>1 (ys<11><21>)
+     LUT3:I2->O           41   0.704   1.344  ds_11_or00001 (slices[12].iX.sliceX/AS2/carry<7>)
+     LUT4:I1->O            1   0.704   0.000  slices[12].iX.sliceX/AS1/ripple[1].FAx/Cout_F (N899)
+     MUXF5:I0->O           2   0.321   0.482  slices[12].iX.sliceX/AS1/ripple[1].FAx/Cout (slices[12].iX.sliceX/AS1/carry<2>)
+     LUT3:I2->O            2   0.704   0.482  slices[12].iX.sliceX/AS1/ripple[2].FAx/Cout1 (slices[12].iX.sliceX/AS1/carry<3>)
+     LUT3:I2->O            2   0.704   0.482  slices[12].iX.sliceX/AS1/ripple[3].FAx/Cout1 (slices[12].iX.sliceX/AS1/carry<4>)
+     LUT3:I2->O            2   0.704   0.482  slices[12].iX.sliceX/AS1/ripple[4].FAx/Cout1 (slices[12].iX.sliceX/AS1/carry<5>)
+     LUT3:I2->O            2   0.704   0.482  slices[12].iX.sliceX/AS1/ripple[5].FAx/Cout1 (slices[12].iX.sliceX/AS1/carry<6>)
+     LUT3:I2->O            2   0.704   0.482  slices[12].iX.sliceX/AS1/ripple[6].FAx/Cout1 (slices[12].iX.sliceX/AS1/carry<7>)
+     LUT3:I2->O            2   0.704   0.482  slices[12].iX.sliceX/AS1/ripple[7].FAx/Cout1 (slices[12].iX.sliceX/AS1/carry<8>)
+     LUT3:I2->O            2   0.704   0.482  slices[12].iX.sliceX/AS1/ripple[8].FAx/Cout1 (slices[12].iX.sliceX/AS1/carry<9>)
+     LUT3:I2->O            3   0.704   0.535  slices[12].iX.sliceX/AS1/ripple[9].FAx/Cout1 (slices[12].iX.sliceX/AS1/carry<10>)
+     LUT4:I3->O            3   0.704   0.535  slices[12].iX.sliceX/AS1/ripple[11].FAx/Cout1 (slices[12].iX.sliceX/AS1/carry<12>)
+     LUT4:I3->O            3   0.704   0.535  slices[12].iX.sliceX/AS1/ripple[13].FAx/Cout1 (slices[12].iX.sliceX/AS1/carry<14>)
+     LUT4:I3->O            3   0.704   0.535  slices[12].iX.sliceX/AS1/ripple[15].FAx/Cout1 (slices[12].iX.sliceX/AS1/carry<16>)
+     LUT4:I3->O            3   0.704   0.535  slices[12].iX.sliceX/AS1/ripple[17].FAx/Cout1 (slices[12].iX.sliceX/AS1/carry<18>)
+     LUT4:I3->O            2   0.704   0.451  slices[12].iX.sliceX/AS1/ripple[19].FAx/Cout1 (slices[12].iX.sliceX/AS1/carry<20>)
+     LUT4:I3->O           11   0.704   0.968  slices[12].iX.sliceX/AS1/r<21>1_SW0 (N793)
+     LUT3:I2->O           41   0.704   1.344  ds_12_or00001 (slices[13].iX.sliceX/AS2/carry<6>)
+     LUT4:I1->O            1   0.704   0.000  slices[13].iX.sliceX/AS1/ripple[1].FAx/Cout_F (N897)
+     MUXF5:I0->O           2   0.321   0.482  slices[13].iX.sliceX/AS1/ripple[1].FAx/Cout (slices[13].iX.sliceX/AS1/carry<2>)
+     LUT3:I2->O            2   0.704   0.482  slices[13].iX.sliceX/AS1/ripple[2].FAx/Cout1 (slices[13].iX.sliceX/AS1/carry<3>)
+     LUT3:I2->O            2   0.704   0.482  slices[13].iX.sliceX/AS1/ripple[3].FAx/Cout1 (slices[13].iX.sliceX/AS1/carry<4>)
+     LUT3:I2->O            2   0.704   0.482  slices[13].iX.sliceX/AS1/ripple[4].FAx/Cout1 (slices[13].iX.sliceX/AS1/carry<5>)
+     LUT3:I2->O            2   0.704   0.482  slices[13].iX.sliceX/AS1/ripple[5].FAx/Cout1 (slices[13].iX.sliceX/AS1/carry<6>)
+     LUT3:I2->O            2   0.704   0.482  slices[13].iX.sliceX/AS1/ripple[6].FAx/Cout1 (slices[13].iX.sliceX/AS1/carry<7>)
+     LUT3:I2->O            2   0.704   0.482  slices[13].iX.sliceX/AS1/ripple[7].FAx/Cout1 (slices[13].iX.sliceX/AS1/carry<8>)
+     LUT3:I2->O            3   0.704   0.535  slices[13].iX.sliceX/AS1/ripple[8].FAx/Cout1 (slices[13].iX.sliceX/AS1/carry<9>)
+     LUT4:I3->O            3   0.704   0.535  slices[13].iX.sliceX/AS1/ripple[10].FAx/Cout1 (slices[13].iX.sliceX/AS1/carry<11>)
+     LUT4:I3->O            3   0.704   0.535  slices[13].iX.sliceX/AS1/ripple[12].FAx/Cout1 (slices[13].iX.sliceX/AS1/carry<13>)
+     LUT4:I3->O            3   0.704   0.535  slices[13].iX.sliceX/AS1/ripple[14].FAx/Cout1 (slices[13].iX.sliceX/AS1/carry<15>)
+     LUT4:I3->O            3   0.704   0.535  slices[13].iX.sliceX/AS1/ripple[16].FAx/Cout1 (slices[13].iX.sliceX/AS1/carry<17>)
+     LUT4:I3->O            3   0.704   0.535  slices[13].iX.sliceX/AS1/ripple[18].FAx/Cout1 (slices[13].iX.sliceX/AS1/carry<19>)
+     LUT4:I3->O           11   0.704   0.968  slices[13].iX.sliceX/AS1/r<21>1 (ys<13><21>)
+     LUT3:I2->O           43   0.704   1.345  ds_13_or00001 (slices[14].iX.sliceX/AS2/carry<5>)
+     LUT4:I1->O            1   0.704   0.000  slices[14].iX.sliceX/AS1/ripple[1].FAx/Cout_F (N895)
+     MUXF5:I0->O           2   0.321   0.482  slices[14].iX.sliceX/AS1/ripple[1].FAx/Cout (slices[14].iX.sliceX/AS1/carry<2>)
+     LUT3:I2->O            2   0.704   0.482  slices[14].iX.sliceX/AS1/ripple[2].FAx/Cout1 (slices[14].iX.sliceX/AS1/carry<3>)
+     LUT3:I2->O            2   0.704   0.482  slices[14].iX.sliceX/AS1/ripple[3].FAx/Cout1 (slices[14].iX.sliceX/AS1/carry<4>)
+     LUT3:I2->O            2   0.704   0.482  slices[14].iX.sliceX/AS1/ripple[4].FAx/Cout1 (slices[14].iX.sliceX/AS1/carry<5>)
+     LUT3:I2->O            2   0.704   0.482  slices[14].iX.sliceX/AS1/ripple[5].FAx/Cout1 (slices[14].iX.sliceX/AS1/carry<6>)
+     LUT3:I2->O            2   0.704   0.482  slices[14].iX.sliceX/AS1/ripple[6].FAx/Cout1 (slices[14].iX.sliceX/AS1/carry<7>)
+     LUT3:I2->O            3   0.704   0.535  slices[14].iX.sliceX/AS1/ripple[7].FAx/Cout1 (slices[14].iX.sliceX/AS1/carry<8>)
+     LUT4:I3->O            3   0.704   0.535  slices[14].iX.sliceX/AS1/ripple[9].FAx/Cout1 (slices[14].iX.sliceX/AS1/carry<10>)
+     LUT4:I3->O            3   0.704   0.535  slices[14].iX.sliceX/AS1/ripple[11].FAx/Cout1 (slices[14].iX.sliceX/AS1/carry<12>)
+     LUT4:I3->O            3   0.704   0.535  slices[14].iX.sliceX/AS1/ripple[13].FAx/Cout1 (slices[14].iX.sliceX/AS1/carry<14>)
+     LUT4:I3->O            3   0.704   0.535  slices[14].iX.sliceX/AS1/ripple[15].FAx/Cout1 (slices[14].iX.sliceX/AS1/carry<16>)
+     LUT4:I3->O            3   0.704   0.535  slices[14].iX.sliceX/AS1/ripple[17].FAx/Cout1 (slices[14].iX.sliceX/AS1/carry<18>)
+     LUT4:I3->O            2   0.704   0.451  slices[14].iX.sliceX/AS1/ripple[19].FAx/Cout1 (slices[14].iX.sliceX/AS1/carry<20>)
+     LUT4:I3->O            9   0.704   0.855  slices[14].iX.sliceX/AS1/r<21>1_SW0 (N791)
+     LUT3:I2->O           43   0.704   1.345  ds_14_or00001 (slices[15].iX.sliceX/AS2/carry<4>)
+     LUT4:I1->O            1   0.704   0.000  slices[15].iX.sliceX/AS1/ripple[1].FAx/Cout_F (N893)
+     MUXF5:I0->O           2   0.321   0.482  slices[15].iX.sliceX/AS1/ripple[1].FAx/Cout (slices[15].iX.sliceX/AS1/carry<2>)
+     LUT3:I2->O            2   0.704   0.482  slices[15].iX.sliceX/AS1/ripple[2].FAx/Cout1 (slices[15].iX.sliceX/AS1/carry<3>)
+     LUT3:I2->O            2   0.704   0.482  slices[15].iX.sliceX/AS1/ripple[3].FAx/Cout1 (slices[15].iX.sliceX/AS1/carry<4>)
+     LUT3:I2->O            2   0.704   0.482  slices[15].iX.sliceX/AS1/ripple[4].FAx/Cout1 (slices[15].iX.sliceX/AS1/carry<5>)
+     LUT3:I2->O            2   0.704   0.482  slices[15].iX.sliceX/AS1/ripple[5].FAx/Cout1 (slices[15].iX.sliceX/AS1/carry<6>)
+     LUT3:I2->O            3   0.704   0.535  slices[15].iX.sliceX/AS1/ripple[6].FAx/Cout1 (slices[15].iX.sliceX/AS1/carry<7>)
+     LUT4:I3->O            3   0.704   0.535  slices[15].iX.sliceX/AS1/ripple[8].FAx/Cout1 (slices[15].iX.sliceX/AS1/carry<9>)
+     LUT4:I3->O            3   0.704   0.535  slices[15].iX.sliceX/AS1/ripple[10].FAx/Cout1 (slices[15].iX.sliceX/AS1/carry<11>)
+     LUT4:I3->O            3   0.704   0.535  slices[15].iX.sliceX/AS1/ripple[12].FAx/Cout1 (slices[15].iX.sliceX/AS1/carry<13>)
+     LUT4:I3->O            3   0.704   0.535  slices[15].iX.sliceX/AS1/ripple[14].FAx/Cout1 (slices[15].iX.sliceX/AS1/carry<15>)
+     LUT4:I3->O            3   0.704   0.535  slices[15].iX.sliceX/AS1/ripple[16].FAx/Cout1 (slices[15].iX.sliceX/AS1/carry<17>)
+     LUT4:I3->O            3   0.704   0.535  slices[15].iX.sliceX/AS1/ripple[18].FAx/Cout1 (slices[15].iX.sliceX/AS1/carry<19>)
+     LUT4:I3->O           10   0.704   0.917  slices[15].iX.sliceX/AS1/r<21>1 (ys<15><21>)
+     LUT3:I2->O           44   0.704   1.345  ds_15_or00001 (slices[16].iX.sliceX/AS2/carry<3>)
+     LUT4:I1->O            1   0.704   0.000  slices[16].iX.sliceX/AS1/ripple[1].FAx/Cout_F (N891)
+     MUXF5:I0->O           2   0.321   0.482  slices[16].iX.sliceX/AS1/ripple[1].FAx/Cout (slices[16].iX.sliceX/AS1/carry<2>)
+     LUT3:I2->O            2   0.704   0.482  slices[16].iX.sliceX/AS1/ripple[2].FAx/Cout1 (slices[16].iX.sliceX/AS1/carry<3>)
+     LUT3:I2->O            2   0.704   0.482  slices[16].iX.sliceX/AS1/ripple[3].FAx/Cout1 (slices[16].iX.sliceX/AS1/carry<4>)
+     LUT3:I2->O            2   0.704   0.482  slices[16].iX.sliceX/AS1/ripple[4].FAx/Cout1 (slices[16].iX.sliceX/AS1/carry<5>)
+     LUT3:I2->O            3   0.704   0.535  slices[16].iX.sliceX/AS1/ripple[5].FAx/Cout1 (slices[16].iX.sliceX/AS1/carry<6>)
+     LUT4:I3->O            3   0.704   0.535  slices[16].iX.sliceX/AS1/ripple[7].FAx/Cout1 (slices[16].iX.sliceX/AS1/carry<8>)
+     LUT4:I3->O            3   0.704   0.535  slices[16].iX.sliceX/AS1/ripple[9].FAx/Cout1 (slices[16].iX.sliceX/AS1/carry<10>)
+     LUT4:I3->O            3   0.704   0.535  slices[16].iX.sliceX/AS1/ripple[11].FAx/Cout1 (slices[16].iX.sliceX/AS1/carry<12>)
+     LUT4:I3->O            3   0.704   0.535  slices[16].iX.sliceX/AS1/ripple[13].FAx/Cout1 (slices[16].iX.sliceX/AS1/carry<14>)
+     LUT4:I3->O            3   0.704   0.535  slices[16].iX.sliceX/AS1/ripple[15].FAx/Cout1 (slices[16].iX.sliceX/AS1/carry<16>)
+     LUT4:I3->O            3   0.704   0.535  slices[16].iX.sliceX/AS1/ripple[17].FAx/Cout1 (slices[16].iX.sliceX/AS1/carry<18>)
+     LUT4:I3->O            2   0.704   0.451  slices[16].iX.sliceX/AS1/ripple[19].FAx/Cout1 (slices[16].iX.sliceX/AS1/carry<20>)
+     LUT4:I3->O            7   0.704   0.743  slices[16].iX.sliceX/AS1/r<21>1_SW0 (N789)
+     LUT3:I2->O           45   0.704   1.345  ds_16_or00001 (ds<16><0>)
+     LUT4:I1->O            1   0.704   0.000  slices[17].iX.sliceX/AS1/ripple[1].FAx/Cout_F (N889)
+     MUXF5:I0->O           2   0.321   0.482  slices[17].iX.sliceX/AS1/ripple[1].FAx/Cout (slices[17].iX.sliceX/AS1/carry<2>)
+     LUT3:I2->O            2   0.704   0.482  slices[17].iX.sliceX/AS1/ripple[2].FAx/Cout1 (slices[17].iX.sliceX/AS1/carry<3>)
+     LUT3:I2->O            2   0.704   0.482  slices[17].iX.sliceX/AS1/ripple[3].FAx/Cout1 (slices[17].iX.sliceX/AS1/carry<4>)
+     LUT3:I2->O            3   0.704   0.535  slices[17].iX.sliceX/AS1/ripple[4].FAx/Cout1 (slices[17].iX.sliceX/AS1/carry<5>)
+     LUT4:I3->O            3   0.704   0.535  slices[17].iX.sliceX/AS1/ripple[6].FAx/Cout1 (slices[17].iX.sliceX/AS1/carry<7>)
+     LUT4:I3->O            3   0.704   0.535  slices[17].iX.sliceX/AS1/ripple[8].FAx/Cout1 (slices[17].iX.sliceX/AS1/carry<9>)
+     LUT4:I3->O            3   0.704   0.535  slices[17].iX.sliceX/AS1/ripple[10].FAx/Cout1 (slices[17].iX.sliceX/AS1/carry<11>)
+     LUT4:I3->O            3   0.704   0.535  slices[17].iX.sliceX/AS1/ripple[12].FAx/Cout1 (slices[17].iX.sliceX/AS1/carry<13>)
+     LUT4:I3->O            3   0.704   0.535  slices[17].iX.sliceX/AS1/ripple[14].FAx/Cout1 (slices[17].iX.sliceX/AS1/carry<15>)
+     LUT4:I3->O            3   0.704   0.535  slices[17].iX.sliceX/AS1/ripple[16].FAx/Cout1 (slices[17].iX.sliceX/AS1/carry<17>)
+     LUT4:I3->O            3   0.704   0.535  slices[17].iX.sliceX/AS1/ripple[18].FAx/Cout1 (slices[17].iX.sliceX/AS1/carry<19>)
+     LUT4:I3->O            8   0.704   0.792  slices[17].iX.sliceX/AS1/r<21>1 (ys<17><21>)
+     LUT3:I2->O           47   0.704   1.346  ds_17_or00001 (ds<17><0>)
+     LUT4:I1->O            1   0.704   0.000  slices[18].iX.sliceX/AS1/ripple[1].FAx/Cout_F (N887)
+     MUXF5:I0->O           2   0.321   0.482  slices[18].iX.sliceX/AS1/ripple[1].FAx/Cout (slices[18].iX.sliceX/AS1/carry<2>)
+     LUT3:I2->O            2   0.704   0.482  slices[18].iX.sliceX/AS1/ripple[2].FAx/Cout1 (slices[18].iX.sliceX/AS1/carry<3>)
+     LUT3:I2->O            3   0.704   0.535  slices[18].iX.sliceX/AS1/ripple[3].FAx/Cout1 (slices[18].iX.sliceX/AS1/carry<4>)
+     LUT4:I3->O            3   0.704   0.535  slices[18].iX.sliceX/AS1/ripple[5].FAx/Cout1 (slices[18].iX.sliceX/AS1/carry<6>)
+     LUT4:I3->O            3   0.704   0.535  slices[18].iX.sliceX/AS1/ripple[7].FAx/Cout1 (slices[18].iX.sliceX/AS1/carry<8>)
+     LUT4:I3->O            3   0.704   0.535  slices[18].iX.sliceX/AS1/ripple[9].FAx/Cout1 (slices[18].iX.sliceX/AS1/carry<10>)
+     LUT4:I3->O            3   0.704   0.535  slices[18].iX.sliceX/AS1/ripple[11].FAx/Cout1 (slices[18].iX.sliceX/AS1/carry<12>)
+     LUT4:I3->O            3   0.704   0.535  slices[18].iX.sliceX/AS1/ripple[13].FAx/Cout1 (slices[18].iX.sliceX/AS1/carry<14>)
+     LUT4:I3->O            3   0.704   0.535  slices[18].iX.sliceX/AS1/ripple[15].FAx/Cout1 (slices[18].iX.sliceX/AS1/carry<16>)
+     LUT4:I3->O            3   0.704   0.535  slices[18].iX.sliceX/AS1/ripple[17].FAx/Cout1 (slices[18].iX.sliceX/AS1/carry<18>)
+     LUT4:I3->O            2   0.704   0.451  slices[18].iX.sliceX/AS1/ripple[19].FAx/Cout1 (slices[18].iX.sliceX/AS1/carry<20>)
+     LUT4:I3->O            5   0.704   0.668  slices[18].iX.sliceX/AS1/r<21>1_SW0 (N787)
+     LUT3:I2->O           43   0.704   1.345  ds_18_or00001 (ds<18><0>)
+     LUT4:I1->O            1   0.704   0.000  slices[19].iX.sliceX/AS1/ripple[1].FAx/Cout_F (N885)
+     MUXF5:I0->O           2   0.321   0.482  slices[19].iX.sliceX/AS1/ripple[1].FAx/Cout (slices[19].iX.sliceX/AS1/carry<2>)
+     LUT3:I2->O            3   0.704   0.535  slices[19].iX.sliceX/AS1/ripple[2].FAx/Cout1 (slices[19].iX.sliceX/AS1/carry<3>)
+     LUT4:I3->O            3   0.704   0.535  slices[19].iX.sliceX/AS1/ripple[4].FAx/Cout1 (slices[19].iX.sliceX/AS1/carry<5>)
+     LUT4:I3->O            3   0.704   0.535  slices[19].iX.sliceX/AS1/ripple[6].FAx/Cout1 (slices[19].iX.sliceX/AS1/carry<7>)
+     LUT4:I3->O            3   0.704   0.535  slices[19].iX.sliceX/AS1/ripple[8].FAx/Cout1 (slices[19].iX.sliceX/AS1/carry<9>)
+     LUT4:I3->O            3   0.704   0.535  slices[19].iX.sliceX/AS1/ripple[10].FAx/Cout1 (slices[19].iX.sliceX/AS1/carry<11>)
+     LUT4:I3->O            3   0.704   0.535  slices[19].iX.sliceX/AS1/ripple[12].FAx/Cout1 (slices[19].iX.sliceX/AS1/carry<13>)
+     LUT4:I3->O            3   0.704   0.535  slices[19].iX.sliceX/AS1/ripple[14].FAx/Cout1 (slices[19].iX.sliceX/AS1/carry<15>)
+     LUT4:I3->O            3   0.704   0.535  slices[19].iX.sliceX/AS1/ripple[16].FAx/Cout1 (slices[19].iX.sliceX/AS1/carry<17>)
+     LUT4:I3->O            3   0.704   0.535  slices[19].iX.sliceX/AS1/ripple[18].FAx/Cout1 (slices[19].iX.sliceX/AS1/carry<19>)
+     LUT4:I3->O           20   0.704   1.106  slices[19].iX.sliceX/AS1/r<21>1 (ys<19><21>)
+     LUT4:I3->O           29   0.704   1.296  ds_19_or0000 (ds<19><0>)
+     LUT3:I2->O            2   0.704   0.526  slices[20].iX.sliceX/f0<1>1 (slices[20].iX.sliceX/f0<1>)
+     LUT3:I1->O            1   0.704   0.000  slices[20].iX.sliceX/AS0/ripple[1].FAx/Cout_F (N855)
+     MUXF5:I0->O           1   0.321   0.424  slices[20].iX.sliceX/AS0/ripple[1].FAx/Cout (slices[20].iX.sliceX/AS0/carry<2>)
+     LUT4:I3->O            4   0.704   0.591  slices[20].iX.sliceX/AS0/ripple[3].FAx/Cout1 (slices[20].iX.sliceX/AS0/carry<4>)
+     LUT4:I3->O            4   0.704   0.591  slices[20].iX.sliceX/AS0/ripple[5].FAx/Cout1 (slices[20].iX.sliceX/AS0/carry<6>)
+     LUT4:I3->O            4   0.704   0.591  slices[20].iX.sliceX/AS0/ripple[7].FAx/Cout1 (slices[20].iX.sliceX/AS0/carry<8>)
+     LUT4:I3->O            4   0.704   0.591  slices[20].iX.sliceX/AS0/ripple[9].FAx/Cout1 (slices[20].iX.sliceX/AS0/carry<10>)
+     LUT4:I3->O            4   0.704   0.591  slices[20].iX.sliceX/AS0/ripple[11].FAx/Cout1 (slices[20].iX.sliceX/AS0/carry<12>)
+     LUT4:I3->O            4   0.704   0.591  slices[20].iX.sliceX/AS0/ripple[13].FAx/Cout1 (slices[20].iX.sliceX/AS0/carry<14>)
+     LUT4:I3->O            4   0.704   0.591  slices[20].iX.sliceX/AS0/ripple[15].FAx/Cout1 (slices[20].iX.sliceX/AS0/carry<16>)
+     LUT4:I3->O            3   0.704   0.610  slices[20].iX.sliceX/AS0/ripple[17].FAx/Cout1 (slices[20].iX.sliceX/AS0/carry<18>)
+     LUT4:I1->O            1   0.704   0.000  r_mux0002<19>2121 (r_mux0002<19>2121)
+     MUXF5:I1->O           1   0.321   0.424  r_mux0002<19>212_f5 (r_mux0002<19>212)
+     LUT4:I3->O            1   0.704   0.000  r_mux0002<19>247 (r_mux0002<19>247)
+     FDS:D                     0.308          r_15
+    ----------------------------------------
+    Total                    432.450ns (240.024ns logic, 192.427ns route)
+                                       (55.5% logic, 44.5% route)
+
+=========================================================================
+Timing constraint: Default OFFSET IN BEFORE for Clock 'clk'
+  Total number of paths / destination ports: 36 / 36
+-------------------------------------------------------------------------
+Offset:              1.946ns (Levels of Logic = 1)
+  Source:            x<0> (PAD)
+  Destination:       x_reg_0 (FF)
+  Destination Clock: clk rising
+
+  Data Path: x<0> to x_reg_0
+                                Gate     Net
+    Cell:in->out      fanout   Delay   Delay  Logical Name (Net Name)
+    ----------------------------------------  ------------
+     IBUF:I->O             1   1.218   0.420  x_0_IBUF (x_0_IBUF)
+     FD:D                      0.308          x_reg_0
+    ----------------------------------------
+    Total                      1.946ns (1.526ns logic, 0.420ns route)
+                                       (78.4% logic, 21.6% route)
+
+=========================================================================
+Timing constraint: Default OFFSET OUT AFTER for Clock 'clk'
+  Total number of paths / destination ports: 16 / 16
+-------------------------------------------------------------------------
+Offset:              4.283ns (Levels of Logic = 1)
+  Source:            r_15 (FF)
+  Destination:       r<15> (PAD)
+  Source Clock:      clk rising
+
+  Data Path: r_15 to r<15>
+                                Gate     Net
+    Cell:in->out      fanout   Delay   Delay  Logical Name (Net Name)
+    ----------------------------------------  ------------
+     FDS:C->Q              1   0.591   0.420  r_15 (r_15)
+     OBUF:I->O                 3.272          r_15_OBUF (r<15>)
+    ----------------------------------------
+    Total                      4.283ns (3.863ns logic, 0.420ns route)
+                                       (90.2% logic, 9.8% route)
+
+=========================================================================
+
+
+Total REAL time to Xst completion: 27.00 secs
+Total CPU time to Xst completion: 27.44 secs
+ 
+--> 
+
+Total memory usage is 4679172 kilobytes
+
+Number of errors   :    0 (   0 filtered)
+Number of warnings :   16 (   0 filtered)
+Number of infos    :    0 (   0 filtered)
+
