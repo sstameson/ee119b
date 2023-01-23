@@ -1,5 +1,29 @@
+---------------------------------------------------------------------------
+--
+-- Pipelined CORDIC Calculator
+--
+-- This file contains the implementation of a CORDIC calculator for
+-- computing sin, cos, sinh, cosh, multiplication, and division.
+-- The inputs and output of the calculator are stored in DFFs and the
+-- computation is pipelined with a 4-cycle latency.
+-- All inputs and outputs are interpreted as Q1.14 fixed point numbers.
+-- The implemented algorithm works for only for non-negative inputs.
+--
+---------------------------------------------------------------------------
+
 library ieee;
 use ieee.std_logic_1164.all;
+
+--
+-- FullAdder entity declaration
+--
+-- This entity implements a 1-bit full adder
+-- a - the first 1-bit input
+-- b - the second 1-bit input
+-- Cin - the carry input
+-- s - the sum output
+-- Cout - the carry output
+--
 
 entity FullAdder is
     port (
@@ -21,6 +45,20 @@ end architecture synth;
 
 library ieee;
 use ieee.std_logic_1164.all;
+
+--
+-- AddSub entity declaration
+--
+-- This entity implements a 22-bit adder/subtractor for the intermediate
+-- CORDIC calculations
+-- a - the first input
+-- b - the second input
+-- f - the function to be computed
+--     f = 00 outputs the input a unchanged
+--     f = 01 preforms the addition a + b
+--     f = 10 performs the subtraction a - b
+-- r - the result of the computation
+--
 
 entity AddSub is
     port (
@@ -65,6 +103,36 @@ end architecture synth;
 
 library ieee;
 use ieee.std_logic_1164.all;
+
+--
+-- CORDICSlice entity declaration
+--
+-- This entity implements one layer of the CORDIC calculation, which consists
+-- of three 21-bit add/sub/no-op operations selected by the control signals
+-- to compute the next x, y, z values for the next slice.
+-- d - the decision variable
+--     d can be -1 or 1
+--     "01" represents 1
+--     "10" represents -1
+--     d = 1 when z is positive in rotation mode or
+--                y is negative in vectoring mode
+--           otherwise d is -1
+-- m - the type of computation
+--     m can be 1, 0, or -1
+--     "01" represents 1 (circular)
+--     "00" represents 0 (linear)
+--     "10" represents -1 (hyperbolic)
+-- x_prev - the previous x
+-- x_shft - the previous x shifted by the layer depth
+-- y_prev - the previous y
+-- y_shft - the previous y shifted by the layer depth
+-- z_prev - the previous z
+-- z_shft - the previous z shifted by the layer depth
+-- const  - the constant used to compute z_next
+-- x_next - the x value for the next slice
+-- y_next - the y value for the next slice
+-- z_next - the z value for the next slice
+--
 
 entity CORDICSlice is
     port (
@@ -138,6 +206,31 @@ end architecture synth;
 library ieee;
 use ieee.std_logic_1164.all;
 
+--
+-- CORDICCalc entity declaration
+--
+-- This implements a CORDIC calculator for computing sin, cos, sinh, cosh,
+-- multiplication, and division. Inputs/outputs are stored in DFFs. The
+-- computation is fully pipelined and completes in four cycles. All inputs and
+-- outputs are interpreted as Q1.14 fixed point numbers
+--
+-- clk - the clock for storage of inputs x, y, f, output r, and the
+--       intermediate pipeline stages
+-- x - the first input (see meaning below), must be a non-negative
+--     Q1.14 fixed point number
+-- y - the second input (see meaning below), must be a non-negative
+--     Q1.14 fixed point number
+-- f - the function to perform
+--     f = 00001 - computes cos(x)
+--     f = 00101 - computes sin(x)
+--     f = 00100 - computes x * y
+--     f = 00010 - computes cosh(x)
+--     f = 00110 - computes sinh(x)
+--     f = 01100 - computes y / x
+-- r - the result of the computation as a Q1.14 fixed point number
+--     for the inputs x, y, and f four cycles earlier.
+--
+
 entity CORDICCalc is
     port (
         clk : in  std_logic;
@@ -161,28 +254,49 @@ architecture synth of CORDICCalc is
     type boolean_vector is array(natural range <>)
                         of boolean;
 
+    -- intermediate x, y, and z values
     signal xs, ys, zs: calc_vector(0 to 20);
 
     signal xs_out, ys_out, zs_out: calc_vector(1 to 20);
 
     signal x_shfts, y_shfts: calc_vector(0 to 19);
 
+    -- decision variables
     signal ds: control_vector(0 to 19);
 
+    -- constants (see below)
     signal cs: calc_vector(0 to 19);
-
-    signal m: control_vector(0 to 19);
-    signal result: std_logic_vector(0 to 19);
-    signal vectoring: std_logic_vector(0 to 19);
 
     signal K: std_logic_vector(21 downto 0);
 
+    -- registered inputs
     signal x_reg: std_logic_vector(x'range);
     signal y_reg: std_logic_vector(y'range);
     signal f_reg: std_logic_vector(f'range);
 
+    -- sign-extended inputs to Q3.18 fixed point form
     signal x_ext, y_ext: std_logic_vector(21 downto 0);
 
+    -- arrays of control signals
+    -- synthesis will generate DFFs to store control signals for each
+    -- intermediate pipeline stage
+    signal m: control_vector(0 to 19);
+    signal result: std_logic_vector(0 to 19);
+    signal vectoring: std_logic_vector(0 to 19);
+
+    -- is_stage(i) determines if the i'th slice is a pipeline stage
+    --      if is_stage(i) = true, generate DFFs to store
+    --      outputs x, y, z and control signals m, result, vectoring
+    --      otherwise, slice i is connected to slice i + 1 with wires
+    -- NOTE: final output is registered by default
+    -- the implemented pipeline is as follows
+    --     stage 1: 3 CORDIC slices
+    --     stage 2: 4 CORDIC slices
+    --     stage 3: 4 CORDIC slices
+    --     stage 4: 5 CORDIC slices
+    -- even though the stages appear unbalanced, the design runs ~10% faster
+    -- by putting an extra slice in the last stage likely due to the large
+    -- amount of shifting before arithmetic in later stages
     constant is_stage: boolean_vector(1 to 20) := (
         false,
         false,
@@ -206,8 +320,18 @@ architecture synth of CORDICCalc is
         false
     );
 
+    -- pre-computed constants for the computation
+    -- all constants are in Q3.18 fixed point form
+
+    -- Ks(0) = 1
+    -- Ks(1) = 1/sqrt(1 + (1/2^i)^2)
+    -- Ks(2) = 1/sqrt(1 - (1/2^i)^2)
     constant Ks: calc_vector(0 to 2) :=
         ("0001000000000000000000", "0000100110110111010100", "0001001101001000001111");
+
+    -- consts(i, 0) = 1/2^i
+    -- consts(i, 1) = arctan(1/2^i)
+    -- consts(i, 2) = arctanh(1/2^i)
     constant consts: const_vector(0 to 19, 0 to 2) := (
         ("0001000000000000000000", "0000110010010000111111", "0000000000000000000000"),
         ("0000100000000000000000", "0000011101101011000110", "0000100011001001111101"),
@@ -338,6 +462,7 @@ begin
         -- must skip the first hyperbolic slice because the
         -- constant arctanh(1) does not exist
         i1: if i = 1 generate
+            -- generate a pipeline stage if specified
             dff: if is_stage(i) generate
                 process(clk)
                 begin
@@ -355,6 +480,7 @@ begin
                 end process;
             end generate dff;
 
+            -- connect outputs to next inputs if not a pipeline stage
             wire: if not is_stage(i) generate
                 xs(i) <= xs(i - 1) when m(i - 1) = "10" else
                          xs_out(i);

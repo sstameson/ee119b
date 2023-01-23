@@ -1,3 +1,26 @@
+---------------------------------------------------------------------------
+--
+-- CORDIC Calculator Testbench
+--
+-- This file contains the testbench for the CORDIC calculator. The
+-- testbench has test vectors for 5 special cases for each of the
+-- 6 different calculation modes. After the special cases, the testbench
+-- cycles through the different modes and generates random non-negative
+-- inputs between 0 and pi/2.
+--
+-- Some outputs of the random computation cannot be represented in the Q1.14
+-- fixed point format due to underflow or overflow, so these errors are
+-- not reported.
+--
+-- Also, the algorithm has a much higher tolerance for error in hyperbolic
+-- modes, since this computation is much less accurate. The testbench will
+-- report errors for
+--     circular/linear calculations with error greater than 0.0001
+--     hyperbolic calculations with error greater than 0.3
+-- Both of these error tolerances are configurable as constants.
+--
+---------------------------------------------------------------------------
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -64,7 +87,9 @@ architecture testbench of CORDICCalc_TB is
         return result;
     end;
 
+    -- linear/circular error tolerance
     constant EPSILON     : signed := signed(real2fixed(0.0001));
+    -- hyperbolic error tolerance
     constant EPSILON_HYP : signed := signed(real2fixed(0.3));
 
     function is_correct(
@@ -95,7 +120,10 @@ architecture testbench of CORDICCalc_TB is
     type control_vector is array(natural range<>) 
                         of std_logic_vector(4 downto 0);
 
+    -- number of special case test vectors
     constant NUM_TESTS: integer := 30;
+
+    -- special case test vectors for all input stimulus signals
 
     constant test_xs: fixed_vector(0 to NUM_TESTS-1) := (
         real2fixed(0.0),
@@ -211,21 +239,26 @@ architecture testbench of CORDICCalc_TB is
         F_DIV
     );
 
-    constant NUM_CYCLES: natural := 2 + 3;
+    -- number of cycles of delay before checking output
+    -- one cycle to latch input + four pipeline stages
+    constant NUM_CYCLES: natural := 5;
 
+    -- input stimulus signals
     signal clk: std_logic;
     signal x, y: std_logic_vector(15 downto 0);
     signal f: std_logic_vector(4 downto 0);
+    -- output signals
     signal r: std_logic_vector(15 downto 0);
 
+    -- shift registers to remember old inputs for NUM_CYCLES
     signal x_reg, y_reg: fixed_vector(0 to NUM_CYCLES - 1);
     signal f_reg: control_vector(0 to NUM_CYCLES - 1);
 
+    -- input stimulus signals correspond to the current result r
     signal x_r, y_r: std_logic_vector(15 downto 0);
     signal f_r: std_logic_vector(4 downto 0);
 
-    signal test: std_logic_vector(15 downto 0);
-
+    -- index for the test vectors
     signal idx: integer := 0;
 begin
 
