@@ -25,20 +25,22 @@ def label(name):
 # instruction may have 0, 1, or 2 operands
 # instruction may be followed by a comment
 def instr(mem, op1=None, op2=None, comment=None):
-    s = f'\t{mem}'
+    s = f'    {mem:<5}'
 
     if op1 is not None:
-        s += f'\t{op1}'
+        s += f'{op1}'
 
     if op2 is not None:
-        s += f',\t{op2}'
+        s += f',{op2}'
+
+    s = f'{s:<25}'
 
     if comment is not None:
         # only add space if comment is not checking a value
         if (comment[0] in ('R', 'W', 'S', 'J')):
-            s += f'\t;{comment}'
+            s += f';{comment}'
         else:
-            s += f'\t; {comment}'
+            s += f'; {comment}'
 
     return s
 
@@ -47,7 +49,7 @@ def test_add(a, b, r1='R16', r2='R17', addr=0x1000):
     assert 0 <= a and a <= 0xFF
     assert 0 <= b and b <= 0xFF
 
-    res = (a + b) % 0xFF
+    res = (a + b) & 0xFF
 
     print(instr('LDI', r1, imm8(a), f'load {r1} <- {a}'))
     print(instr('LDI', r2, imm8(b), f'load {r2} <- {b}'))
@@ -59,7 +61,7 @@ def test_adc(a, b, c, r1='R16', r2='R17', addr=0x1000):
     assert 0 <= b and b <= 0xFF
     assert isinstance(c, bool)
 
-    res = (a + b + c) % 0xFF
+    res = (a + b + c) & 0xFF
 
     print(instr('LDI', r1, imm8(a), f'load {r1} <- {a}'))
     print(instr('LDI', r2, imm8(b), f'load {r2} <- {b}'))
@@ -73,7 +75,7 @@ def test_adiw(a, k, r1='R24', r2='R25', addr=0x1000):
     a1 = (a & 0x00FF)
     a2 = (a & 0xFF00) >> 8
 
-    res = (a + k) % 0xFFFF
+    res = (a + k) & 0xFFFF
 
     res1 = (res & 0x00FF)
     res2 = (res & 0xFF00) >> 8
@@ -84,6 +86,17 @@ def test_adiw(a, k, r1='R24', r2='R25', addr=0x1000):
                f'compute {r2}:{r1} <- {r2}:{r1} + {k}'))
     print(instr('STS', imm16(addr), r1, check('W', res1, addr) + ' check add result (lower byte)'))
     print(instr('STS', imm16(addr), r2, check('W', res2, addr) + ' check add result (upper byte)'))
+
+def test_sub(a, b, r1='R16', r2='R17', addr=0x1000):
+    assert 0 <= a and a <= 0xFF
+    assert 0 <= b and b <= 0xFF
+
+    res = (a - b) & 0xFF
+
+    print(instr('LDI', r1, imm8(a), f'load {r1} <- {a}'))
+    print(instr('LDI', r2, imm8(b), f'load {r2} <- {b}'))
+    print(instr('ADD', r1, r2, f'compute {r1} <- {r1} + {r2}'))
+    print(instr('STS', imm16(addr), r1, check('W', res, addr) + ' check add result'))
 
 g_skip_num = 1
 def label_name():
