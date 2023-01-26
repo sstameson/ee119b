@@ -286,6 +286,30 @@ def test_swap(a, r1='R16', addr=0x1000):
     print(instr('STS', imm16(addr), r1, check('W', res, addr) + ' check swap nibble result'))
 
 
+def test_cp(a, b, r1='R16', r2='R17', addr=0x1000):
+    assert 0 <= a and a <= 0xFF
+    assert 0 <= b and b <= 0xFF
+
+    print(instr('LDI', r1, imm8(a), f'load {r1} <- {a:#x}'))
+    print(instr('LDI', r2, imm8(b), f'load {r2} <- {b:#x}'))
+    print(instr('CP', r1, r2, f'compute {r1} - {r2}'))
+
+def test_cpc(a, b, r1='R16', r2='R17', addr=0x1000):
+    assert 0 <= a and a <= 0xFF
+    assert 0 <= b and b <= 0xFF
+
+    print(instr('LDI', r1, imm8(a), f'load {r1} <- {a:#x}'))
+    print(instr('LDI', r2, imm8(b), f'load {r2} <- {b:#x}'))
+    print(instr('CPC', r1, r2, f'compute {r1} - {r2} - C'))
+
+def test_cpi(a, k, r1='R16', addr=0x1000):
+    assert 0 <= a and a <= 0xFF
+    assert 0 <= k and k <= 0xFF
+
+    print(instr('LDI', r1, imm8(a), f'load {r1} <- {a:#x}'))
+    print(instr('CPI', r1, imm8(k), f'compute {r1} - {k:#x}'))
+
+
 ### FLAG TESTING ###
 
 
@@ -302,7 +326,7 @@ for i in range(len(flags)):
     flag_idx[flags[i]] = i
 
 g_org_addr    = 0x0040
-ORG_ADDR_INC  = 0x0010
+ORG_ADDR_INC  = 0x003F
 
 def test_flag_set(flag):
     global g_org_addr
@@ -374,11 +398,93 @@ if __name__ == '__main__':
     print()
 
     print(';')
+    print('; check compare operations')
+    print(';')
+
+    print('; check compare')
+    print('; test carry flag')
+    test_cp(2, 1)
+    test_flag_clr('C')
+    test_cp(0, 0x80)
+    test_flag_set('C')
+    print('; test zero flag')
+    test_cp(2, 1)
+    test_flag_clr('Z')
+    test_cp(0, 0)
+    test_flag_set('Z')
+    print('; test negative flag')
+    test_cp(2, 1)
+    test_flag_clr('N')
+    test_cp(0, 1)
+    test_flag_set('N')
+    print('; test signed overflow flag')
+    test_cp(2, 1)
+    test_flag_clr('V')
+    test_cp(0x80, 1)
+    test_flag_set('V')
+    print('; test corrected signed flag')
+    test_cp(2, 1)
+    test_flag_clr('S')
+    test_cp(0, 1)
+    test_flag_set('S')
+    print('; test half carry flag')
+    test_cp(2, 1)
+    test_flag_clr('H')
+    test_cp(0, 1)
+    test_flag_set('H')
+
+    print('; check compare with intermediate')
+    test_cpi(2, 1)
+    test_flag_clr('C')
+    test_cpi(0, 0x80)
+    test_flag_set('C')
+    print('; test zero flag')
+    test_cpi(2, 1)
+    test_flag_clr('Z')
+    test_cpi(0, 0)
+    test_flag_set('Z')
+    print('; test negative flag')
+    test_cpi(2, 1)
+    test_flag_clr('N')
+    test_cpi(0, 1)
+    test_flag_set('N')
+    print('; test signed overflow flag')
+    test_cpi(2, 1)
+    test_flag_clr('V')
+    test_cpi(0x80, 1)
+    test_flag_set('V')
+    print('; test corrected signed flag')
+    test_cpi(2, 1)
+    test_flag_clr('S')
+    test_cpi(0, 1)
+    test_flag_set('S')
+    print('; test half carry flag')
+    test_cpi(2, 1)
+    test_flag_clr('H')
+    test_cpi(0, 1)
+    test_flag_set('H')
+
+    print('; check compare with carry')
+    print('; clear carry')
+    test_cp(0, 0)
+    print('; check without carry')
+    test_cpc(0, 0)
+    test_flag_set('Z')
+    print('; generate a carry')
+    test_add(0xff, 1)
+    print('; check with carry')
+    test_cpc(0, 0)
+    test_flag_set('N')
+    print()
+
+    print(';')
     print('; check add variants')
     print(';')
 
     print('; add without carry')
     test_add(7, 8)
+    test_add(0xf, 1)
+    test_add(0, 0)
 
     print('; add with carry')
     print('; generate a carry')
@@ -481,14 +587,6 @@ if __name__ == '__main__':
 
     print('; check swap nibbles')
     test_swap(0xAB)
-    print()
-
-    print(';')
-    print('; check compare operations')
-    print(';')
-    print('; check compare')
-    print('; check compare with carry')
-    print('; check compare with intermediate')
     print()
 
     print(instr('JMP', 'start'))
