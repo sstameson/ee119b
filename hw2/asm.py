@@ -318,6 +318,36 @@ def test_cpi(a, k, r1='R16', addr=0x1000):
     print(instr('CPI', r1, imm8(k), f'compute {r1} - {k:#x}'))
 
 
+def test_cpse(a, b, r1='R16', r2='R17', addr=0x1000):
+    assert 0 <= a and a <= 0xFF
+    assert 0 <= b and b <= 0xFF
+
+    print(instr('LDI', r1, imm8(a), f'load {r1} <- {a:#x}'))
+    print(instr('LDI', r2, imm8(b), f'load {r2} <- {b:#x}'))
+    print(instr('CPSE', r1, r2, f'compare {r1} to {r2}'))
+    if a == b:
+        print(instr('NOP', comment='S skip this NOP'))
+    else:
+        print(instr('NOP', comment='run this NOP'))
+
+
+def skip_clr(r, b):
+    assert 0 <= b and b <= 8
+
+    print(instr('SBRS', r, imm8(b), f'{r}({b}) is clear'))
+    print(instr('NOP', comment=f'run this NOP'))
+    print(instr('SBRC', r, imm8(b), f'{r}({b}) is clear'))
+    print(instr('NOP', comment=f'S skip this NOP'))
+
+def skip_set(r, b):
+    assert 0 <= b and b <= 8
+
+    print(instr('SBRC', r, imm8(b), f'{r}({b}) is set'))
+    print(instr('NOP', comment=f'run this NOP'))
+    print(instr('SBRS', r, imm8(b), f'{r}({b}) is set'))
+    print(instr('NOP', comment=f'S skip this NOP'))
+
+
 ### FLAG TESTING ###
 
 
@@ -622,5 +652,23 @@ if __name__ == '__main__':
     for i in range(32):
         print(instr('STS', imm16(0x1000), f'R{i}', check('W', fib(i) & 0xFF, 0x1000) + f' check R{i} = fib({i}) % 256'))
     print()
+
+    print(';')
+    print('; check skip instructions')
+    print(';')
+
+    print('; check skip if equal')
+    test_cpse(1, 2)
+    test_cpse(0, 0)
+
+    print('; check skip if bit set')
+    for i in range(8):
+        print(instr('LDI', f'R{i + 16}', imm8(1 << i), f'load R{i + 16} <- {(1 << i) & 0xFF:#02x}'))
+        skip_set(f'R{i + 16}', i)
+
+    print('; check skip if bit clear')
+    for i in range(8):
+        print(instr('LDI', f'R{i + 24}', imm8(~(1 << i)), f'load R{i + 24} <- {~(1 << i) & 0xFF:#02x}'))
+        skip_clr(f'R{i + 24}', i)
 
     print(instr('JMP', 'start', comment='J jump taken'))
