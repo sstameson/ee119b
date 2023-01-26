@@ -245,6 +245,47 @@ def test_com(a, r1='R16', addr=0x1000):
     print(instr('STS', imm16(addr), r1, check('W', res, addr) + ' check complement result'))
 
 
+def test_asr(a, r1='R16', addr=0x1000):
+    assert 0 <= a and a <= 0xFF
+
+    print(instr('LDI', r1, imm8(a), f'load {r1} <- {a:#x}'))
+
+    if a & (1 << 7):
+        a = a - (1 << 8)
+    res = (a >> 1) & 0xFF # arithmetic shift
+
+    print(instr('ASR', r1, comment=f'compute {r1} <- {r1} >> 1'))
+    print(instr('STS', imm16(addr), r1, check('W', res, addr) + ' check arithmetic shift result'))
+
+def test_lsr(a, r1='R16', addr=0x1000):
+    assert 0 <= a and a <= 0xFF
+
+    res = (a & 0xFF) >> 1 # logical shift
+
+    print(instr('LDI', r1, imm8(a), f'load {r1} <- {a:#x}'))
+    print(instr('LSR', r1, comment=f'compute {r1} <- {r1} >>> 1'))
+    print(instr('STS', imm16(addr), r1, check('W', res, addr) + ' check logical shift result'))
+
+def test_ror(a, c, r1='R16', addr=0x1000):
+    assert 0 <= a and a <= 0xFF
+    assert isinstance(c, bool)
+
+    res = ((a & 0xFF) >> 1) | (c << 7)
+
+    print(instr('LDI', r1, imm8(a), f'load {r1} <- {a:#x}'))
+    print(instr('ROR', r1, comment=f'compute {r1} <- (c, {r1} >> 1)'))
+    print(instr('STS', imm16(addr), r1, check('W', res, addr) + ' check rotate through carry result'))
+
+def test_swap(a, r1='R16', addr=0x1000):
+    assert 0 <= a and a <= 0xFF
+
+    res = ((a & 0x0F) << 4) | ((a & 0xF0) >> 4)
+
+    print(instr('LDI', r1, imm8(a), f'load {r1} <- {a:#x}'))
+    print(instr('SWAP', r1, comment=f'compute {r1} <- ({r1}(3:0), {r1}(7:4))'))
+    print(instr('STS', imm16(addr), r1, check('W', res, addr) + ' check swap nibble result'))
+
+
 ### FLAG TESTING ###
 
 
@@ -340,14 +381,14 @@ if __name__ == '__main__':
     print('; subtract with carry')
     test_sbc(0x80, 1, False)
     print('; generate a carry')
-    test_adc(0xff, 1, False)
+    test_add(0xff, 1)
     print('; make sure carry is used')
     test_sbc(32, 8, True)
 
     print('; subtract immediate with carry')
     test_sbci(0x80, 1, False)
     print('; generate a carry')
-    test_adc(0xff, 1, False)
+    test_add(0xff, 1)
     print('; make sure carry is used')
     test_sbci(32, 8, True)
 
@@ -399,10 +440,25 @@ if __name__ == '__main__':
     print(';')
     print('; check shift operations')
     print(';')
+
     print('; check arithmetic right shift')
+    test_asr(0xAA)
+    test_asr(0x5F)
+
     print('; check logical right shift')
-    print('; check rotate right')
+    test_lsr(0xAA)
+    test_asr(0x5F)
+
+    print('; check rotate right through carry')
+    print('; remove carry')
+    test_add(0, 0)
+    test_ror(0xAA, False)
+    print('; generate a carry')
+    test_add(0xff, 1)
+    test_ror(0xAA, True)
+
     print('; check swap nibbles')
+    test_swap(0xAB)
     print()
 
     print(';')
