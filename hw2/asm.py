@@ -467,12 +467,11 @@ if __name__ == '__main__':
     print('; check compare with carry')
     print('; clear carry')
     test_cp(0, 0)
-    print('; check without carry')
     test_cpc(0, 0)
     test_flag_set('Z')
     print('; generate a carry')
     test_add(0xff, 1)
-    print('; check with carry')
+    print('; make sure carry is used')
     test_cpc(0, 0)
     test_flag_set('N')
     print()
@@ -484,16 +483,21 @@ if __name__ == '__main__':
     print('; add without carry')
     test_add(7, 8)
     test_add(0xf, 1)
+    test_add(0xCD, 0x1f)
     test_add(0, 0)
 
     print('; add with carry')
-    print('; generate a carry')
-    test_adc(0xff, 1, False)
+    print('; clear carry')
+    test_add(0, 0)
+    test_adc(37, 89, False)
+    print('; generate carry')
+    test_add(0xff, 1)
     print('; make sure carry is used')
     test_adc(37, 89, True)
 
     print('; add immediate to word')
     test_adiw(0xBEEF, 1)
+    test_adiw(0xABCD, 0x3F)
     print()
 
     print(';')
@@ -502,11 +506,15 @@ if __name__ == '__main__':
 
     print('; subtract without carry')
     test_sub(56, 99)
+    test_sub(0xAB, 32)
 
     print('; subtract immediate')
-    test_subi(32, 8)
+    test_subi(27, 4)
+    test_subi(8, 9)
 
     print('; subtract with carry')
+    print('; clear carry')
+    test_add(0, 0)
     test_sbc(0x80, 1, False)
     print('; generate a carry')
     test_add(0xff, 1)
@@ -514,6 +522,8 @@ if __name__ == '__main__':
     test_sbc(32, 8, True)
 
     print('; subtract immediate with carry')
+    print('; clear carry')
+    test_add(0, 0)
     test_sbci(0x80, 1, False)
     print('; generate a carry')
     test_add(0xff, 1)
@@ -521,6 +531,7 @@ if __name__ == '__main__':
     test_sbci(32, 8, True)
 
     print('; subtract immediate from word')
+    test_sbiw(0xBEEF, 30)
     test_sbiw(0xABCD, 7)
     print()
 
@@ -589,4 +600,4 @@ if __name__ == '__main__':
     test_swap(0xAB)
     print()
 
-    print(instr('JMP', 'start'))
+    print(instr('JMP', 'start', comment='J jump taken'))
