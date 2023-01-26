@@ -51,8 +51,8 @@ def test_add(a, b, r1='R16', r2='R17', addr=0x1000):
 
     res = (a + b) & 0xFF
 
-    print(instr('LDI', r1, imm8(a), f'load {r1} <- {a}'))
-    print(instr('LDI', r2, imm8(b), f'load {r2} <- {b}'))
+    print(instr('LDI', r1, imm8(a), f'load {r1} <- {a:#x}'))
+    print(instr('LDI', r2, imm8(b), f'load {r2} <- {b:#x}'))
     print(instr('ADD', r1, r2, f'compute {r1} <- {r1} + {r2}'))
     print(instr('STS', imm16(addr), r1, check('W', res, addr) + ' check add result'))
 
@@ -63,8 +63,8 @@ def test_adc(a, b, c, r1='R16', r2='R17', addr=0x1000):
 
     res = (a + b + c) & 0xFF
 
-    print(instr('LDI', r1, imm8(a), f'load {r1} <- {a}'))
-    print(instr('LDI', r2, imm8(b), f'load {r2} <- {b}'))
+    print(instr('LDI', r1, imm8(a), f'load {r1} <- {a:#x}'))
+    print(instr('LDI', r2, imm8(b), f'load {r2} <- {b:#x}'))
     print(instr('ADC', r1, r2, f'compute {r1} <- {r1} + {r2} + C'))
     print(instr('STS', imm16(addr), r1, check('W', res, addr) + ' check add result (w/ carry)'))
 
@@ -80,10 +80,10 @@ def test_adiw(a, k, r1='R24', r2='R25', addr=0x1000):
     res1 = (res & 0x00FF)
     res2 = (res & 0xFF00) >> 8
 
-    print(instr('LDI', r1, imm8(a1), f'load {r1} <- {a1}'))
-    print(instr('LDI', r2, imm8(a2), f'load {r2} <- {a2}'))
+    print(instr('LDI', r1, imm8(a1), f'load {r1} <- {a1:#x}'))
+    print(instr('LDI', r2, imm8(a2), f'load {r2} <- {a2:#x}'))
     print(instr('ADIW', f'{r2}:{r1}', imm8(k),
-               f'compute {r2}:{r1} <- {r2}:{r1} + {k}'))
+               f'compute {r2}:{r1} <- {r2}:{r1} + {k:#x}'))
     print(instr('STS', imm16(addr), r1, check('W', res1, addr) + ' check add result (lower byte)'))
     print(instr('STS', imm16(addr), r2, check('W', res2, addr) + ' check add result (upper byte)'))
 
@@ -93,10 +93,62 @@ def test_sub(a, b, r1='R16', r2='R17', addr=0x1000):
 
     res = (a - b) & 0xFF
 
-    print(instr('LDI', r1, imm8(a), f'load {r1} <- {a}'))
-    print(instr('LDI', r2, imm8(b), f'load {r2} <- {b}'))
-    print(instr('ADD', r1, r2, f'compute {r1} <- {r1} + {r2}'))
-    print(instr('STS', imm16(addr), r1, check('W', res, addr) + ' check add result'))
+    print(instr('LDI', r1, imm8(a), f'load {r1} <- {a:#x}'))
+    print(instr('LDI', r2, imm8(b), f'load {r2} <- {b:#x}'))
+    print(instr('SUB', r1, r2, f'compute {r1} <- {r1} - {r2}'))
+    print(instr('STS', imm16(addr), r1, check('W', res, addr) + ' check sub result'))
+
+def test_subi(a, k, r1='R16', addr=0x1000):
+    assert 0 <= a and a <= 0xFF
+    assert 0 <= k and k <= 0xFF
+
+    res = (a - k) & 0xFF
+
+    print(instr('LDI', r1, imm8(a), f'load {r1} <- {a:#x}'))
+    print(instr('SUBI', r1, imm8(k), f'compute {r1} <- {r1} - {k:#x}'))
+    print(instr('STS', imm16(addr), r1, check('W', res, addr) + ' check sub result'))
+
+def test_sbc(a, b, c, r1='R16', r2='R17', addr=0x1000):
+    assert 0 <= a and a <= 0xFF
+    assert 0 <= b and b <= 0xFF
+    assert isinstance(c, bool)
+
+    res = (a - b - c) & 0xFF
+
+    print(instr('LDI', r1, imm8(a), f'load {r1} <- {a:#x}'))
+    print(instr('LDI', r2, imm8(b), f'load {r2} <- {b:#x}'))
+    print(instr('SBC', r1, r2, f'compute {r1} <- {r1} - {r2} - C'))
+    print(instr('STS', imm16(addr), r1, check('W', res, addr) + ' check sub result (w/ carry)'))
+
+def test_sbci(a, k, c, r1='R16', addr=0x1000):
+    assert 0 <= a and a <= 0xFF
+    assert 0 <= k and k <= 0xFF
+    assert isinstance(c, bool)
+
+    res = (a - k - c) & 0xFF
+
+    print(instr('LDI', r1, imm8(a), f'load {r1} <- {a:#x}'))
+    print(instr('SBCI', r1, imm8(k), f'compute {r1} <- {r1} - {k:#x} - C'))
+    print(instr('STS', imm16(addr), r1, check('W', res, addr) + ' check sub result (w/ carry)'))
+
+def test_sbiw(a, k, r1='R24', r2='R25', addr=0x1000):
+    assert 0 <= a and a <= 0xFFFF
+    assert 0 <= k and k <= 63
+
+    a1 = (a & 0x00FF)
+    a2 = (a & 0xFF00) >> 8
+
+    res = (a - k) & 0xFFFF
+
+    res1 = (res & 0x00FF)
+    res2 = (res & 0xFF00) >> 8
+
+    print(instr('LDI', r1, imm8(a1), f'load {r1} <- {a1:#x}'))
+    print(instr('LDI', r2, imm8(a2), f'load {r2} <- {a2:#x}'))
+    print(instr('SBIW', f'{r2}:{r1}', imm8(k),
+               f'compute {r2}:{r1} <- {r2}:{r1} - {k:#x}'))
+    print(instr('STS', imm16(addr), r1, check('W', res1, addr) + ' check sub result (lower byte)'))
+    print(instr('STS', imm16(addr), r2, check('W', res2, addr) + ' check sub result (upper byte)'))
 
 g_skip_num = 1
 def label_name():
@@ -168,8 +220,37 @@ if __name__ == '__main__':
     test_add(7, 8)
 
     print('; add with carry')
+    print('; generate a carry')
     test_adc(0xff, 1, False)
+    print('; make sure carry is used')
     test_adc(37, 89, True)
 
     print('; add immediate to word')
     test_adiw(0xBEEF, 1)
+
+    print(';')
+    print('; check sub variants')
+    print(';')
+
+    print('; subtract without carry')
+    test_sub(56, 99)
+
+    print('; subtract immediate')
+    test_subi(32, 8)
+
+    print('; subtract with carry')
+    test_sbc(0x80, 1, False)
+    print('; generate a carry')
+    test_adc(0xff, 1, False)
+    print('; make sure carry is used')
+    test_sbc(32, 8, True)
+
+    print('; subtract immediate with carry')
+    test_sbci(0x80, 1, False)
+    print('; generate a carry')
+    test_adc(0xff, 1, False)
+    print('; make sure carry is used')
+    test_sbci(32, 8, True)
+
+    print('; subtract immediate from word')
+    test_sbiw(0xABCD, 7)
