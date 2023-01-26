@@ -87,6 +87,24 @@ def test_adiw(a, k, r1='R24', r2='R25', addr=0x1000):
     print(instr('STS', imm16(addr), r1, check('W', res1, addr) + ' check add result (lower byte)'))
     print(instr('STS', imm16(addr), r2, check('W', res2, addr) + ' check add result (upper byte)'))
 
+def test_inc(a, r1='R16', addr=0x1000):
+    assert 0 <= a and a <= 0xFF
+
+    res = (a + 1) & 0xFF
+
+    print(instr('LDI', r1, imm8(a), f'load {r1} <- {a:#x}'))
+    print(instr('INC', r1, comment=f'compute {r1} <- {r1} + 1'))
+    print(instr('STS', imm16(addr), r1, check('W', res, addr) + ' check increment result'))
+
+def test_dec(a, r1='R16', addr=0x1000):
+    assert 0 <= a and a <= 0xFF
+
+    res = (a - 1) & 0xFF
+
+    print(instr('LDI', r1, imm8(a), f'load {r1} <- {a:#x}'))
+    print(instr('DEC', r1, comment=f'compute {r1} <- {r1} + 1'))
+    print(instr('STS', imm16(addr), r1, check('W', res, addr) + ' check decrement result'))
+
 def test_sub(a, b, r1='R16', r2='R17', addr=0x1000):
     assert 0 <= a and a <= 0xFF
     assert 0 <= b and b <= 0xFF
@@ -254,3 +272,11 @@ if __name__ == '__main__':
 
     print('; subtract immediate from word')
     test_sbiw(0xABCD, 7)
+
+    print(';')
+    print('; check increment/decrement')
+    print(';')
+    test_inc(0)
+    test_inc(0xff)
+    test_dec(0)
+    test_dec(1)
