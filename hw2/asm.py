@@ -181,6 +181,70 @@ def test_neg(a, r1='R16', addr=0x1000):
     print(instr('NEG', r1, comment=f'compute {r1} <- -{r1}'))
     print(instr('STS', imm16(addr), r1, check('W', res, addr) + ' check negation result'))
 
+
+def test_and(a, b, r1='R16', r2='R17', addr=0x1000):
+    assert 0 <= a and a <= 0xFF
+    assert 0 <= b and b <= 0xFF
+
+    res = (a & b) & 0xFF
+
+    print(instr('LDI', r1, imm8(a), f'load {r1} <- {a:#x}'))
+    print(instr('LDI', r2, imm8(b), f'load {r2} <- {b:#x}'))
+    print(instr('AND', r1, r2, f'compute {r1} <- {r1} & {r2}'))
+    print(instr('STS', imm16(addr), r1, check('W', res, addr) + ' check and result'))
+
+def test_andi(a, k, r1='R16', addr=0x1000):
+    assert 0 <= a and a <= 0xFF
+    assert 0 <= k and k <= 0xFF
+
+    res = (a & k) & 0xFF
+
+    print(instr('LDI', r1, imm8(a), f'load {r1} <- {a:#x}'))
+    print(instr('ANDI', r1, imm8(k), f'compute {r1} <- {r1} & {k:#x}'))
+    print(instr('STS', imm16(addr), r1, check('W', res, addr) + ' check and result'))
+
+def test_or(a, b, r1='R16', r2='R17', addr=0x1000):
+    assert 0 <= a and a <= 0xFF
+    assert 0 <= b and b <= 0xFF
+
+    res = (a | b) & 0xFF
+
+    print(instr('LDI', r1, imm8(a), f'load {r1} <- {a:#x}'))
+    print(instr('LDI', r2, imm8(b), f'load {r2} <- {b:#x}'))
+    print(instr('OR', r1, r2, f'compute {r1} <- {r1} | {r2}'))
+    print(instr('STS', imm16(addr), r1, check('W', res, addr) + ' check or result'))
+
+def test_ori(a, k, r1='R16', addr=0x1000):
+    assert 0 <= a and a <= 0xFF
+    assert 0 <= k and k <= 0xFF
+
+    res = (a | k) & 0xFF
+
+    print(instr('LDI', r1, imm8(a), f'load {r1} <- {a:#x}'))
+    print(instr('ORI', r1, imm8(k), f'compute {r1} <- {r1} & {k:#x}'))
+    print(instr('STS', imm16(addr), r1, check('W', res, addr) + ' check or result'))
+
+def test_eor(a, b, r1='R16', r2='R17', addr=0x1000):
+    assert 0 <= a and a <= 0xFF
+    assert 0 <= b and b <= 0xFF
+
+    res = (a ^ b) & 0xFF
+
+    print(instr('LDI', r1, imm8(a), f'load {r1} <- {a:#x}'))
+    print(instr('LDI', r2, imm8(b), f'load {r2} <- {b:#x}'))
+    print(instr('EOR', r1, r2, f'compute {r1} <- {r1} ^ {r2}'))
+    print(instr('STS', imm16(addr), r1, check('W', res, addr) + ' check eor result'))
+
+def test_com(a, r1='R16', addr=0x1000):
+    assert 0 <= a and a <= 0xFF
+
+    res = (~a) & 0xFF
+
+    print(instr('LDI', r1, imm8(a), f'load {r1} <- {a:#x}'))
+    print(instr('COM', r1, comment=f'compute {r1} <- ~{r1}'))
+    print(instr('STS', imm16(addr), r1, check('W', res, addr) + ' check complement result'))
+
+
 ### FLAG TESTING ###
 
 
@@ -261,6 +325,7 @@ if __name__ == '__main__':
 
     print('; add immediate to word')
     test_adiw(0xBEEF, 1)
+    print()
 
     print(';')
     print('; check sub variants')
@@ -288,16 +353,69 @@ if __name__ == '__main__':
 
     print('; subtract immediate from word')
     test_sbiw(0xABCD, 7)
+    print()
 
     print(';')
     print('; check unary arithmetic')
     print(';')
+
     print('; check increment')
     test_inc(0)
     test_inc(0xff)
+
     print('; check decrement')
     test_dec(0)
     test_dec(1)
+
     print('; check negation')
     test_neg(1)
     test_neg(0x80)
+    print()
+
+    print(';')
+    print('; check logic operations')
+    print(';')
+
+    print('; check and')
+    test_and(0xFF, 0xAA)
+
+    print('; check and with immediate')
+    test_andi(0xFF, 0xAA)
+
+    print('; check or')
+    test_or(0xFF, 0xAA)
+
+    print('; check or with immediate')
+    test_ori(0xFF, 0xAA)
+
+    print('; check exclusive or')
+    test_eor(0xFF, 0xAA)
+
+    print('; check complement')
+    test_com(0xAF)
+
+    print()
+
+    print(';')
+    print('; check shift operations')
+    print(';')
+    print('; check arithmetic right shift')
+    print('; check logical right shift')
+    print('; check rotate right')
+    print('; check swap nibbles')
+    print()
+
+    print(';')
+    print('; check T flag operations')
+    print(';')
+    print('; check bit set')
+    print('; check bit load')
+    print()
+
+    print(';')
+    print('; check compare operations')
+    print(';')
+    print('; check compare')
+    print('; check compare with carry')
+    print('; check compare with intermediate')
+    print()
