@@ -1,3 +1,11 @@
+# fibonacci numbers
+def fib(n):
+    curr = 0
+    next = 1
+    for _ in range(n):
+        curr, next = next, curr + next
+    return curr
+
 
 # generate a comment to check data memory read or write result
 def check(op, val, addr):
@@ -7,12 +15,12 @@ def check(op, val, addr):
 
 # format 8-bit immediate
 def imm8(x):
-    return f'${x:02X}'
+    return f'${(x & 0xFF):02X}'
 
 
 # format 16-bit immediate
 def imm16(x):
-    return f'${x:04X}'
+    return f'${(x & 0xFFFF):04X}'
 
 
 # format jump label
@@ -598,6 +606,21 @@ if __name__ == '__main__':
 
     print('; check swap nibbles')
     test_swap(0xAB)
+    print()
+
+    print(';')
+    print('; check fibonacci program')
+    print(';')
+
+    print(instr('LDI', 'R16', imm8(0), f'load R16 <- {0:#x}'))
+    print(instr('LDI', 'R17', imm8(1), f'load R16 <- {1:#x}'))
+    print(instr('MOV', 'R0', 'R16', f'load R0 <- R16'))
+    print(instr('MOV', 'R1', 'R17', f'load R1 <- R17'))
+    for i in range(2, 32):
+        print(instr('MOV', f'R{i}', f'R{i-2}', f'load R{i} <- R{i-2}'))
+        print(instr('ADD', f'R{i}', f'R{i-1}', f'compute R{i} <- R{i} + R{i-1}'))
+    for i in range(32):
+        print(instr('STS', imm16(0x1000), f'R{i}', check('W', fib(i) & 0xFF, 0x1000) + f' check R{i} = fib({i}) % 256'))
     print()
 
     print(instr('JMP', 'start', comment='J jump taken'))
