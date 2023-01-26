@@ -307,15 +307,19 @@ ORG_ADDR_INC  = 0x0010
 def test_flag_set(flag):
     global g_org_addr
     name = label_name()
-    print(instr('BRBS', str(flag_idx[flag]), name, f'J flag {flag} set'))
+    print(instr('BRBC', str(flag_idx[flag]), name, f'branch not taken'))
+    print(instr('NOP', comment='no-op after missed branch'))
+    print(instr('BRBS', str(flag_idx[flag]), name, f'J flag {flag} set so branch taken'))
     print(instr('.ORG', imm16(g_org_addr)))
     print(label(name))
     g_org_addr += ORG_ADDR_INC
 
-def test_flag_clear(flag):
+def test_flag_clr(flag):
     global g_org_addr
     name = label_name()
-    print(instr('BRBC', str(flag_idx[flag]), name, f'J flag {flag} clear'))
+    print(instr('BRBS', str(flag_idx[flag]), name, f'branch not taken'))
+    print(instr('NOP', comment='no-op after missed branch'))
+    print(instr('BRBC', str(flag_idx[flag]), name, f'J flag {flag} clear so branch taken'))
     print(instr('.ORG', imm16(g_org_addr)))
     print(label(name))
     g_org_addr += ORG_ADDR_INC
@@ -323,6 +327,7 @@ def test_flag_clear(flag):
 
 # generate the program
 if __name__ == '__main__':
+    print(label('start'))
     print(';')
     print('; set all flags')
     print(';')
@@ -348,7 +353,24 @@ if __name__ == '__main__':
     print('; check all flags clear')
     print(';')
     for flag in flags:
-        test_flag_clear(flag)
+        test_flag_clr(flag)
+    print()
+
+    print(';')
+    print('; check T flag operations')
+    print(';')
+
+    print('; check bit set')
+    print(instr('LDI', 'R16', imm8(0xFF), f'load R16 <- 0xff'))
+    print(instr('BLD', 'R16', imm8(1), f'load R16(1) <- T'))
+    print(instr('BLD', 'R16', imm8(3), f'load R16(3) <- T'))
+    print(instr('STS', imm16(0x1000), 'R16', check('W', 0xF5, 0x1000) + ' check bit load from T flag result'))
+
+    print('; check bit load')
+    print(instr('BST', 'R16', imm8(0), f'set T <- R16(0)'))
+    test_flag_set('T')
+    print(instr('BST', 'R16', imm8(1), f'set T <- R16(1)'))
+    test_flag_clr('T')
     print()
 
     print(';')
@@ -462,16 +484,11 @@ if __name__ == '__main__':
     print()
 
     print(';')
-    print('; check T flag operations')
-    print(';')
-    print('; check bit set')
-    print('; check bit load')
-    print()
-
-    print(';')
     print('; check compare operations')
     print(';')
     print('; check compare')
     print('; check compare with carry')
     print('; check compare with intermediate')
     print()
+
+    print(instr('JMP', 'start'))
