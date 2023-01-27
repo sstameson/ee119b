@@ -389,7 +389,36 @@ def test_flag_clr(flag):
 
 # generate the program
 if __name__ == '__main__':
-    print(label('start'))
+
+    print(';' * 75)
+    print(';')
+    print('; AVR test program #1')
+    print(';')
+    print('; Hayward Melton')
+    print('; Spiro Stameson')
+    print(';')
+    print('; This a test program for an AVR CPU. This file contains code that')
+    print('; checks all ALU instructions, conditional branches, skip instructions,')
+    print('; and the no-op instruction. There are annotated to enable the')
+    print('; future generation of test vectors.')
+    print(';')
+    print('; `; W <val> <addr>` means that the 8-bit value <val> is written')
+    print('; to the 16-bit address <addr> on the data memory bus')
+    print('; `; R <val> <addr>` means that the 8-bit value <val> is read')
+    print('; from the 16-bit address <addr> on the data memory bus')
+    print('; `; J` means that a jump is taken')
+    print('; `; S` means that the next instruction is skipped')
+    print(';')
+    print('; This is one test program from a two-person group. The second')
+    print('; program contains exhaustive test code for data movement and')
+    print('; flow control instructions')
+    print(';')
+    print(';' * 75)
+
+    print()
+    print()
+    print()
+
     print(';')
     print('; set all flags')
     print(';')
@@ -670,5 +699,3 @@ if __name__ == '__main__':
     for i in range(8):
         print(instr('LDI', f'R{i + 24}', imm8(~(1 << i)), f'load R{i + 24} <- {~(1 << i) & 0xFF:#02x}'))
         skip_clr(f'R{i + 24}', i)
-
-    print(instr('JMP', 'start', comment='J jump taken'))
