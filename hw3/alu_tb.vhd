@@ -86,14 +86,16 @@ begin
              'X';
 
     sum <=
-        std_logic_vector(unsigned("0" & ALUOpA) + unsigned("0" & ALUOpB)) when carry = '0' else
-        std_logic_vector(unsigned("0" & ALUOpA) + unsigned("0" & ALUOpB) + 1);
+        std_logic_vector(unsigned("0" & ALUOpA) + unsigned("0" & FResult))
+            when carry = '0' else
+        std_logic_vector(unsigned("0" & ALUOpA) + unsigned("0" & FResult) + 1);
 
     halfsum <=
         std_logic_vector(unsigned("0" & ALUOpA(halfsize - 1 downto 0)) +
-                         unsigned("0" & ALUOpB(halfsize - 1 downto 0))) when carry = '0' else
+                         unsigned("0" & FResult(halfsize - 1 downto 0)))
+            when carry = '0' else
         std_logic_vector(unsigned("0" & ALUOpA(halfsize - 1 downto 0)) +
-                         unsigned("0" & ALUOpB(halfsize - 1 downto 0)) + 1);
+                         unsigned("0" & FResult(halfsize - 1 downto 0)) + 1);
 
     AResult <= sum(wordsize - 1 downto 0);
 
@@ -230,5 +232,29 @@ begin
             Zero     => mdl_Zero,
             Sign     => mdl_Sign
         );
+
+    process
+        variable i: integer := 0;
+    begin
+
+        while i < 10 loop
+            ALUOpA <= X"7F";
+            ALUOpB <= X"01";
+            Cin    <= '0';
+            FCmd   <= "1010"; -- B
+            CinCmd <= CinCmd_CIN;
+            SCmd   <= SCmd_LEFT;
+            ALUCmd <= ALUCmd_ADDER;
+
+            report "iteration " & to_string(i);
+            i := i + 1;
+
+            wait for 10 ns;
+
+        end loop;
+
+        std.env.stop;
+    end process;
+
 
 end testbench;
