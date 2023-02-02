@@ -150,9 +150,9 @@ end behavioral;
 
 library ieee;
 use ieee.std_logic_1164.all;
-use work.ALUConstants.all;
-
 library osvvm;
+use osvvm.RandomPkg.all;
+use work.ALUConstants.all;
 
 --
 -- ALU_TB
