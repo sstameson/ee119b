@@ -1,5 +1,5 @@
 DIR := /mnt/c/Users/Spiro
-LIB := ./OSVVM/VHDL_LIBS/GHDL-1.0.0
+LIB := ./OSVVM/VHDL_LIBS/GHDL-2.0.0
 
 default: OSVVM
 	ghdl -a --std=08 alu.vhd
