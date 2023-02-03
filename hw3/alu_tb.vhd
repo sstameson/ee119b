@@ -135,7 +135,7 @@ begin
 
     -- overflow if sign of two inputs are the same
     -- and don't match add result
-    Overflow <= (ALUOpA(wordsize - 1) xnor ALUOpB(wordsize - 1)) and
+    Overflow <= (ALUOpA(wordsize - 1) xnor FResult(wordsize - 1)) and
                 (ALUOpA(wordsize - 1) xor  AResult(wordsize - 1));
 
     -- zero flag is set when the result is 0
@@ -150,8 +150,10 @@ end behavioral;
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 library osvvm;
 use osvvm.RandomPkg.all;
+use osvvm.CoveragePkg.all;
 use work.ALUConstants.all;
 
 --
@@ -191,6 +193,8 @@ architecture testbench of ALU_TB is
     signal mdl_Overflow :  std_logic;                                 -- signed overflow
     signal mdl_Zero     :  std_logic;                                 -- result is zero
     signal mdl_Sign     :  std_logic;                                 -- sign of result
+
+    signal AddCov: CoverageIDType;
 begin
 
     -- instantiate Design Under Test
@@ -237,23 +241,58 @@ begin
 
     process
         variable i: integer := 0;
+        variable RandCin, RandFCmd: integer;
+        variable RV: RandomPType;
     begin
+        RV.InitSeed(RV'instance_name);
 
-        while i < 10 loop
-            ALUOpA <= X"7F";
-            ALUOpB <= X"01";
-            Cin    <= '0';
-            FCmd   <= "1010"; -- B
-            CinCmd <= CinCmd_CIN;
-            SCmd   <= SCmd_LEFT;
+        report "seed = " & RV'instance_name;
+
+        AddCov <= NewID("ALU Add Coverage (OpA x OpB x Cin x CinCmd x FCmd)");
+        wait for 0 ns; -- Update AddCov
+
+        -- check big/small operands for all carry modes
+        -- and either inverting or buffering the second operand
+        AddCross(AddCov,
+                 GenBin(0, 2**ALUOpA'length - 1, 4),
+                 GenBin(0, 2**ALUOpB'length - 1, 4),
+                 GenBin(0, 1),
+                 GenBin(0, 2**CinCmd'length - 1),
+                 GenBin(0, 1));
+
+        while not IsCovered(AddCov) loop
+
+            -- test adder
             ALUCmd <= ALUCmd_ADDER;
 
-            report "iteration " & to_string(i);
-            i := i + 1;
+            -- generate arbitrary random operand inputs
+            ALUOpA <= RV.RandSlv(0, 2**ALUOpA'length - 1, ALUOpA'Length);
+            ALUOpB <= RV.RandSlv(0, 2**ALUOpB'length - 1, ALUOpB'Length);
 
-            wait for 10 ns;
+            -- generate random carry in and command
+            RandCin := RV.RandInt(0, 1);
+            Cin    <= '1' when RandCin = 1 else '0';
+            CinCmd <= RV.Randslv(0, 2**CinCmd'length - 1, CinCmd'length);
+
+            -- either buffer or invert second operand
+            -- inverting is used for subtraction
+            RandFCmd := RV.RandInt(0, 1);
+            FCmd   <= "1010" when RandFCmd = 1 else "0101";
+
+            -- shift command has no effect on adder
+            SCmd   <= (others => 'X');
+
+            wait for 1 ns; -- update inputs
+
+            ICover(AddCov, (to_integer(unsigned(ALUOpA)),
+                            to_integer(unsigned(ALUOpB)),
+                            RandCin,
+                            to_integer(unsigned(CinCmd)),
+                            RandFCmd));
 
         end loop;
+
+        WriteBin(AddCov);
 
         std.env.stop;
     end process;
