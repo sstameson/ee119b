@@ -1,10 +1,11 @@
 DIR := /mnt/c/Users/Spiro
+LIB := ./OSVVM/VHDL_LIBS/GHDL-1.0.0
 
 default: OSVVM
 	ghdl -a --std=08 alu.vhd
-	ghdl -a --std=08 -P./OSVVM/VHDL_LIBS/GHDL-1.0.0 alu_tb.vhd
-	ghdl -e --std=08 -P./OSVVM/VHDL_LIBS/GHDL-1.0.0 ALU_TB
-	ghdl -r --std=08 -P./OSVVM/VHDL_LIBS/GHDL-1.0.0 ALU_TB --wave=wave.ghw
+	ghdl -a --std=08 -P$(LIB) alu_tb.vhd
+	ghdl -e --std=08 -P$(LIB) ALU_TB
+	ghdl -r --std=08 -P$(LIB) ALU_TB --wave=wave.ghw
 
 OSVVM:
 	mkdir OSVVM && cd OSVVM && printf "%s\n%s\n" \
