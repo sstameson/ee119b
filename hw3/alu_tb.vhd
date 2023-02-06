@@ -29,32 +29,9 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.ALUConstants.all;
+use work.ALU;
 
-entity ALUModel is
-
-    generic (
-        wordsize : integer := 8      -- default width is 8-bits
-    );
-
-    port(
-        ALUOpA   : in      std_logic_vector(wordsize - 1 downto 0);   -- first operand
-        ALUOpB   : in      std_logic_vector(wordsize - 1 downto 0);   -- second operand
-        Cin      : in      std_logic;                                 -- carry in
-        FCmd     : in      std_logic_vector(3 downto 0);              -- F-Block operation
-        CinCmd   : in      std_logic_vector(1 downto 0);              -- carry in operation
-        SCmd     : in      std_logic_vector(2 downto 0);              -- shift operation
-        ALUCmd   : in      std_logic_vector(1 downto 0);              -- ALU result select
-        Result   : buffer  std_logic_vector(wordsize - 1 downto 0);   -- ALU result
-        Cout     : out     std_logic;                                 -- carry out
-        HalfCout : out     std_logic;                                 -- half carry out
-        Overflow : out     std_logic;                                 -- signed overflow
-        Zero     : out     std_logic;                                 -- result is zero
-        Sign     : out     std_logic                                  -- sign of result
-    );
-
-end ALUModel;
-
-architecture behavioral of ALUModel is
+architecture behavioral of ALU is
     constant halfsize: integer := wordsize / 2;
 
     signal FResult: std_logic_vector(wordsize - 1 downto 0);
@@ -202,7 +179,7 @@ architecture testbench of ALU_TB is
 begin
 
     -- instantiate Design Under Test
-    DUT: entity work.ALU
+    DUT: entity work.ALU(structural)
         generic map (
             wordsize => wordsize
         )
@@ -223,7 +200,7 @@ begin
         );
 
     -- instantiate Behavioral Model
-    MDL: entity work.ALUModel
+    MDL: entity work.ALU(behavioral)
         generic map (
             wordsize => wordsize
         )
