@@ -142,7 +142,10 @@ begin
         end loop;
 
         -- random access
+        -- generate all random pairs of RegASel, RegBSel to make sure
+        -- that indexing is correct
 
+        -- value of the register is just the register index number
         for i in 0 to regcnt - 1 loop
             RegStore <= '1';
             RegIn    <= std_logic_vector(to_unsigned(i, RegIn'length));
