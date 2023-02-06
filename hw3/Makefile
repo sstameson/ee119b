@@ -5,7 +5,13 @@ DIR := /mnt/c/Users/Spiro
 # The OSVVM build script will name this based on your version of GHDL
 LIB := ./OSVVM/VHDL_LIBS/GHDL-2.0.0
 
-default: statusreg
+default: regarray
+
+regarray: OSVVM
+	ghdl -a --std=08 reg.vhd
+	ghdl -a --std=08 -P$(LIB) reg_tb.vhd
+	ghdl -e --std=08 -P$(LIB) RegArray_TB
+	ghdl -r --std=08 -P$(LIB) RegArray_TB --wave=wave.ghw
 
 statusreg: OSVVM
 	ghdl -a --std=08 alu.vhd
@@ -27,4 +33,4 @@ OSVVM:
 clean:
 	rm -f *.zip *.ps *.pdf *.cf *.ghw
 
-.PHONY: clean default alu statusreg
+.PHONY: clean default alu statusreg regarray
