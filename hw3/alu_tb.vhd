@@ -166,7 +166,7 @@ use work.ALUConstants.all;
 --
 
 entity ALU_TB is
-end ALU_TB;
+end entity ALU_TB;
 
 architecture testbench of ALU_TB is
     constant wordsize : integer := 8;

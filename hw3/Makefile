@@ -1,7 +1,15 @@
 DIR := /mnt/c/Users/Spiro
 LIB := ./OSVVM/VHDL_LIBS/GHDL-2.0.0
 
-default: OSVVM
+default: statusreg
+
+statusreg: OSVVM
+	ghdl -a --std=08 alu.vhd
+	ghdl -a --std=08 -P$(LIB) statusreg_tb.vhd
+	ghdl -e --std=08 -P$(LIB) StatusReg_TB
+	ghdl -r --std=08 -P$(LIB) StatusReg_TB --wave=wave.ghw
+
+alu: OSVVM
 	ghdl -a --std=08 alu.vhd
 	ghdl -a --std=08 -P$(LIB) alu_tb.vhd
 	ghdl -e --std=08 -P$(LIB) ALU_TB
@@ -15,4 +23,4 @@ OSVVM:
 clean:
 	rm -f *.zip *.ps *.pdf *.cf *.ghw
 
-.PHONY: clean default
+.PHONY: clean default alu statusreg
