@@ -69,7 +69,7 @@ architecture behavioral of ALUModel is
     signal SCout: std_logic;
 begin
 
-    -- compute FBlock
+    -- compute F-Block result
     FBlock: for i in FResult'range generate
         FResult(i) <= FCmd(0) when ALUOpA(i) = '0' and ALUOpB(i) = '0' else
                       FCmd(1) when ALUOpA(i) = '0' and ALUOpB(i) = '1' else
@@ -85,6 +85,7 @@ begin
              not Cin when CinCmd = CinCmd_CINBAR else
              'X';
 
+    -- compute add result
     sum <=
         std_logic_vector(unsigned("0" & ALUOpA) + unsigned("0" & FResult))
             when carry = '0' else
@@ -244,7 +245,8 @@ begin
 
     process
         variable i: integer := 0;
-        variable RandOpA, RandOpB, RandCin, RandCinCmd, RandFCmd: integer;
+        variable RandOpA, RandOpB, RandCin,
+                 RandCinCmd, RandFCmd, RandSCmd: integer;
     begin
 
         SetTestName("ALU");
@@ -253,7 +255,7 @@ begin
 
         FBlockCov <= NewID("ALU F-Block Coverage (OpA x OpB x FCmd)");
         AddCov    <= NewID("ALU Add Coverage (OpA x OpB x Cin x CinCmd x FCmd)");
-        ShiftCov  <= NewID("ALU Shift Coverage (??)");
+        ShiftCov  <= NewID("ALU Shift Coverage (OpA x Cin x CinCmd x SCmd)");
         FBlockID  <= NewID("ALU FBlock");
         AddID     <= NewID("ALU Add");
         ShiftID   <= NewID("ALU Shift");
@@ -263,6 +265,7 @@ begin
         -- FBlock Testing
         --
 
+        -- check big/small operand for all F-Block modes
         AddCross(FBlockCov, 16,
                  GenBin(0, 2**ALUOpA'length - 1, 4),
                  GenBin(0, 2**ALUOpB'length - 1, 4),
@@ -272,7 +275,7 @@ begin
 
             (RandOpA, RandOpB, RandFCmd) := GetRandPoint(FBlockCov);
 
-            -- test f-block
+            -- test F-Block
             ALUCmd <= ALUCmd_FBLOCK;
 
             -- generate arbitrary random operand inputs
@@ -287,11 +290,11 @@ begin
             CinCmd <= (others => 'X');
             SCmd   <= (others => 'X');
 
-            wait for 1 ns; -- update inputs
+            wait for 1 ns; -- update outputs
 
             -- check result and relevant output flags
-            -- ignore carry and overflow flags
             AffirmIfEqual(FBlockID, dut_Result,   mdl_Result,   "Result, ");
+            AffirmIfEqual(FBlockID, dut_Cout,     mdl_Cout,     "Cout, ");
             AffirmIfEqual(FBlockID, dut_Zero,     mdl_Zero,     "Zero, ");
             AffirmIfEqual(FBlockID, dut_Sign,     mdl_Sign,     "Sign, ");
 
@@ -337,7 +340,7 @@ begin
             -- shift command has no effect on adder
             SCmd   <= (others => 'X');
 
-            wait for 1 ns; -- update inputs
+            wait for 1 ns; -- update outputs
 
             -- check all outputs
             AffirmIfEqual(AddID, dut_Result,   mdl_Result,   "Result, ");
@@ -357,7 +360,48 @@ begin
         -- Shift Testing
         --
 
-        -- TODO
+        -- check big/small operand for all shift and carry modes
+        AddCross(ShiftCov, 16,
+                 GenBin(0, 2**ALUOpA'length - 1, 4),
+                 GenBin(0, 1),
+                 GenBin(0, 2**CinCmd'length - 1),
+                 GenBin(0, 2**SCmd'length - 1));
+
+        while not IsCovered(ShiftCov) loop
+
+            (RandOpA, RandCin, RandCinCmd, RandSCmd) := GetRandPoint(ShiftCov);
+
+            -- test shifter
+            ALUCmd <= ALUCmd_SHIFT;
+
+            -- generate arbitrary random operand input
+            ALUOpA <= std_logic_vector(to_unsigned(RandOpA, ALUOpA'Length));
+            -- second operand has no effect on shifter
+            ALUOpB <= (others => 'X');
+
+            -- generate random carry in and command
+            Cin    <= '1' when RandCin = 1 else '0';
+            CinCmd <= std_logic_vector(to_unsigned(RandCinCmd, CinCmd'length));
+
+            -- generate random shift command
+            SCmd   <= std_logic_vector(to_unsigned(RandSCmd, SCmd'length));
+
+            -- F-Block command has no effect on shifter
+            FCmd   <= (others => 'X');
+
+            wait for 1 ns; -- update outputs
+
+            -- check result and relevant output flags
+            AffirmIfEqual(ShiftID, dut_Result,   mdl_Result,   "Result, ");
+            AffirmIfEqual(ShiftID, dut_Cout,     mdl_Cout,     "Cout, ");
+            AffirmIfEqual(ShiftID, dut_Zero,     mdl_Zero,     "Zero, ");
+            AffirmIfEqual(ShiftID, dut_Sign,     mdl_Sign,     "Sign, ");
+
+            ICover(ShiftCov, (RandOpA, RandCin, RandCinCmd, RandSCmd));
+
+        end loop;
+
+        WriteBin(ShiftCov);
 
         ReportAlerts;
 
