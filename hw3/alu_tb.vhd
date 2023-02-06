@@ -263,11 +263,43 @@ begin
         -- FBlock Testing
         --
 
-        -- TODO
-        -- AddCross(FCov, 16,
-        --          GenBin(0, 2**ALUOpA'length - 1, 4),
-        --          GenBin(0, 2**ALUOpB'length - 1, 4),
-        --          GenBin(0, 2**FCmd'length - 1));
+        AddCross(FBlockCov, 16,
+                 GenBin(0, 2**ALUOpA'length - 1, 4),
+                 GenBin(0, 2**ALUOpB'length - 1, 4),
+                 GenBin(0, 2**FCmd'length - 1));
+
+        while not IsCovered(FBlockCov) loop
+
+            (RandOpA, RandOpB, RandFCmd) := GetRandPoint(FBlockCov);
+
+            -- test f-block
+            ALUCmd <= ALUCmd_FBLOCK;
+
+            -- generate arbitrary random operand inputs
+            ALUOpA <= std_logic_vector(to_unsigned(RandOpA, ALUOpA'Length));
+            ALUOpB <= std_logic_vector(to_unsigned(RandOpB, ALUOpA'Length));
+
+            -- test all command types
+            FCmd   <= std_logic_vector(to_unsigned(RandFCmd, FCmd'length));
+
+            -- carry and shift should have no effect on F-Block
+            Cin    <= 'X';
+            CinCmd <= (others => 'X');
+            SCmd   <= (others => 'X');
+
+            wait for 1 ns; -- update inputs
+
+            -- check result and relevant output flags
+            -- ignore carry and overflow flags
+            AffirmIfEqual(FBlockID, dut_Result,   mdl_Result,   "Result, ");
+            AffirmIfEqual(FBlockID, dut_Zero,     mdl_Zero,     "Zero, ");
+            AffirmIfEqual(FBlockID, dut_Sign,     mdl_Sign,     "Sign, ");
+
+            ICover(FBlockCov, (RandOpA, RandOpB, RandFCmd));
+
+        end loop;
+
+        WriteBin(FBlockCov);
 
         --
         -- Add Testing
@@ -283,6 +315,7 @@ begin
                  GenBin(0, 1));
 
         while not IsCovered(AddCov) loop
+
             (RandOpA, RandOpB, RandCin, RandCinCmd, RandFCmd)
                 := GetRandPoint(AddCov);
 
@@ -306,16 +339,19 @@ begin
 
             wait for 1 ns; -- update inputs
 
-            AffirmIfEqual(AddID, dut_Result, mdl_Result, "Result, ");
-            AffirmIfEqual(AddID, dut_Cout, mdl_Cout, "Cout, ");
+            -- check all outputs
+            AffirmIfEqual(AddID, dut_Result,   mdl_Result,   "Result, ");
+            AffirmIfEqual(AddID, dut_Cout,     mdl_Cout,     "Cout, ");
             AffirmIfEqual(AddID, dut_HalfCout, mdl_HalfCout, "HalfCout, ");
             AffirmIfEqual(AddID, dut_Overflow, mdl_Overflow, "Overflow, ");
-            AffirmIfEqual(AddID, dut_Zero, mdl_Zero, "Zero, ");
-            AffirmIfEqual(AddID, dut_Sign, mdl_Sign, "Sign, ");
+            AffirmIfEqual(AddID, dut_Zero,     mdl_Zero,     "Zero, ");
+            AffirmIfEqual(AddID, dut_Sign,     mdl_Sign,     "Sign, ");
 
             ICover(AddCov, (RandOpA, RandOpB, RandCin, RandCinCmd, RandFCmd));
 
         end loop;
+
+        WriteBin(AddCov);
 
         --
         -- Shift Testing
@@ -323,7 +359,6 @@ begin
 
         -- TODO
 
-        WriteBin(AddCov);
         ReportAlerts;
 
         std.env.stop;
