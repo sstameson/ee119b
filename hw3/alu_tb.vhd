@@ -1,29 +1,14 @@
+---------------------------------------------------------------------------
 --
---  ALUModel
+-- ALU Testbench
 --
---  This is a behavioral ALU model for the CPU.
+-- This file contains the testbench for the ALU subsystem of the AVR CPU.
+-- There is a behavioral implementation of the ALU, which the testbench
+-- uses to compare with the structural implementation. The testbench
+-- covers all F-Block, add, and shift operations with a wide range
+-- of random inputs.
 --
---  Generics:
---    wordsize - width of the ALU in bits (default 8)
---
---  Inputs:
---    ALUOpA   - first operand
---    ALUOpB   - second operand
---    Cin      - carry in (from status register)
---    FCmd     - F-Block operation to perform (4 bits)
---    CinCmd   - adder carry in operation for carry in (2 bits)
---    SCmd     - shift operation to perform (3 bits)
---    ALUCmd   - ALU operation to perform - selects result (2 bits)
---
---  Outputs:
---    Result   - ALU result
---    Cout     - carry out from the operation
---    HalfCOut - half carry out for addition
---    Overflow - signed overflow for addition
---    Zero     - zero result
---    Sign     - result sign (1 negative, 0 positive)
---
-
+---------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;
