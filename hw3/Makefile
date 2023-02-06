@@ -1,4 +1,8 @@
+# Location of the OsvvmLibraries folder
+# Install from here https://github.com/OSVVM/OsvvmLibraries
 DIR := /mnt/c/Users/Spiro
+# Location of the compiled OSVVM libraries
+# The OSVVM build script will name this based on your version of GHDL
 LIB := ./OSVVM/VHDL_LIBS/GHDL-2.0.0
 
 default: statusreg
