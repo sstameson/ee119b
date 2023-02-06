@@ -154,6 +154,7 @@ use ieee.numeric_std.all;
 library osvvm;
 use osvvm.RandomPkg.all;
 use osvvm.CoveragePkg.all;
+use osvvm.AlertLogPkg.all;
 use work.ALUConstants.all;
 
 --
@@ -194,7 +195,9 @@ architecture testbench of ALU_TB is
     signal mdl_Zero     :  std_logic;                                 -- result is zero
     signal mdl_Sign     :  std_logic;                                 -- sign of result
 
-    signal AddCov: CoverageIDType;
+    signal AddCov, FBlockCov, ShiftCov: CoverageIDType;
+
+    signal AddID, FBlockID, ShiftID: AlertLogIDType;
 begin
 
     -- instantiate Design Under Test
@@ -243,8 +246,32 @@ begin
         variable i: integer := 0;
         variable RandOpA, RandOpB, RandCin, RandCinCmd, RandFCmd: integer;
     begin
-        AddCov <= NewID("ALU Add Coverage (OpA x OpB x Cin x CinCmd x FCmd)");
-        wait for 0 ns; -- Update AddCov
+
+        SetTestName("ALU");
+        -- uncomment to log all passing tests
+        -- SetLogEnable(PASSED, true);
+
+        FBlockCov <= NewID("ALU F-Block Coverage (OpA x OpB x FCmd)");
+        AddCov    <= NewID("ALU Add Coverage (OpA x OpB x Cin x CinCmd x FCmd)");
+        ShiftCov  <= NewID("ALU Shift Coverage (??)");
+        FBlockID  <= NewID("ALU FBlock");
+        AddID     <= NewID("ALU Add");
+        ShiftID   <= NewID("ALU Shift");
+        wait for 1 ns; -- Update IDs
+
+        --
+        -- FBlock Testing
+        --
+
+        -- TODO
+        -- AddCross(FCov, 16,
+        --          GenBin(0, 2**ALUOpA'length - 1, 4),
+        --          GenBin(0, 2**ALUOpB'length - 1, 4),
+        --          GenBin(0, 2**FCmd'length - 1));
+
+        --
+        -- Add Testing
+        --
 
         -- check big/small operands for all carry modes
         -- and either inverting or buffering the second operand
@@ -279,14 +306,27 @@ begin
 
             wait for 1 ns; -- update inputs
 
+            AffirmIfEqual(AddID, dut_Result, mdl_Result, "Result, ");
+            AffirmIfEqual(AddID, dut_Cout, mdl_Cout, "Cout, ");
+            AffirmIfEqual(AddID, dut_HalfCout, mdl_HalfCout, "HalfCout, ");
+            AffirmIfEqual(AddID, dut_Overflow, mdl_Overflow, "Overflow, ");
+            AffirmIfEqual(AddID, dut_Zero, mdl_Zero, "Zero, ");
+            AffirmIfEqual(AddID, dut_Sign, mdl_Sign, "Sign, ");
+
             ICover(AddCov, (RandOpA, RandOpB, RandCin, RandCinCmd, RandFCmd));
 
         end loop;
 
+        --
+        -- Shift Testing
+        --
+
+        -- TODO
+
         WriteBin(AddCov);
+        ReportAlerts;
 
         std.env.stop;
     end process;
-
 
 end testbench;
