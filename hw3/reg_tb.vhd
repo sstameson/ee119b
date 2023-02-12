@@ -186,19 +186,19 @@ begin
 
         -- test loading and reading 10 random values for
         -- each of the double width registers
-        for reg in 0 to regcnt/2 - 1 loop
+        for r in 0 to regcnt/2 - 1 loop
             for i in 0 to 9 loop
 
                 ExpectedD := RV.RandSlv(0, 2**ExpectedD'length - 1, ExpectedD'length);
                 RegStore  <= '0';
                 RegDStore <= '1';
                 RegDIn    <= ExpectedD;
-                RegDInSel <= 12;
+                RegDInSel <= r;
                 wait for 25 ns; -- latch new double value
                 RegDStore <= '0';
-                RegASel   <= 24;
-                RegBSel   <= 25;
-                RegDSel   <= 12;
+                RegASel   <= 2*r;
+                RegBSel   <= 2*r + 1;
+                RegDSel   <= r;
                 wait for 10 ns; -- wait for new output
                 AffirmIfEqual(RegD, ExpectedD, "RegD, ");
                 AffirmIfEqual(RegA, ExpectedD(wordsize - 1 downto 0), "RegA, ");
