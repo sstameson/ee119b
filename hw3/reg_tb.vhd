@@ -66,8 +66,10 @@ begin
 
 
     process
+        variable RV: RandomPType;
         variable RandRegA, RandRegB: integer range regcnt - 1 downto 0;
         variable Expected: std_logic_vector(wordsize - 1 downto 0);
+        variable ExpectedD: std_logic_vector(2 * wordsize - 1 downto 0);
     begin
 
         SetTestName("Register Array");
@@ -165,24 +167,46 @@ begin
 
             RegStore <= '0';
             RegASel  <= RandRegA;
-            RegASel  <= RandRegB;
+            RegBSel  <= RandRegB;
             wait for 10 ns; -- wait for new output
-            Expected := std_logic_vector(to_unsigned(RegASel, Expected'length));
+            Expected := std_logic_vector(to_unsigned(RandRegA, Expected'length));
             AffirmIfEqual(RegA, Expected, "RegA, ");
-            Expected := std_logic_vector(to_unsigned(RegBSel, Expected'length));
+            Expected := std_logic_vector(to_unsigned(RandRegB, Expected'length));
             AffirmIfEqual(RegB, Expected, "RegB, ");
 
             ICover(RegCov, (RandRegA, RandRegB));
 
         end loop;
 
-        WriteBin(RegCov);
+        -- WriteBin(RegCov);
 
         --
         -- double width register tests
         --
 
-        -- TODO
+        -- test loading and reading 10 random values for
+        -- each of the double width registers
+        for reg in 0 to regcnt/2 - 1 loop
+            for i in 0 to 9 loop
+
+                ExpectedD := RV.RandSlv(0, 2**ExpectedD'length - 1, ExpectedD'length);
+                RegStore  <= '0';
+                RegDStore <= '1';
+                RegDIn    <= ExpectedD;
+                RegDInSel <= 12;
+                wait for 25 ns; -- latch new double value
+                RegDStore <= '0';
+                RegASel   <= 24;
+                RegBSel   <= 25;
+                RegDSel   <= 12;
+                wait for 10 ns; -- wait for new output
+                AffirmIfEqual(RegD, ExpectedD, "RegD, ");
+                AffirmIfEqual(RegA, ExpectedD(wordsize - 1 downto 0), "RegA, ");
+                AffirmIfEqual(RegB, ExpectedD(2*wordsize - 1 downto wordsize),
+                              "RegB, ");
+
+            end loop;
+        end loop;
 
         ReportAlerts;
 
