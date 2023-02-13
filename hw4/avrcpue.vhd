@@ -35,6 +35,8 @@ entity ControlUnit is
         CinCmd : out std_logic_vector(1 downto 0); -- carry in operation
         SCmd   : out std_logic_vector(2 downto 0); -- shift operation
         ALUCmd : out std_logic_vector(1 downto 0); -- ALU result select
+        ALUImm : out std_logic_vector(7 downto 0); -- ALU immediate
+        OpBSel : out std_logic;                    -- select OpB as reg or imm
 
         -- status flag control signals
         RegMask : out std_logic_vector(7 downto 0); -- write mask
@@ -113,6 +115,15 @@ architecture structural of AVR_CPU is
     constant addrsize: integer := 16;
     constant regcnt: integer   := 32;
 
+    constant C_FLAG: integer := 0;
+    constant Z_FLAG: integer := 1;
+    constant N_FLAG: integer := 2;
+    constant V_FLAG: integer := 3;
+    constant S_FLAG: integer := 4;
+    constant H_FLAG: integer := 5;
+    constant T_FLAG: integer := 6;
+    constant I_FLAG: integer := 7;
+
     --
     -- ALU
     --
@@ -177,6 +188,10 @@ architecture structural of AVR_CPU is
     signal AddrSrcOut : std_logic_vector(addrsize - 1 downto 0);
 begin
 
+    ALUOpA <= RegA;
+    ALUOpB <= RegB when OpBSel = '0' else
+              ALUImm;
+    Cin    <= StatOut(C_FLAG);
     ALU: entity work.ALU
         port map (
             ALUOpA   => ALUOpA  ,
