@@ -297,15 +297,18 @@ begin
             offsetCnt => 1
         )
         port map (
+            -- datapath inputs
             AddrSrc    => DataAddrSrc   ,
+            -- datapath outputs
+            Address    => DataAddress   ,
+            AddrSrcOut => DataAddrSrcOut,
+            -- controls
             SrcSel     => DataSrcSel    ,
             AddrOff    => DataAddrOff   ,
             OffsetSel  => 0             ,
             IncDecSel  => DataIncDecSel ,
             IncDecBit  => 0             ,
-            PrePostSel => DataPrePostSel,
-            Address    => DataAddress   ,
-            AddrSrcOut => DataAddrSrcOut
+            PrePostSel => DataPrePostSel
         );
 
     -- Prog MAU
