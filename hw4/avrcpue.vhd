@@ -13,6 +13,54 @@
 --
 ----------------------------------------------------------------------------
 
+library ieee;
+use ieee.std_logic_1164.all;
+
+entity ControlUnit is
+
+    port (
+        -- program memory data bus
+        ProgDB : in  std_logic_vector(15 downto 0);
+
+        -- system clock
+        clock  : in  std_logic;
+
+        -- control bus inputs
+        Reset  : in  std_logic; -- reset signal (active low)
+        INT0   : in  std_logic; -- interrupt signal (active low)
+        INT1   : in  std_logic; -- interrupt signal (active low)
+
+        -- ALU control signals
+        FCmd   : out std_logic_vector(3 downto 0); -- F-Block operation
+        CinCmd : out std_logic_vector(1 downto 0); -- carry in operation
+        SCmd   : out std_logic_vector(2 downto 0); -- shift operation
+        ALUCmd : out std_logic_vector(1 downto 0); -- ALU result select
+
+        -- status flag control signals
+        RegMask : out std_logic_vector(7 downto 0); -- write mask
+
+        -- register control signals
+        RegInSel  : out integer  range 31 downto 0; -- register to write
+        RegStore  : out std_logic;                  -- register write enable
+        RegASel   : out integer  range 31 downto 0; -- register to read on bus A
+        RegBSel   : out integer  range 31 downto 0; -- register to read on bus B
+        RegDInSel : out integer  range 15 downto 0; -- double-register to write
+        RegDStore : out std_logic;                  -- double-register write enable
+        RegDSel   : out integer  range 15 downto 0; -- double-register to read
+
+        -- memory interface control signals
+        SrcSel      : out integer  range 1 downto 0;     -- address source select bit
+        AddrOff     : out std_logic_vector(15 downto 0); -- address offset
+        IncDecSel   : out std_logic;                     -- increment/decrement control
+        PrePostSel  : out std_logic;                     -- pre/post control
+
+        -- control bus outputs
+        DataWr : out std_logic; -- data memory write enable (active low)
+        DataRd : out std_logic; -- data memory read enable (active low)
+    );
+
+begin
+end entity ControlUnit;
 
 --
 --  AVR_CPU
@@ -62,3 +110,4 @@ entity  AVR_CPU  is
     );
 
 end  AVR_CPU;
+
