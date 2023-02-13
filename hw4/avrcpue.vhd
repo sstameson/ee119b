@@ -242,12 +242,21 @@ begin
             Sign     => Sign
         );
 
+    StatusIn <= "00" & HalfCout &
+                (Sign xor Overflow) &
+                Overflow &
+                Sign &
+                Zero &
+                Cout;
     FLAGS: entity work.StatusReg
         port map (
+            -- datapath inputs
             RegIn   => StatusIn  ,
+            -- datapath outputs
+            RegOut  => StatusOut ,
+            -- controls
             RegMask => StatusMask,
-            clock   => clock     ,
-            RegOut  => StatusOut
+            clock   => clock
         );
 
     -- TODO: support data memory to reg datapath
@@ -319,9 +328,7 @@ begin
             end if;
         end if;
     end process;
-
-    ProgAddrSrc    <= PC;
-
+    ProgAddrSrc <= PC;
     PROG_MAU: entity work.MemUnit
         generic map (
             srcCnt    => 1,
