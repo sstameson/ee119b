@@ -246,25 +246,31 @@ begin
         port map (
             RegIn   => StatusIn  ,
             RegMask => StatusMask,
-            clock   => clock   ,
+            clock   => clock     ,
             RegOut  => StatusOut
         );
 
+    -- TODO: support data memory to reg datapath
+    RegIn  <= RegA;
+    RegDIn <= RegD;
     REGS: entity work.RegArray
         port map (
+            -- datapath inputs
             RegIn     => RegIn    ,
+            RegDIn    => RegDIn   ,
+            clock     => clock    ,
+            -- datapath outputs
+            RegA      => RegA     ,
+            RegB      => RegB     ,
+            RegD      => RegD     ,
+            -- controls
             RegInSel  => RegInSel ,
             RegStore  => RegStore ,
             RegASel   => RegASel  ,
             RegBSel   => RegBSel  ,
-            RegDIn    => RegDIn   ,
             RegDInSel => RegDInSel,
             RegDStore => RegDStore,
-            RegDSel   => RegDSel  ,
-            clock     => clock    ,
-            RegA      => RegA     ,
-            RegB      => RegB     ,
-            RegD      => RegD
+            RegDSel   => RegDSel
         );
 
     -- Data MAU
@@ -273,6 +279,7 @@ begin
     -- X, Y, Z regs + Y or Z with offset
     -- second word of instruction
 
+    -- TODO: data memory datapath
     DATA_MAU: entity work.MemUnit
         generic map (
             srcCnt    => 3,
@@ -304,11 +311,15 @@ begin
                 -- TODO
                 PC <= (others => '0');
             else
-                PC <= ProgAddrSrcOut when ProgPrePostSel = MemUnit_POST else
-                      ProgAddress;
+                if ProgPrePostSel = MemUnit_POST then
+                    PC <= ProgAddrSrcOut;
+                else
+                    PC <= ProgAddress;
+                end if;
             end if;
         end if;
     end process;
+
     ProgAddrSrc    <= PC;
 
     PROG_MAU: entity work.MemUnit
@@ -321,14 +332,14 @@ begin
             AddrSrc    => ProgAddrSrc   ,
             -- datapath outputs
             Address    => ProgAddress   ,
-            AddrSrcOut => ProgAddrSrcOut
+            AddrSrcOut => ProgAddrSrcOut,
             -- controls
             SrcSel     => 0             ,
             AddrOff    => ProgAddrOff   ,
             OffsetSel  => 0             ,
             IncDecSel  => MemUnit_INC   ,
             IncDecBit  => 0             ,
-            PrePostSel => ProgPrePostSel,
+            PrePostSel => ProgPrePostSel
         );
 
     CONTROL: entity work.ControlUnit
