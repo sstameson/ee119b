@@ -36,10 +36,10 @@ entity ControlUnit is
         SCmd   : out std_logic_vector(2 downto 0); -- shift operation
         ALUCmd : out std_logic_vector(1 downto 0); -- ALU result select
         ALUImm : out std_logic_vector(7 downto 0); -- ALU immediate
-        OpBSel : out std_logic;                    -- select OpB as reg or imm
+        OpBImm : out std_logic;                    -- select OpB as reg or imm
 
         -- status flag control signals
-        RegMask : out std_logic_vector(7 downto 0); -- write mask
+        StatusMask : out std_logic_vector(7 downto 0); -- write mask
 
         -- register control signals
         RegInSel  : out integer  range 31 downto 0; -- register to write
@@ -50,11 +50,15 @@ entity ControlUnit is
         RegDStore : out std_logic;                  -- double-register write enable
         RegDSel   : out integer  range 15 downto 0; -- double-register to read
 
-        -- memory interface control signals
-        SrcSel      : out integer  range 1 downto 0;     -- address source select bit
-        AddrOff     : out std_logic_vector(15 downto 0); -- address offset
-        IncDecSel   : out std_logic;                     -- increment/decrement control
-        PrePostSel  : out std_logic;                     -- pre/post control
+        -- data memory interface control signals
+        DataSrcSel     : out integer  range 1 downto 0;     -- address source select bit
+        DataAddrOff    : out std_logic_vector(15 downto 0); -- address offset
+        DataIncDecSel  : out std_logic;                     -- increment/decrement control
+        DataPrePostSel : out std_logic;                     -- pre/post control
+
+        -- program memory interface control signals
+        ProgAddrOff    : out std_logic_vector(15 downto 0); -- address offset
+        ProgPrePostSel : out std_logic;                     -- pre/post control
 
         -- control bus outputs
         DataWr : out std_logic; -- data memory write enable (active low)
@@ -154,10 +158,10 @@ architecture structural of AVR_CPU is
     --
 
     -- inputs
-    signal StatIn   : std_logic_vector(wordsize - 1 downto 0); -- data to write to register
-    signal StatMask : std_logic_vector(wordsize - 1 downto 0); -- write mask
+    signal StatusIn   : std_logic_vector(wordsize - 1 downto 0); -- data to write to register
+    signal StatusMask : std_logic_vector(wordsize - 1 downto 0); -- write mask
     --- outputs
-    signal StatOut  : std_logic_vector(wordsize - 1 downto 0); -- current register value
+    signal StatusOut  : std_logic_vector(wordsize - 1 downto 0); -- current register value
 
     --
     -- RegArray
@@ -203,13 +207,24 @@ architecture structural of AVR_CPU is
     -- outputs
     signal ProgAddress    : std_logic_vector(addrsize - 1 downto 0);
     signal ProgAddrSrcOut : std_logic_vector(addrsize - 1 downto 0);
+
+    --
+    -- Control Unit
+    --
+    signal ALUImm : std_logic_vector(wordsize - 1 downto 0); -- ALU immediate value
+    signal OpBImm : std_logic; -- '1' if ALU OpB is an immediate
+
+    -- stack pointer
+    signal SP: std_logic_vector(addrsize - 1 downto 0);
+
+    -- program counter
+    signal PC: std_logic_vector(addrsize - 1 downto 0);
 begin
 
     ALUOpA <= RegA;
-    -- ALUOpB <= RegB when OpBSel = '0' else
-    --           ALUImm;
-    ALUOpB <= RegB;
-    Cin    <= StatOut(C_FLAG);
+    ALUOpB <= RegB when OpBImm = '0' else
+              ALUImm;
+    Cin    <= StatusOut(C_FLAG);
     ALU: entity work.ALU
         port map (
             ALUOpA   => ALUOpA  ,
@@ -229,10 +244,10 @@ begin
 
     FLAGS: entity work.StatusReg
         port map (
-            RegIn   => StatIn  ,
-            RegMask => StatMask,
+            RegIn   => StatusIn  ,
+            RegMask => StatusMask,
             clock   => clock   ,
-            RegOut  => StatOut
+            RegOut  => StatusOut
         );
 
     REGS: entity work.RegArray
@@ -282,21 +297,82 @@ begin
     -- relative immediate
     -- load next word
 
+    process (clock)
+    begin
+        if rising_edge(clock) then
+            if Reset = '0' then
+                -- TODO
+                PC <= (others => '0');
+            else
+                PC <= ProgAddrSrcOut when ProgPrePostSel = MemUnit_POST else
+                      ProgAddress;
+            end if;
+        end if;
+    end process;
+    ProgAddrSrc    <= PC;
+
     PROG_MAU: entity work.MemUnit
         generic map (
             srcCnt    => 1,
             offsetCnt => 1
         )
         port map (
+            -- datapath inputs
             AddrSrc    => ProgAddrSrc   ,
+            -- datapath outputs
+            Address    => ProgAddress   ,
+            AddrSrcOut => ProgAddrSrcOut
+            -- controls
             SrcSel     => 0             ,
             AddrOff    => ProgAddrOff   ,
             OffsetSel  => 0             ,
             IncDecSel  => MemUnit_INC   ,
             IncDecBit  => 0             ,
             PrePostSel => ProgPrePostSel,
-            Address    => ProgAddress   ,
-            AddrSrcOut => ProgAddrSrcOut
+        );
+
+    CONTROL: entity work.ControlUnit
+        port map (
+            -- control bus inputs
+            ProgDB         => ProgDB        ,
+            clock          => clock         ,
+            Reset          => Reset         ,
+            INT0           => INT0          ,
+            INT1           => INT1          ,
+
+            -- ALU controls
+            FCmd           => FCmd          ,
+            CinCmd         => CinCmd        ,
+            SCmd           => SCmd          ,
+            ALUCmd         => ALUCmd        ,
+            ALUImm         => ALUImm        ,
+            OpBImm         => OpBImm        ,
+
+            -- StatusReg controls
+            StatusMask     => StatusMask    ,
+
+            -- RegArray controls
+            RegInSel       => RegInSel      ,
+            RegStore       => RegStore      ,
+            RegASel        => RegASel       ,
+            RegBSel        => RegBSel       ,
+            RegDInSel      => RegDInSel     ,
+            RegDStore      => RegDStore     ,
+            RegDSel        => RegDSel       ,
+
+            -- Data MemUnit controls
+            DataSrcSel     => DataSrcSel    ,
+            DataAddrOff    => DataAddrOff   ,
+            DataIncDecSel  => DataIncDecSel ,
+            DataPrePostSel => DataPrePostSel,
+
+            -- Program MemUnit Controls
+            ProgAddrOff    => ProgAddrOff   ,
+            ProgPrePostSel => ProgPrePostSel,
+
+            -- control bus outputs
+            DataWr         => DataWr        ,
+            DataRd         => DataRd
         );
 
 end architecture structural;
