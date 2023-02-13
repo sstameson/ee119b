@@ -227,19 +227,22 @@ begin
     Cin    <= StatusOut(C_FLAG);
     ALU: entity work.ALU
         port map (
+            -- datapath inputs
             ALUOpA   => ALUOpA  ,
             ALUOpB   => ALUOpB  ,
             Cin      => Cin     ,
-            FCmd     => FCmd    ,
-            CinCmd   => CinCmd  ,
-            SCmd     => SCmd    ,
-            ALUCmd   => ALUCmd  ,
+            -- datapath outputs
             Result   => Result  ,
             Cout     => Cout    ,
             HalfCout => HalfCout,
             Overflow => Overflow,
             Zero     => Zero    ,
-            Sign     => Sign
+            Sign     => Sign    ,
+            -- controls
+            FCmd     => FCmd    ,
+            CinCmd   => CinCmd  ,
+            SCmd     => SCmd    ,
+            ALUCmd   => ALUCmd
         );
 
     StatusIn <= "00" & HalfCout &
