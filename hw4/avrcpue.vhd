@@ -262,15 +262,13 @@ begin
             clock   => clock
         );
 
-    -- TODO: support data memory to reg datapath
-    RegIn  <= RegA;
-    RegDIn <= RegD;
+    RegIn  <= Result;
+    RegDIn <= DataAddrSrcOut;
     REGS: entity work.RegArray
         port map (
             -- datapath inputs
             RegIn     => RegIn    ,
             RegDIn    => RegDIn   ,
-            clock     => clock    ,
             -- datapath outputs
             RegA      => RegA     ,
             RegB      => RegB     ,
@@ -282,7 +280,8 @@ begin
             RegBSel   => RegBSel  ,
             RegDInSel => RegDInSel,
             RegDStore => RegDStore,
-            RegDSel   => RegDSel
+            RegDSel   => RegDSel  ,
+            clock     => clock
         );
 
     -- Data MAU
@@ -320,7 +319,7 @@ begin
     begin
         if rising_edge(clock) then
             if Reset = '0' then
-                -- TODO
+                -- TODO: what is initial PC?
                 PC <= (others => '0');
             else
                 if ProgPrePostSel = MemUnit_POST then
