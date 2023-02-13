@@ -56,7 +56,7 @@ entity ControlUnit is
 
         -- control bus outputs
         DataWr : out std_logic; -- data memory write enable (active low)
-        DataRd : out std_logic; -- data memory read enable (active low)
+        DataRd : out std_logic  -- data memory read enable (active low)
     );
 
 begin
@@ -87,11 +87,7 @@ end entity ControlUnit;
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.std_logic_arith.all;
-use ieee.numeric_std.all;
-
-library opcodes;
-use opcodes.opcodes.all;
+use work.opcodes.all;
 
 
 entity  AVR_CPU  is
