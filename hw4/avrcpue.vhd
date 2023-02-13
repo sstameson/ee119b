@@ -107,3 +107,133 @@ entity  AVR_CPU  is
 
 end  AVR_CPU;
 
+architecture structural of AVR_CPU is
+
+    constant wordsize: integer := 8;
+    constant addrsize: integer := 16;
+    constant regcnt: integer   := 32;
+
+    --
+    -- ALU
+    --
+
+    -- inputs
+    signal ALUOpA   : std_logic_vector(wordsize - 1 downto 0); -- first operand
+    signal ALUOpB   : std_logic_vector(wordsize - 1 downto 0); -- second operand
+    signal Cin      : std_logic;                    -- carry in
+    signal FCmd     : std_logic_vector(3 downto 0); -- F-Block operation
+    signal CinCmd   : std_logic_vector(1 downto 0); -- carry in operation
+    signal SCmd     : std_logic_vector(2 downto 0); -- shift operation
+    signal ALUCmd   : std_logic_vector(1 downto 0); -- ALU result select
+    -- outputs
+    signal Result   : std_logic_vector(wordsize - 1 downto 0); -- ALU result
+    signal Cout     : std_logic;                    -- carry out
+    signal HalfCout : std_logic;                    -- half carry out
+    signal Overflow : std_logic;                    -- signed overflow
+    signal Zero     : std_logic;                    -- result is zero
+    signal Sign     : std_logic;                    -- sign of result
+
+    --
+    -- StatusReg
+    --
+
+    -- inputs
+    signal StatIn   : std_logic_vector(wordsize - 1 downto 0); -- data to write to register
+    signal StatMask : std_logic_vector(wordsize - 1 downto 0); -- write mask
+    --- outputs
+    signal StatOut  : std_logic_vector(wordsize - 1 downto 0); -- current register value
+
+    --
+    -- RegArray
+    --
+
+    -- inputs
+    signal RegIn     : std_logic_vector(wordsize - 1 downto 0);
+    signal RegInSel  : integer  range regcnt - 1 downto 0;
+    signal RegStore  : std_logic;
+    signal RegASel   : integer  range regcnt - 1 downto 0;
+    signal RegBSel   : integer  range regcnt - 1 downto 0;
+    signal RegDIn    : std_logic_vector(2 * wordsize - 1 downto 0);
+    signal RegDInSel : integer  range regcnt/2 - 1 downto 0;
+    signal RegDStore : std_logic;
+    signal RegDSel   : integer  range regcnt/2 - 1 downto 0;
+    -- outputs
+    signal RegA      : std_logic_vector(wordsize - 1 downto 0);
+    signal RegB      : std_logic_vector(wordsize - 1 downto 0);
+    signal RegD      : std_logic_vector(2 * wordsize - 1 downto 0);
+
+    --
+    -- MemUnit
+    --
+
+    -- inputs
+    signal AddrSrc    : std_logic_vector(2*addrsize - 1 downto 0);
+    signal SrcSel     : integer  range 1 downto 0;
+    signal AddrOff    : std_logic_vector(addrsize - 1 downto 0);
+    signal IncDecSel  : std_logic;
+    signal PrePostSel : std_logic;
+    -- outputs
+    signal Address    : std_logic_vector(addrsize - 1 downto 0);
+    signal AddrSrcOut : std_logic_vector(addrsize - 1 downto 0);
+begin
+
+    ALU: entity work.ALU
+        port map (
+            ALUOpA   => ALUOpA  ,
+            ALUOpB   => ALUOpB  ,
+            Cin      => Cin     ,
+            FCmd     => FCmd    ,
+            CinCmd   => CinCmd  ,
+            SCmd     => SCmd    ,
+            ALUCmd   => ALUCmd  ,
+            Result   => Result  ,
+            Cout     => Cout    ,
+            HalfCout => HalfCout,
+            Overflow => Overflow,
+            Zero     => Zero    ,
+            Sign     => Sign
+        );
+
+    FLAGS: entity work.StatusReg
+        port map (
+            RegIn   => StatIn  ,
+            RegMask => StatMask,
+            clock   => clock   ,
+            RegOut  => StatOut
+        );
+
+    REGS: entity work.RegArray
+        port map (
+            RegIn     => RegIn    ,
+            RegInSel  => RegInSel ,
+            RegStore  => RegStore ,
+            RegASel   => RegASel  ,
+            RegBSel   => RegBSel  ,
+            RegDIn    => RegDIn   ,
+            RegDInSel => RegDInSel,
+            RegDStore => RegDStore,
+            RegDSel   => RegDSel  ,
+            clock     => clock    ,
+            RegA      => RegA     ,
+            RegB      => RegB     ,
+            RegD      => RegD
+        );
+
+    MIU: entity work.MemUnit
+        generic map (
+            srcCnt    => 2,
+            offsetCnt => 1
+        )
+        port map (
+            AddrSrc    => AddrSrc   ,
+            SrcSel     => SrcSel    ,
+            AddrOff    => AddrOff   ,
+            OffsetSel  => 0         ,
+            IncDecSel  => IncDecSel ,
+            IncDecBit  => 0         ,
+            PrePostSel => PrePostSel,
+            Address    => Address   ,
+            AddrSrcOut => AddrSrcOut
+        );
+
+end architecture structural;
