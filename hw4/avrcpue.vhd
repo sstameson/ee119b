@@ -90,6 +90,7 @@ end entity ControlUnit;
 library ieee;
 use ieee.std_logic_1164.all;
 use work.opcodes.all;
+use work.MemUnitConstants.all;
 
 
 entity  AVR_CPU  is
@@ -123,6 +124,10 @@ architecture structural of AVR_CPU is
     constant H_FLAG: integer := 5;
     constant T_FLAG: integer := 6;
     constant I_FLAG: integer := 7;
+
+    constant DataAddr_SP: integer  := 0;
+    constant DataAddr_Reg: integer := 1;
+    constant DataAddr_Mem: integer := 2;
 
     --
     -- ALU
@@ -174,23 +179,36 @@ architecture structural of AVR_CPU is
     signal RegD      : std_logic_vector(2 * wordsize - 1 downto 0);
 
     --
-    -- MemUnit
+    -- Data MemUnit
     --
 
     -- inputs
-    signal AddrSrc    : std_logic_vector(2*addrsize - 1 downto 0);
-    signal SrcSel     : integer  range 1 downto 0;
-    signal AddrOff    : std_logic_vector(addrsize - 1 downto 0);
-    signal IncDecSel  : std_logic;
-    signal PrePostSel : std_logic;
+    signal DataAddrSrc    : std_logic_vector(3*addrsize - 1 downto 0);
+    signal DataSrcSel     : integer  range 2 downto 0;
+    signal DataAddrOff    : std_logic_vector(addrsize - 1 downto 0);
+    signal DataIncDecSel  : std_logic;
+    signal DataPrePostSel : std_logic;
     -- outputs
-    signal Address    : std_logic_vector(addrsize - 1 downto 0);
-    signal AddrSrcOut : std_logic_vector(addrsize - 1 downto 0);
+    signal DataAddress    : std_logic_vector(addrsize - 1 downto 0);
+    signal DataAddrSrcOut : std_logic_vector(addrsize - 1 downto 0);
+
+    --
+    -- Program MemUnit
+    --
+
+    -- inputs
+    signal ProgAddrSrc    : std_logic_vector(addrsize - 1 downto 0);
+    signal ProgAddrOff    : std_logic_vector(addrsize - 1 downto 0);
+    signal ProgPrePostSel : std_logic;
+    -- outputs
+    signal ProgAddress    : std_logic_vector(addrsize - 1 downto 0);
+    signal ProgAddrSrcOut : std_logic_vector(addrsize - 1 downto 0);
 begin
 
     ALUOpA <= RegA;
-    ALUOpB <= RegB when OpBSel = '0' else
-              ALUImm;
+    -- ALUOpB <= RegB when OpBSel = '0' else
+    --           ALUImm;
+    ALUOpB <= RegB;
     Cin    <= StatOut(C_FLAG);
     ALU: entity work.ALU
         port map (
@@ -234,21 +252,51 @@ begin
             RegD      => RegD
         );
 
-    MIU: entity work.MemUnit
+    -- Data MAU
+    -- src could be...
+    -- SP
+    -- X, Y, Z regs + Y or Z with offset
+    -- second word of instruction
+
+    DATA_MAU: entity work.MemUnit
         generic map (
-            srcCnt    => 2,
+            srcCnt    => 3,
             offsetCnt => 1
         )
         port map (
-            AddrSrc    => AddrSrc   ,
-            SrcSel     => SrcSel    ,
-            AddrOff    => AddrOff   ,
-            OffsetSel  => 0         ,
-            IncDecSel  => IncDecSel ,
-            IncDecBit  => 0         ,
-            PrePostSel => PrePostSel,
-            Address    => Address   ,
-            AddrSrcOut => AddrSrcOut
+            AddrSrc    => DataAddrSrc   ,
+            SrcSel     => DataSrcSel    ,
+            AddrOff    => DataAddrOff   ,
+            OffsetSel  => 0             ,
+            IncDecSel  => DataIncDecSel ,
+            IncDecBit  => 0             ,
+            PrePostSel => DataPrePostSel,
+            Address    => DataAddress   ,
+            AddrSrcOut => DataAddrSrcOut
+        );
+
+    -- Prog MAU
+    -- src will always be PC
+    -- PC can be modified with...
+    -- icrement
+    -- relative immediate
+    -- load next word
+
+    PROG_MAU: entity work.MemUnit
+        generic map (
+            srcCnt    => 1,
+            offsetCnt => 1
+        )
+        port map (
+            AddrSrc    => ProgAddrSrc   ,
+            SrcSel     => 0             ,
+            AddrOff    => ProgAddrOff   ,
+            OffsetSel  => 0             ,
+            IncDecSel  => MemUnit_INC   ,
+            IncDecBit  => 0             ,
+            PrePostSel => ProgPrePostSel,
+            Address    => ProgAddress   ,
+            AddrSrcOut => ProgAddrSrcOut
         );
 
 end architecture structural;
