@@ -15,6 +15,7 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use work.MemUnitConstants.all;
 
 entity ControlUnit is
 
@@ -67,6 +68,62 @@ entity ControlUnit is
 
 begin
 end entity ControlUnit;
+
+architecture dataflow of ControlUnit is
+    signal IR: std_logic_vector(15 downto 0);
+begin
+
+    process (clock)
+    begin
+        if rising_edge(clock) then
+            IR <= ProgDB;
+        end if;
+    end process;
+
+    process (all)
+    begin
+
+        --
+        -- assign control signals for a NOP
+        --
+
+        -- ALU controls
+        FCmd           <= (others => '0');
+        CinCmd         <= (others => '0');
+        SCmd           <= (others => '0');
+        ALUCmd         <= (others => '0');
+        ALUImm         <= (others => '0');
+        OpBImm         <= '0';
+
+        -- StatusReg controls
+        StatusMask     <= (others => '0'); -- don't change status flags
+
+        -- RegArray controls
+        RegInSel       <= 0;
+        RegStore       <= '0'; -- don't change registers
+        RegASel        <= 0;
+        RegBSel        <= 0;
+        RegDInSel      <= 0;
+        RegDStore      <= '0'; -- don't change double-registers
+        RegDSel        <= 0;
+
+        -- Data MemUnit controls
+        DataSrcSel     <= 0;
+        DataAddrOff    <= (others => '0');
+        DataIncDecSel  <= '0';
+        DataPrePostSel <= '0';
+
+        -- Program MemUnit controls
+        ProgAddrOff    <= (others => '0'); -- no PC offset
+        ProgPrePostSel <= MemUnit_POST; -- post increment PC
+
+        -- control bus outputs
+        DataWr         <= '1'; -- don't read from memory (active low)
+        DataRd         <= '1'; -- don't write to memory (acive low)
+
+    end process;
+
+end architecture dataflow;
 
 --
 --  AVR_CPU
@@ -220,6 +277,9 @@ architecture structural of AVR_CPU is
     -- program counter
     signal PC: std_logic_vector(addrsize - 1 downto 0);
 begin
+    -- control bus outputs
+    ProgAB <= ProgAddress;
+    DataAB <= DataAddress;
 
     ALUOpA <= RegA;
     ALUOpB <= RegB when OpBImm = '0' else
@@ -322,17 +382,13 @@ begin
     begin
         if rising_edge(clock) then
             if Reset = '0' then
-                -- TODO: what is initial PC?
                 PC <= (others => '0');
             else
-                if ProgPrePostSel = MemUnit_POST then
-                    PC <= ProgAddrSrcOut;
-                else
-                    PC <= ProgAddress;
-                end if;
+                PC <= ProgAddrSrcOut;
             end if;
         end if;
     end process;
+
     ProgAddrSrc <= PC;
     PROG_MAU: entity work.MemUnit
         generic map (
