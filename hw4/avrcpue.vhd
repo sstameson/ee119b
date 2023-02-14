@@ -78,6 +78,8 @@ entity ControlUnit is
         -- decoded values
         DataImm : out std_logic_vector(7 downto 0); -- ALU immediate
         BitIdx  : out std_logic_vector(2 downto 0); -- T flag bit index
+        WordImm : out std_logic_vector(5 downto 0); -- word immediate (adiw/sbiw)
+        MemDisp : out std_logic_vector(5 downto 0); -- memory displacement q
 
         -- ALU control signals
         FCmd   : out std_logic_vector(3 downto 0); -- F-Block operation
@@ -129,6 +131,8 @@ begin
     -- decoded immediates
     DataImm <= IR(11 downto 8) & IR(3 downto 0);
     BitIdx  <= IR(2 downto 0);
+    WordImm <= IR(7 downto 6) & IR(3 downto 0);
+    MemDisp <= IR(13) & IR(11 downto 10) & IR(2 downto 0);
 
     process (all)
     begin
@@ -238,6 +242,8 @@ architecture structural of AVR_CPU is
     --
     signal DataImm : std_logic_vector(wordsize - 1 downto 0); -- ALU immediate value
     signal BitIdx  : std_logic_vector(2 downto 0); -- T flag bit index
+    signal WordImm : std_logic_vector(5 downto 0); -- word immediate (adiw/sbiw)
+    signal MemDisp : std_logic_vector(5 downto 0); -- memory displacement q
 
     --
     -- Datapath Mux Controls
@@ -411,10 +417,19 @@ begin
     -- second word of instruction
 
     -- TODO: data memory datapath
+    -- address souce can be...
+        -- RegD   -- X, Y, or Z reg
+        -- SP     -- this will be an internal register
+        -- ProgDB -- second word of instruction (requires an extra cycle, do we need to latch this??)
+    -- ofset can be...
+        -- zero
+        -- WordImm
+        -- not WordImm
+        -- MemDisp
     DATA_MAU: entity work.MemUnit
         generic map (
             srcCnt    => 3,
-            offsetCnt => 1
+            offsetCnt => 4
         )
         port map (
             -- datapath inputs
@@ -482,6 +497,8 @@ begin
             -- decoded immediates
             DataImm        => DataImm       ,
             BitIdx         => BitIdx        ,
+            WordImm        => WordImm       ,
+            MemDisp        => MemDisp       ,
 
             -- datapath mux controls
             OpBMux         => OpBMux        ,
