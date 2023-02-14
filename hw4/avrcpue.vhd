@@ -93,8 +93,8 @@ entity ControlUnit is
         RegDSel   : out integer  range 15 downto 0; -- double-register to read
 
         -- data memory interface control signals
-        DataSrcSel     : out integer  range 1 downto 0;     -- address source select bit
-        DataAddrOff    : out std_logic_vector(15 downto 0); -- address offset
+        DataSrcSel     : out integer range 2 downto 0;      -- address source select
+        DataOffsetSel  : out integer range 3 downto 0;      -- address offset select
         DataIncDecSel  : out std_logic;                     -- increment/decrement control
         DataPrePostSel : out std_logic;                     -- pre/post control
 
@@ -160,7 +160,7 @@ begin
 
         -- Data MemUnit controls
         DataSrcSel     <= 0;
-        DataAddrOff    <= (others => '0');
+        DataOffsetSel  <= 0;
         DataIncDecSel  <= '0';
         DataPrePostSel <= '0';
 
@@ -302,8 +302,9 @@ architecture structural of AVR_CPU is
 
     -- inputs
     signal DataAddrSrc    : std_logic_vector(3*addrsize - 1 downto 0);
-    signal DataSrcSel     : integer  range 2 downto 0;
-    signal DataAddrOff    : std_logic_vector(addrsize - 1 downto 0);
+    signal DataAddrOff    : std_logic_vector(4*addrsize - 1 downto 0);
+    signal DataSrcSel     : integer range 2 downto 0;
+    signal DataOffsetSel  : integer range 3 downto 0;
     signal DataIncDecSel  : std_logic;
     signal DataPrePostSel : std_logic;
     -- outputs
@@ -403,22 +404,24 @@ begin
             clock     => clock
         );
 
-    -- Data MAU
-    -- src could be...
-    -- SP
-    -- X, Y, Z regs + Y or Z with offset
-    -- second word of instruction
-
     -- TODO: data memory datapath
     -- address souce can be...
         -- RegD   -- X, Y, or Z reg
         -- SP     -- this will be an internal register
         -- ProgDB -- second word of instruction (requires an extra cycle, do we need to latch this??)
-    -- ofset can be...
-        -- zero
-        -- WordImm
-        -- not WordImm
-        -- MemDisp
+
+    -- zero offset
+    DataAddrOff(1*addrsize - 1 downto 0*addrsize)
+        <= (others => '0');
+    -- word immediate for adiw
+    DataAddrOff(2*addrsize - 1 downto 1*addrsize)
+        <= (addrsize - 1 downto WordImm'length => '0') & WordImm;
+    -- word immediate for sbiw
+    DataAddrOff(3*addrsize - 1 downto 2*addrsize)
+        <= not DataAddrOff(2*addrsize - 1 downto 1*addrsize);
+    -- memory displacement for ldd and std
+    DataAddrOff(4*addrsize - 1 downto 3*addrsize)
+        <= (addrsize - 1 downto MemDisp'length => '0') & MemDisp;
     DATA_MAU: entity work.MemUnit
         generic map (
             srcCnt    => 3,
@@ -427,13 +430,13 @@ begin
         port map (
             -- datapath inputs
             AddrSrc    => DataAddrSrc   ,
+            AddrOff    => DataAddrOff   ,
             -- datapath outputs
             Address    => DataAddress   ,
             AddrSrcOut => DataAddrSrcOut,
             -- controls
             SrcSel     => DataSrcSel    ,
-            AddrOff    => DataAddrOff   ,
-            OffsetSel  => 0             ,
+            OffsetSel  => DataOffsetSel ,
             IncDecSel  => DataIncDecSel ,
             IncDecBit  => 0             ,
             PrePostSel => DataPrePostSel
@@ -519,7 +522,7 @@ begin
 
             -- Data MemUnit controls
             DataSrcSel     => DataSrcSel    ,
-            DataAddrOff    => DataAddrOff   ,
+            DataOffsetSel  => DataOffsetSel ,
             DataIncDecSel  => DataIncDecSel ,
             DataPrePostSel => DataPrePostSel,
 
