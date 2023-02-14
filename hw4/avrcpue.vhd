@@ -36,9 +36,14 @@ package ControlConstants is
 
    constant C_FLAG: integer := 0;
 
-   constant DataAddr_SP: integer  := 0;
-   constant DataAddr_Reg: integer := 1;
-   constant DataAddr_Mem: integer := 2;
+   constant DataAddrOff_ZERO : integer := 0;
+   constant DataAddrOff_K    : integer := 1;
+   constant DataAddrOff_KBAR : integer := 2;
+   constant DataAddrOff_Q    : integer := 3;
+
+   constant DataAddr_REG: integer := 0;
+   constant DataAddr_SP: integer  := 1;
+   constant DataAddr_MEM: integer := 2;
 
 end package ControlConstants;
 
