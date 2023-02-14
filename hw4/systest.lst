@@ -1,0 +1,455 @@
+
+AVRASM ver. 1.74  D:\avrwork\systest.asm Wed Jan 23 02:43:09 2008
+
+
+         ; This is the testcode for Homework #4.  It is in AVR assembly so
+         ; that it will be easy to generate the actual testcode.  It was assembled
+         ; targetting an ATMega16.
+         ;
+         ;
+         ; Revision History
+         ;     5/11/00  Glen George      Initial revision (from 4/23/00 version of 
+         ;                               alutest.asm and 5/11/00 version of
+         ;                               memtest.asm).
+         ;     5/13/00  Glen George      Fixed mistakes in BST instructions (wrong
+         ;                               registers).  Fixed some flag and register
+         ;                               value problems.
+         ;     7/27/00  Glen George      Added instructions for Homework #5 (jumps,
+         ;                               calls, etc.).
+         ;     5/16/04  Glen George      Added more testing and updated comments.
+         ;     2/8/06   Glen George      Fixed some mistakes in the comments.
+         ;     1/22/08  Glen George      Changed the code a litte to match up with the
+         ;                               comments and vice-versa.
+         
+         
+         
+          Start:                                  ; start of the test code
+         
+         
+                                                 ;OpA OpB Res    Flags
+000000 9488              BCLR    0                       ; XX  XX  --  -------0
+000001 94f8              BCLR    7                       ; XX  XX  --  0------0
+000002 94c8              BCLR    4                       ; XX  XX  --  0--0---0
+000003 94b8              BCLR    3                       ; XX  XX  --  0--00--0
+000004 9498              BCLR    1                       ; XX  XX  --  0--00-00
+000005 94d8              BCLR    5                       ; XX  XX  --  0-000-00
+000006 94a8              BCLR    2                       ; XX  XX  --  0-000000
+000007 94e8              BCLR    6                       ; XX  XX  --  00000000
+         
+                                                 ;OpA OpB Res    Flags
+000008 9448              BSET    4                       ; XX  XX  --  00010000
+000009 9418              BSET    1                       ; XX  XX  --  00010010
+00000a 9478              BSET    7                       ; XX  XX  --  10010010
+00000b 9408              BSET    0                       ; XX  XX  --  10010011
+00000c 9428              BSET    2                       ; XX  XX  --  10010111
+00000d 9468              BSET    6                       ; XX  XX  --  11010111
+00000e 9458              BSET    5                       ; XX  XX  --  11110111
+00000f 9438              BSET    3                       ; XX  XX  --  11111111
+         
+000010 e000              LDI     R16, 0                  ; need a bunch of 0 values
+000011 2e00              MOV     R0, R16
+000012 2e10              MOV     R1, R16
+000013 2e20              MOV     R2, R16
+000014 2e30              MOV     R3, R16
+000015 2e40              MOV     R4, R16
+000016 2e50              MOV     R5, R16
+000017 2e60              MOV     R6, R16
+000018 2e70              MOV     R7, R16
+         
+                                                 ;OpA OpB Res    Flags
+000019 f807              BLD     R0, 7                   ; 00  XX  80  11111111
+00001a f813              BLD     R1, 3                   ; 00  XX  08  11111111
+00001b f821              BLD     R2, 1                   ; 00  XX  02  11111111
+00001c f836              BLD     R3, 6                   ; 00  XX  40  11111111
+00001d f840              BLD     R4, 0                   ; 00  XX  01  11111111
+00001e f855              BLD     R5, 5                   ; 00  XX  20  11111111
+00001f f864              BLD     R6, 4                   ; 00  XX  10  11111111
+000020 f872              BLD     R7, 2                   ; 00  XX  04  11111111
+         
+000021 ed4f              LDI     R20, $DF                ; initialize for BST
+000022 2e84              MOV     R8, R20
+000023 e044              LDI     R20, $04
+000024 2e94              MOV     R9, R20
+000025 e74f              LDI     R20, $7F
+000026 2ea4              MOV     R10, R20
+000027 e041              LDI     R20, $01
+000028 2eb4              MOV     R11, R20
+000029 ef4d              LDI     R20, $FD
+00002a 2ec4              MOV     R12, R20
+00002b e440              LDI     R20, $40
+00002c 2ed4              MOV     R13, R20
+00002d ef47              LDI     R20, $F7
+00002e 2ee4              MOV     R14, R20
+00002f e140              LDI     R20, $10
+000030 2ef4              MOV     R15, R20
+                                                 ;OpA OpB Res    Flags
+000031 fa85              BST     R8, 5                   ; DF  XX  --  10111111
+000032 fa92              BST     R9, 2                   ; 04  XX  --  11111111
+000033 faa7              BST     R10, 7                  ; 7F  XX  --  10111111
+000034 fab0              BST     R11, 0                  ; 01  XX  --  11111111
+000035 fac1              BST     R12, 1                  ; FD  XX  --  10111111
+000036 fad6              BST     R13, 6                  ; 40  XX  --  11111111
+000037 fae3              BST     R14, 3                  ; F7  XX  --  10111111
+000038 faf4              BST     R15, 4                  ; 10  XX  --  11111111
+         
+000039 ef0f              LDI     R16, $FF                ; initialize for ALU ops
+00003a ef1f              LDI     R17, $FF
+00003b e020              LDI     R18, 0
+00003c e730              LDI     R19, $70
+00003d e040              LDI     R20, 0
+00003e e75e              LDI     R21, $7E
+00003f e76e              LDI     R22, $7E
+000040 e870              LDI     R23, $80
+000041 e485              LDI     R24, $45
+000042 e890              LDI     R25, $80
+000043 efa0              LDI     R26, $F0
+000044 efbf              LDI     R27, $FF
+000045 e5c5              LDI     R28, $55
+000046 eada              LDI     R29, $AA
+000047 e7e0              LDI     R30, $70
+000048 e3ff              LDI     R31, $3F
+         
+                                                 ;OpA OpB Res    Flags
+000049 1f01              ADC     R16, R17                ; FF  FF  FF  11110101
+00004a 1f02              ADC     R16, R18                ; FF  00  00  11100011
+00004b 1f21              ADC     R18, R17                ; 00  FF  00  11100011
+00004c 1f95              ADC     R25, R21                ; 80  7E  FF  11010100
+00004d 1d60              ADC     R22, R0                 ; 7E  80  FE  11010100
+         
+                                                 ;OpA OpB Res    Flags
+00004e 0f95              ADD     R25, R21                ; FF  7E  7D  11100001
+00004f 0f01              ADD     R16, R17                ; 00  FF  FF  11010100
+000050 0f24              ADD     R18, R20                ; 00  00  00  11000010
+000051 0d70              ADD     R23, R0                 ; 80  80  00  11011011
+         
+                                                 ;OpA OpB Res    Flags
+000052 9600              ADIW    R24, $0                 ; 45  00  45  --------
+                                                 ; 7D  XX  7D  11000000
+000053 9650              ADIW    R26, $10                ; F0  10  00  --------
+                                                 ; FF  XX  00  11000011
+          
+                                                 ;OpA OpB Res    Flags
+000054 231c              AND     R17, R28                ; FF  55  55  11000001
+000055 231d              AND     R17, R29                ; 55  AA  00  11000011
+000056 20d0              AND     R13, R0                 ; 40  80  00  11000011
+         
+                                                 ;OpA OpB Res    Flags
+000057 7fcf              ANDI    R28, $FF                ; 55  FF  55  11000001
+000058 7f0f              ANDI    R16, $FF                ; FF  FF  FF  11010101
+000059 7fdf              ANDI    R29, $FF                ; AA  FF  AA  11010101
+         
+                                                 ;OpA OpB Res    Flags
+00005a 9505              ASR     R16                     ; FF  XX  FF  11010101
+00005b 95b5              ASR     R27                     ; 00  XX  00  11000010
+00005c 95e5              ASR     R30                     ; 70  XX  38  11000000
+00005d 9485              ASR     R8                      ; DF  XX  EF  11010101
+         
+                                                 ;OpA OpB Res    Flags
+00005e 9500              COM     R16                     ; FF  XX  00  11000011
+00005f 9500              COM     R16                     ; 00  XX  FF  11010101
+000060 95c0              COM     R28                     ; 55  XX  AA  11010101
+000061 95c0              COM     R28                     ; AA  XX  55  11000001
+         
+                                                 ;OpA OpB Res    Flags
+000062 1710              CP      R17, R16                ; 00  FF  --  11100001
+000063 175a              CP      R21, R26                ; 7E  00  --  11000000
+000064 15f3              CP      R31, R3                 ; 3F  40  --  11010101
+         
+                                                 ;OpA OpB Res    Flags
+000065 0710              CPC     R17, R16                ; 00  FF  --  11100001
+000066 0751              CPC     R21, R17                ; 7E  00  --  11000000
+000067 0715              CPC     R17, R21                ; 00  7E  --  11110101
+000068 0750              CPC     R21, R16                ; 7E  FF  --  11100001
+         
+000069 e4e0              LDI     R30, $40
+00006a e7ff              LDI     R31, $7F
+                                                 ;OpA OpB Res    Flags
+00006b 371f              CPI     R17, $7F                ; 00  7F  --  11110101
+00006c 37e0              CPI     R30, $70                ; 40  70  --  11010101
+00006d 3af0              CPI     R31, $A0                ; 7F  A0  --  11001101
+         
+00006e 2fe3              MOV     R30, R19
+                                                 ;OpA OpB Res    Flags
+00006f 951a              DEC     R17                     ; 00  XX  FF  11010101
+000070 940a              DEC     R0                      ; 80  XX  7F  11011001
+000071 95ea              DEC     R30                     ; 70  XX  6F  11000001
+000072 951a              DEC     R17                     ; FF  XX  FE  11010101
+         
+000073 2f1c              MOV     R17, R28
+                                                 ;OpA OpB Res    Flags
+000074 271d              EOR     R17, R29                ; 55  AA  FF  11010101
+000075 271c              EOR     R17, R28                ; FF  55  AA  11010101
+000076 2721              EOR     R18, R17                ; 00  AA  AA  11010101
+000077 2720              EOR     R18, R16                ; AA  FF  55  11000001
+000078 2788              EOR     R24, R24                ; 45  45  00  11000011
+         
+                                                 ;OpA OpB Res    Flags
+000079 9583              INC     R24                     ; 00  XX  01  11000001
+00007a 9563              INC     R22                     ; FE  XX  FF  11010101
+00007b 9563              INC     R22                     ; FF  XX  00  11000011
+00007c 9403              INC     R0                      ; 7F  XX  80  11001101
+         
+00007d 95aa              DEC     R26
+00007e e8f0              LDI     R31, $80
+                                                 ;OpA OpB Res    Flags
+00007f 95a6              LSR     R26                     ; FF  XX  7F  11011001
+000080 95e6              LSR     R30                     ; 6F  XX  37  11011001
+000081 9546              LSR     R20                     ; 00  XX  00  11000010
+000082 95f6              LSR     R31                     ; 80  XX  40  11000000
+         
+                                                 ;OpA OpB Res    Flags
+000083 9501              NEG     R16                     ; FF  XX  01  11100001
+000084 9561              NEG     R22                     ; 00  XX  00  11000010
+000085 9401              NEG     R0                      ; 80  XX  80  11001101
+000086 9551              NEG     R21                     ; 7E  XX  82  11110101
+         
+                                                 ;OpA OpB Res    Flags
+000087 2b21              OR      R18, R17                ; 55  AA  FF  11110101
+000088 2b2c              OR      R18, R28                ; FF  55  FF  11110101
+000089 2b61              OR      R22, R17                ; 00  AA  AA  11110101
+         
+                                                 ;OpA OpB Res    Flags
+00008a 6f1f              ORI     R17, $FF                ; AA  FF  FF  11110101
+00008b 679d              ORI     R25, $7D                ; 7D  7D  7D  11100001
+         
+                                                 ;OpA OpB Res    Flags
+00008c 9517              ROR     R17                     ; FF  XX  FF  11110101
+00008d 9537              ROR     R19                     ; 70  XX  B8  11101100
+00008e 9507              ROR     R16                     ; 01  XX  00  11111011
+00008f 9407              ROR     R0                      ; 80  XX  C0  11101100
+000090 9507              ROR     R16                     ; 00  XX  00  11100010
+         
+000091 e5f0              LDI     R31, $50
+                                                 ;OpA OpB Res    Flags
+000092 0b01              SBC     R16, R17                ; 00  FF  01  11100001
+000093 47f0              SBCI    R31, $70                ; 50  70  DF  11110101
+000094 0aa4              SBC     R10, R20                ; 7F  00  7E  11000000
+         
+000095 e79f              LDI     R25, $7F
+000096 e781              LDI     R24, $71
+                                                 ;OpA OpB Res    Flags
+000097 47af              SBCI    R26, $7F                ; 7F  7F  00  11000000
+000098 0b91              SBC     R25, R17                ; 7F  FF  80  11000000
+000099 4a80              SBCI    R24, $A0                ; 71  A0  D0  11001101
+         
+00009a e08d              LDI     R24, $0D
+00009b e090              LDI     R25, 0
+                                                 ;OpA OpB Res    Flags
+00009c 9740              SBIW    R24, $10                ; 0D  10  FD  --------
+                                                 ; 00  XX  FF  11010101
+00009d 9700              SBIW    R24, $0                 ; FD  00  FD  --------
+                                                 ; FF  XX  FF  11010100
+         
+00009e e7ef              LDI     R30, $7F
+00009f e7ff              LDI     R31, $7F
+                                                 ;OpA OpB Res    Flags
+0000a0 1b01              SUB     R16, R17                ; 01  FF  02  11100001
+0000a1 1be1              SUB     R30, R17                ; 7F  FF  80  11001101
+0000a2 1bf4              SUB     R31, R20                ; 7F  00  7F  11000000
+         
+0000a3 e5e0              LDI     R30, $50
+0000a4 e7f1              LDI     R31, $71
+                                                 ;OpA OpB Res    Flags
+0000a5 574f              SUBI    R20, $7F                ; 00  7F  81  11110101
+0000a6 57e0              SUBI    R30, $70                ; 50  70  E0  11010101
+0000a7 5af0              SUBI    R31, $A0                ; 71  A0  D1  11001101
+         
+                                                 ;OpA OpB Res    Flags
+0000a8 9552              SWAP    R21                     ; 82  XX  28  11001101
+0000a9 94a2              SWAP    R10                     ; 7E  XX  E7  11001101
+0000aa 95b2              SWAP    R27                     ; 00  XX  00  11001101
+         
+                                                 ; store address registers
+0000ab 93af              PUSH    R26                     ; write 00 @ FFFF
+0000ac 93bf              PUSH    R27                     ; write 00 @ FFFE
+0000ad 93cf              PUSH    R28                     ; write 55 @ FFFD
+0000ae 93df              PUSH    R29                     ; write AA @ FFFC
+0000af 93ef              PUSH    R30                     ; write E0 @ FFFB
+0000b0 93ff              PUSH    R31                     ; write D1 @ FFFA
+                                                 ; pop back into a couple other regs
+0000b1 900f              POP     R0                      ; read D1 @ FFFA
+0000b2 901f              POP     R1                      ; read E0 @ FFFB
+         
+                                                 ; setup addresses for writing
+0000b3 efbf              LDI     R27, $FF                ; X = FFFF
+0000b4 efaf              LDI     R26, $FF
+0000b5 efdf              LDI     R29, $FF                ; Y = FFC0
+0000b6 ecc0              LDI     R28, $C0
+0000b7 e0f0              LDI     R31, $00                ; Z = 0080
+0000b8 e8e0              LDI     R30, $80
+         
+0000b9 9200 5555         STS      $5555, R0              ; write D1 @ 5555
+0000bb 9210 aaaa         STS      $AAAA, R1              ; write E0 @ AAAA
+         
+0000bd 922c              ST       X, R2                  ; write 02 @ FFFF
+0000be 923e              ST      -X, R3                  ; write 40 @ FFFE
+0000bf 924d              ST      X+, R4                  ; write 01 @ FFFE
+0000c0 925d              ST      X+, R5                  ; write 20 @ FFFF
+0000c1 926c              ST       X, R6                  ; write 10 @ 0000
+         
+0000c2 9279              ST      Y+, R7                  ; write 04 @ FFC0
+0000c3 8288              ST       Y, R8                  ; write EF @ FFC1
+0000c4 929a              ST      -Y, R9                  ; write 04 @ FFC0
+0000c5 82a8              ST       Y, R10                 ; write E7 @ FFC0
+0000c6 aebc              STD     Y + 60, R11             ; write 01 @ FFFC
+0000c7 82ca              STD     Y + 2, R12              ; write FD @ FFC2
+0000c8 8ade              STD     Y + 22, R13             ; write 00 @ FFD6
+0000c9 82e9              STD     Y + 1, R14              ; write F7 @ FFC1
+         
+0000ca 92f1              ST      Z+, R15                 ; write 10 @ 0080
+0000cb 8300              ST       Z, R16                 ; write 02 @ 0081
+0000cc 9312              ST      -Z, R17                 ; write FF @ 0080
+0000cd 8320              ST       Z, R18                 ; write FF @ 0080
+0000ce 8f36              STD     Z + 30, R19             ; write B8 @ 009E
+0000cf 8341              STD     Z + 1, R20              ; write 81 @ 0081
+0000d0 af57              STD     Z + 63, R21             ; write 28 @ 00BF
+0000d1 a360              STD     Z + 32, R22             ; write AA @ 00A0
+         
+                                                 ; setup another address for writing
+0000d2 efdf              LDI     R29, $FF                ; Y = FFE0
+0000d3 eec0              LDI     R28, $E0
+         
+0000d4 937a              ST      -Y, R23                 ; write 00 @ FFDF
+0000d5 9389              ST      Y+, R24                 ; write FD @ FFDF
+0000d6 af9f              STD     Y + 63, R25             ; write FF @ 001F
+         
+         
+                                                 ;setup new addresses for reading
+0000d7 e0b0              LDI     R27, 0                  ; X = 0
+0000d8 e0a0              LDI     R26, 0
+0000d9 efdf              LDI     R29, $FF                ; Y = FFFF
+0000da efcf              LDI     R28, $FF
+0000db efff              LDI     R31, $FF                ; Z = FFC0
+0000dc ece0              LDI     R30, $C0
+         
+0000dd 9000 aaaa         LDS     R0, $AAAA               ; read E0 @ AAAA
+0000df 9010 5555         LDS     R1, $5555               ; read D1 @ 5555
+         
+0000e1 907c              LD      R7, X                   ; read 10 @ 0000
+0000e2 909e              LD      R9, -X                  ; read 20 @ FFFF
+0000e3 914d              LD      R20, X+                 ; read 20 @ FFFF
+0000e4 915c              LD      R21, X                  ; read 10 @ 0000
+         
+0000e5 9069              LD      R6, Y+                  ; read 20 @ FFFF
+0000e6 8178              LD      R23, Y                  ; read 10 @ 0000
+0000e7 916a              LD      R22, -Y                 ; read 20 @ FFFF
+0000e8 a0f8              LDD     R15, Y + 32             ; read FF @ 001F
+         
+0000e9 9041              LD      R4, Z+                  ; read 04 @ FFC0
+0000ea 80d0              LD      R13, Z                  ; read EF @ FFC1
+0000eb 9022              LD      R2, -Z                  ; read 04 @ FFC0
+0000ec ad14              LDD     R17, Z + 60             ; read 01 @ FFFC
+         
+         
+          TestJumps:                              ; test unconditional jumping
+         
+0000ed 940c 00f2         JMP     JumpTest                ; just test jumping
+          BackRJump:
+0000ef e56a              LDI     R22, $5A
+0000f0 e57a              LDI     R23, $5A
+0000f1 c002              RJMP    ForwardRJump            ; test a forward RJMP
+          JumpTest:
+0000f2 ea85              LDI     R24, $A5
+0000f3 cffb              RJMP    BackRJump               ; test a backward RJMP
+          ForwardRJump:
+0000f4 efe9              LDI     R30, LOW(IndirJump)     ; finally test an indirect jump
+0000f5 e0f0              LDI     R31, HIGH(IndirJump)
+0000f6 9409              IJMP
+0000f7 e0b0              LDI     R27, 0                  ; should skip these instructions
+0000f8 e0c0              LDI     R28, 0
+          IndirJump:
+         
+         
+          TestCalls:                              ; test subroutine calls
+0000f9 940e 0146         CALL    Subr1                   ; direct subroutine call
+0000fb d04a              RCALL   Subr1                   ; relative direct subroutine call
+0000fc e4e6              LDI     R30, LOW(Subr1)
+0000fd e0f1              LDI     R31, HIGH(Subr1)
+0000fe 9509              ICALL                           ; indirect subroutine call
+         
+         
+          TestBranches:                           ; test some conditional branches
+0000ff 17cb              CP      R28, R27
+000100 f010              BRLO    Branch1                 ; should branch: $7F U< $FF
+000101 940c 00ff         JMP     TestBranches
+          Branch1:
+000103 f3dc              BRLT    TestBranches            ; should not branch: $7F S> $FF
+000104 f3d1              BREQ    TestBranches            ; should not branch: $7F != $FF
+000105 f411              BRNE    Branch2                 ; should branch: $7F != $FF
+000106 940c 00ff         JMP     TestBranches
+          Branch2:
+000108 e659              LDI     R21, $69
+000109 0f55              ADD     R21, R21
+00010a f7a5              BRHC    TestBranches            ; should not branch (HC is set)
+00010b 2bbb              OR      R27, R27                ; this is a negative number
+00010c f012              BRMI    Branch3                 ; should take the branch
+00010d 940c 00ff         JMP     TestBranches
+          Branch3:
+00010f 2bcc              OR      R28, R28                ; this is a positive number
+000110 f372              BRMI    TestBranches            ; should not take the branch
+000111 f412              BRPL    Branch4                 ; now should take it
+000112 940c 00ff         JMP     TestBranches
+          Branch4:
+000114 2bbb              OR      R27, R27                ; this is a negative number
+000115 f74a              BRPL    TestBranches            ; should not take the branch
+000116 1bcb              SUB     R28, R27                ; this generates an overflow
+000117 f013              BRVS    Branch5                 ; so should take the branch
+000118 940c 00ff         JMP     TestBranches
+          Branch5:
+00011a 95ca              DEC     R28                     ; 80 - 1 -> 7F => overflow
+00011b f71b              BRVC    TestBranches            ; should not take the branch
+00011c 30b1              CPI     R27, 1                  ; -1 < 1
+00011d f70c              BRGE    TestBranches            ; so should not take the branch
+00011e 94f8              CLI                             ; clear interrupt flag
+00011f f2ff              BRIE    TestBranches            ; so should not take the branch
+000120 940e 014a         CALL    SubrI                   ; call subroutine that ends with RETI
+000122 f6e7              BRID    TestBranches            ; RETI set I flag, don't branch
+000123 fbe1              BST     R30, 1                  ; set the T flag
+000124 f6d6              BRTC    TestBranches            ; so should not branch
+000125 fbe3              BST     R30, 3                  ; now clear the T flag
+000126 f2c6              BRTS    TestBranches            ; and still should not branch
+000127 0fee              ADD     R30, R30                ; R30 is now $CC (no carry)
+000128 f410              BRSH    Branch6                 ; so should take the branch
+000129 940c 00ff         JMP     TestBranches
+          Branch6:
+00012b 0fee              ADD     R30, R30                ; should set the carry and half carry
+00012c f690              BRSH    TestBranches            ; should not take branch
+00012d f015              BRHS    TestSkips               ; but should take this one
+00012e 940c 00ff         JMP     TestBranches
+         
+         
+          TestSkips:                              ; test skip instructions
+000130 1367              CPSE    R22, R23                ; skip a 1 byte instruction
+000131 cffe              RJMP    TestSkips
+000132 1367              CPSE    R22, R23                ; skip a 2 byte instruction
+000133 940c 0130         JMP     TestSkips
+000135 1368              CPSE    R22, R24                ; don't skip
+000136 e860              LDI     R22, $80
+000137 fd66              SBRC    R22, 6                  ; should skip a 1 byte instruction
+000138 ef6f              LDI     R22, $FF
+000139 fd63              SBRC    R22, 3                  ; should skip a 2 byte instruction
+00013a 940c 0130         JMP     TestSkips
+00013c fd67              SBRC    R22, 7                  ; don't skip
+00013d ea65              LDI     R22, $A5
+00013e ff60              SBRS    R22, 0                  ; should skip a 1 byte instruction
+00013f e060              LDI     R22, 0
+000140 ff65              SBRS    R22, 5                  ; should skip a 2 byte instruction
+000141 940c 0130         JMP     TestSkips
+000143 ff61              SBRS    R22, 1                  ; don't skip
+000144 940c 0000         JMP     Start                   ; start over
+         
+         
+          Subr1:                                  ; the subroutine
+000146 efbf              LDI     R27, $FF
+000147 e7cf              LDI     R28, $7F
+000148 e0d0              LDI     R29, 0
+000149 9508              RET
+         
+         
+          SubrI:                                  ; subroutine ending with RETI
+00014a ef9f              LDI     R25, $FF
+00014b e7af              LDI     R26, $7F
+00014c e6e6              LDI     R30, $66
+00014d 9518              RETI
+
+Assembly complete with no errors.
