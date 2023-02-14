@@ -18,11 +18,6 @@ use ieee.std_logic_1164.all;
 
 package ControlConstants is
 
-   constant RegInMux_ALU : std_logic_vector(1 downto 0) := "00";
-   constant RegInMux_IMM : std_logic_vector(1 downto 0) := "01";
-   constant RegInMux_REG : std_logic_vector(1 downto 0) := "10";
-   constant RegInMux_MEM : std_logic_vector(1 downto 0) := "11";
-
    constant OpBMux_REG : std_logic := '0';
    constant OpBMux_IMM : std_logic := '1';
 
@@ -32,13 +27,11 @@ package ControlConstants is
    constant StatusInMux_ALU : std_logic_vector(1 downto 0) := "11";
 
    constant C_FLAG: integer := 0;
-   constant Z_FLAG: integer := 1;
-   constant N_FLAG: integer := 2;
-   constant V_FLAG: integer := 3;
-   constant S_FLAG: integer := 4;
-   constant H_FLAG: integer := 5;
-   constant T_FLAG: integer := 6;
-   constant I_FLAG: integer := 7;
+
+   constant RegInMux_ALU : std_logic_vector(1 downto 0) := "00";
+   constant RegInMux_IMM : std_logic_vector(1 downto 0) := "01";
+   constant RegInMux_REG : std_logic_vector(1 downto 0) := "10";
+   constant RegInMux_MEM : std_logic_vector(1 downto 0) := "11";
 
    constant DataAddr_SP: integer  := 0;
    constant DataAddr_Reg: integer := 1;
@@ -372,9 +365,9 @@ begin
             clock   => clock
         );
 
-    RegIn  <= Result when RegInMux = RegInMux_ALU else
-              DataImm  when RegInMux = RegInMux_IMM else
-              RegB   when RegInMux = RegInMux_REG else
+    RegIn  <= Result  when RegInMux = RegInMux_ALU else
+              DataImm when RegInMux = RegInMux_IMM else
+              RegB    when RegInMux = RegInMux_REG else
               DataDB;
     RegDIn <= DataAddrSrcOut;
     REGS: entity work.RegArray
