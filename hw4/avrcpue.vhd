@@ -26,6 +26,10 @@ package ControlConstants is
    constant OpBMux_REG : std_logic := '0';
    constant OpBMux_IMM : std_logic := '1';
 
+   constant StatusInMux_CLR : std_logic_vector(1 downto 0) := "00";
+   constant StatusInMux_SET : std_logic_vector(1 downto 0) := "01";
+   constant StatusInMux_TRN : std_logic_vector(1 downto 0) := "10";
+   constant StatusInMux_ALU : std_logic_vector(1 downto 0) := "11";
 
    constant C_FLAG: integer := 0;
    constant Z_FLAG: integer := 1;
@@ -44,7 +48,9 @@ end package ControlConstants;
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.std_match;
 use work.MemUnitConstants.all;
+use work.opcodes.all;
 
 entity ControlUnit is
 
@@ -61,11 +67,13 @@ entity ControlUnit is
         INT1   : in  std_logic; -- interrupt signal (active low)
 
         -- datapath mux controls
-        OpBMux   : out std_logic; -- select ALUOpB as reg or imm
-        RegInMux : out std_logic_vector(1 downto 0); -- select reg input from datapath
+        OpBMux      : out std_logic; -- select ALUOpB as reg or imm
+        StatusInMux : out std_logic_vector(1 downto 0); -- select StatusIn
+        RegInMux    : out std_logic_vector(1 downto 0); -- select reg input from datapath
 
-        -- decoded immediate value
-        OpImm : out std_logic_vector(7 downto 0); -- ALU immediate
+        -- decoded values
+        DataImm : out std_logic_vector(7 downto 0); -- ALU immediate
+        BitIdx  : out std_logic_vector(2 downto 0); -- T flag bit index
 
         -- ALU control signals
         FCmd   : out std_logic_vector(3 downto 0); -- F-Block operation
@@ -115,7 +123,8 @@ begin
     end process;
 
     -- immediate decoder
-    OpImm          <= (others => '0');
+    DataImm <= IR(11 downto 8) & IR(3 downto 0);
+    BitIdx  <= IR(2 downto 0);
 
     process (all)
     begin
@@ -125,8 +134,9 @@ begin
         --
 
         -- datapath mux controls
-        RegInMux       <= (others => '0');
         OpBMux         <= '0';
+        StatusInMux    <= (others => '0');
+        RegInMux       <= (others => '0');
 
         -- ALU controls
         FCmd           <= (others => '0');
@@ -189,6 +199,7 @@ end architecture dataflow;
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 use work.opcodes.all;
 use work.MemUnitConstants.all;
 use work.ControlConstants.all;
@@ -220,14 +231,16 @@ architecture structural of AVR_CPU is
     --
     -- Decoded Immediates
     --
-    signal OpImm  : std_logic_vector(wordsize - 1 downto 0); -- ALU immediate value
+    signal DataImm : std_logic_vector(wordsize - 1 downto 0); -- ALU immediate value
+    signal BitIdx  : std_logic_vector(2 downto 0); -- T flag bit index
 
     --
     -- Datapath Mux Controls
     --
 
-    signal OpBMux   : std_logic;
-    signal RegInMux : std_logic_vector(1 downto 0);
+    signal OpBMux      : std_logic;
+    signal StatusInMux : std_logic_vector(1 downto 0);
+    signal RegInMux    : std_logic_vector(1 downto 0);
 
     --
     -- ALU
@@ -316,7 +329,7 @@ begin
 
     ALUOpA <= RegA;
     ALUOpB <= RegB when OpBMux = OpBMux_REG else
-              OpImm;
+              DataImm;
     Cin    <= StatusOut(C_FLAG);
     ALU: entity work.ALU
         port map (
@@ -338,7 +351,11 @@ begin
             ALUCmd   => ALUCmd
         );
 
-    StatusIn <= "00" & HalfCout &
+    StatusIn <= (others => '0') when StatusInMux = StatusInMux_CLR else
+                (others => '1') when StatusInMux = StatusInMux_SET else
+                "0" & RegA(to_integer(unsigned(BitIdx))) & "000000"
+                                when StatusInMux = StatusInMux_TRN else
+                "00" & HalfCout &
                 (Sign xor Overflow) &
                 Overflow &
                 Sign &
@@ -356,7 +373,7 @@ begin
         );
 
     RegIn  <= Result when RegInMux = RegInMux_ALU else
-              OpImm  when RegInMux = RegInMux_IMM else
+              DataImm  when RegInMux = RegInMux_IMM else
               RegB   when RegInMux = RegInMux_REG else
               DataDB;
     RegDIn <= DataAddrSrcOut;
@@ -456,10 +473,12 @@ begin
             INT1           => INT1          ,
 
             -- immediate decoder
-            OpImm          => OpImm         ,
+            DataImm        => DataImm       ,
+            BitIdx         => BitIdx        ,
 
             -- datapath mux controls
             OpBMux         => OpBMux        ,
+            StatusInMux    => StatusInMux   ,
             RegInMux       => RegInMux      ,
 
             -- ALU controls

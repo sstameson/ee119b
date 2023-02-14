@@ -8,5 +8,8 @@ default:
 	ghdl -e --std=08 AVR_CPU_TB
 	ghdl -r --std=08 AVR_CPU_TB --stop-time=10000ns --wave=wave.ghw
 
+lst2test:
+	echo hello
+
 clean:
-	rm -f *.zip *.ps *.pdf *.cf *.ghw
+	rm -f *.zip *.ps *.pdf *.cf *.ghw lst2test
