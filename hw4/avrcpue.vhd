@@ -15,6 +15,35 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+
+package ControlConstants is
+
+   constant RegInMux_ALU : std_logic_vector(1 downto 0) := "00";
+   constant RegInMux_IMM : std_logic_vector(1 downto 0) := "01";
+   constant RegInMux_REG : std_logic_vector(1 downto 0) := "10";
+   constant RegInMux_MEM : std_logic_vector(1 downto 0) := "11";
+
+   constant OpBMux_REG : std_logic := '0';
+   constant OpBMux_IMM : std_logic := '1';
+
+
+   constant C_FLAG: integer := 0;
+   constant Z_FLAG: integer := 1;
+   constant N_FLAG: integer := 2;
+   constant V_FLAG: integer := 3;
+   constant S_FLAG: integer := 4;
+   constant H_FLAG: integer := 5;
+   constant T_FLAG: integer := 6;
+   constant I_FLAG: integer := 7;
+
+   constant DataAddr_SP: integer  := 0;
+   constant DataAddr_Reg: integer := 1;
+   constant DataAddr_Mem: integer := 2;
+
+end package ControlConstants;
+
+library ieee;
+use ieee.std_logic_1164.all;
 use work.MemUnitConstants.all;
 
 entity ControlUnit is
@@ -31,13 +60,18 @@ entity ControlUnit is
         INT0   : in  std_logic; -- interrupt signal (active low)
         INT1   : in  std_logic; -- interrupt signal (active low)
 
+        -- datapath mux controls
+        OpBMux   : out std_logic; -- select ALUOpB as reg or imm
+        RegInMux : out std_logic_vector(1 downto 0); -- select reg input from datapath
+
+        -- decoded immediate value
+        OpImm : out std_logic_vector(7 downto 0); -- ALU immediate
+
         -- ALU control signals
         FCmd   : out std_logic_vector(3 downto 0); -- F-Block operation
         CinCmd : out std_logic_vector(1 downto 0); -- carry in operation
         SCmd   : out std_logic_vector(2 downto 0); -- shift operation
         ALUCmd : out std_logic_vector(1 downto 0); -- ALU result select
-        ALUImm : out std_logic_vector(7 downto 0); -- ALU immediate
-        OpBImm : out std_logic;                    -- select OpB as reg or imm
 
         -- status flag control signals
         StatusMask : out std_logic_vector(7 downto 0); -- write mask
@@ -80,6 +114,9 @@ begin
         end if;
     end process;
 
+    -- immediate decoder
+    OpImm          <= (others => '0');
+
     process (all)
     begin
 
@@ -87,13 +124,15 @@ begin
         -- assign control signals for a NOP
         --
 
+        -- datapath mux controls
+        RegInMux       <= (others => '0');
+        OpBMux         <= '0';
+
         -- ALU controls
         FCmd           <= (others => '0');
         CinCmd         <= (others => '0');
         SCmd           <= (others => '0');
         ALUCmd         <= (others => '0');
-        ALUImm         <= (others => '0');
-        OpBImm         <= '0';
 
         -- StatusReg controls
         StatusMask     <= (others => '0'); -- don't change status flags
@@ -152,6 +191,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use work.opcodes.all;
 use work.MemUnitConstants.all;
+use work.ControlConstants.all;
 
 
 entity  AVR_CPU  is
@@ -177,18 +217,17 @@ architecture structural of AVR_CPU is
     constant addrsize: integer := 16;
     constant regcnt: integer   := 32;
 
-    constant C_FLAG: integer := 0;
-    constant Z_FLAG: integer := 1;
-    constant N_FLAG: integer := 2;
-    constant V_FLAG: integer := 3;
-    constant S_FLAG: integer := 4;
-    constant H_FLAG: integer := 5;
-    constant T_FLAG: integer := 6;
-    constant I_FLAG: integer := 7;
+    --
+    -- Decoded Immediates
+    --
+    signal OpImm  : std_logic_vector(wordsize - 1 downto 0); -- ALU immediate value
 
-    constant DataAddr_SP: integer  := 0;
-    constant DataAddr_Reg: integer := 1;
-    constant DataAddr_Mem: integer := 2;
+    --
+    -- Datapath Mux Controls
+    --
+
+    signal OpBMux   : std_logic;
+    signal RegInMux : std_logic_vector(1 downto 0);
 
     --
     -- ALU
@@ -265,12 +304,6 @@ architecture structural of AVR_CPU is
     signal ProgAddress    : std_logic_vector(addrsize - 1 downto 0);
     signal ProgAddrSrcOut : std_logic_vector(addrsize - 1 downto 0);
 
-    --
-    -- Control Unit
-    --
-    signal ALUImm : std_logic_vector(wordsize - 1 downto 0); -- ALU immediate value
-    signal OpBImm : std_logic; -- '1' if ALU OpB is an immediate
-
     -- stack pointer
     signal SP: std_logic_vector(addrsize - 1 downto 0);
 
@@ -282,8 +315,8 @@ begin
     DataAB <= DataAddress;
 
     ALUOpA <= RegA;
-    ALUOpB <= RegB when OpBImm = '0' else
-              ALUImm;
+    ALUOpB <= RegB when OpBMux = OpBMux_REG else
+              OpImm;
     Cin    <= StatusOut(C_FLAG);
     ALU: entity work.ALU
         port map (
@@ -322,7 +355,10 @@ begin
             clock   => clock
         );
 
-    RegIn  <= Result;
+    RegIn  <= Result when RegInMux = RegInMux_ALU else
+              OpImm  when RegInMux = RegInMux_IMM else
+              RegB   when RegInMux = RegInMux_REG else
+              DataDB;
     RegDIn <= DataAddrSrcOut;
     REGS: entity work.RegArray
         port map (
@@ -419,13 +455,18 @@ begin
             INT0           => INT0          ,
             INT1           => INT1          ,
 
+            -- immediate decoder
+            OpImm          => OpImm         ,
+
+            -- datapath mux controls
+            OpBMux         => OpBMux        ,
+            RegInMux       => RegInMux      ,
+
             -- ALU controls
             FCmd           => FCmd          ,
             CinCmd         => CinCmd        ,
             SCmd           => SCmd          ,
             ALUCmd         => ALUCmd        ,
-            ALUImm         => ALUImm        ,
-            OpBImm         => OpBImm        ,
 
             -- StatusReg controls
             StatusMask     => StatusMask    ,
