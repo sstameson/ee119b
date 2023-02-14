@@ -23,6 +23,9 @@ package ControlConstants is
    constant RegInMux_REG : std_logic_vector(1 downto 0) := "10";
    constant RegInMux_MEM : std_logic_vector(1 downto 0) := "11";
 
+   constant RegDInMux_SRC : std_logic := '0';
+   constant RegDInMux_ADR : std_logic := '1';
+
    constant OpBMux_REG : std_logic := '0';
    constant OpBMux_IMM : std_logic := '1';
 
@@ -70,6 +73,7 @@ entity ControlUnit is
         OpBMux      : out std_logic; -- select ALUOpB as reg or imm
         StatusInMux : out std_logic_vector(1 downto 0); -- select StatusIn
         RegInMux    : out std_logic_vector(1 downto 0); -- select reg input from datapath
+        RegDInMux   : out std_logic; -- select double reg input from datapath
 
         -- decoded values
         DataImm : out std_logic_vector(7 downto 0); -- ALU immediate
@@ -122,7 +126,7 @@ begin
         end if;
     end process;
 
-    -- immediate decoder
+    -- decoded immediates
     DataImm <= IR(11 downto 8) & IR(3 downto 0);
     BitIdx  <= IR(2 downto 0);
 
@@ -137,6 +141,7 @@ begin
         OpBMux         <= '0';
         StatusInMux    <= (others => '0');
         RegInMux       <= (others => '0');
+        RegDInMux      <= '0';
 
         -- ALU controls
         FCmd           <= (others => '0');
@@ -241,6 +246,7 @@ architecture structural of AVR_CPU is
     signal OpBMux      : std_logic;
     signal StatusInMux : std_logic_vector(1 downto 0);
     signal RegInMux    : std_logic_vector(1 downto 0);
+    signal RegDInMux   : std_logic;
 
     --
     -- ALU
@@ -372,11 +378,12 @@ begin
             clock   => clock
         );
 
-    RegIn  <= Result when RegInMux = RegInMux_ALU else
-              DataImm  when RegInMux = RegInMux_IMM else
-              RegB   when RegInMux = RegInMux_REG else
+    RegIn  <= Result  when RegInMux = RegInMux_ALU else
+              DataImm when RegInMux = RegInMux_IMM else
+              RegB    when RegInMux = RegInMux_REG else
               DataDB;
-    RegDIn <= DataAddrSrcOut;
+    RegDIn <= DataAddrSrcOut when RegDInMux = RegDInMux_SRC else
+              DataAddress;
     REGS: entity work.RegArray
         port map (
             -- datapath inputs
@@ -472,7 +479,7 @@ begin
             INT0           => INT0          ,
             INT1           => INT1          ,
 
-            -- immediate decoder
+            -- decoded immediates
             DataImm        => DataImm       ,
             BitIdx         => BitIdx        ,
 
@@ -480,6 +487,7 @@ begin
             OpBMux         => OpBMux        ,
             StatusInMux    => StatusInMux   ,
             RegInMux       => RegInMux      ,
+            RegDInMux      => RegDInMux     ,
 
             -- ALU controls
             FCmd           => FCmd          ,
