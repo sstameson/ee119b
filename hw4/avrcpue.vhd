@@ -133,8 +133,8 @@ entity ControlUnit is
         ProgPrePostSel : out std_logic;                -- pre/post control
 
         -- control bus outputs
-        DataWr : out std_logic; -- data memory write enable (active low)
-        DataRd : out std_logic  -- data memory read enable (active low)
+        DataWrEn : out std_logic; -- data memory write enable
+        DataRdEn : out std_logic  -- data memory read enable
     );
 
 begin
@@ -223,8 +223,8 @@ begin
         ProgPrePostSel <= MemUnit_POST;
 
         -- control bus outputs
-        DataWr         <= '1'; -- don't read from memory (active low)
-        DataRd         <= '1'; -- don't write to memory (acive low)
+        DataWrEn       <= '0'; -- don't read from memory
+        DataRdEn       <= '0'; -- don't write to memory
 
     end process;
 
@@ -302,6 +302,13 @@ architecture structural of AVR_CPU is
     signal RegDInMux   : std_logic;
     signal PCMux       : std_logic_vector(1 downto 0);
     signal SPMux       : std_logic;
+
+    --
+    -- Control Bus Outputs
+    --
+
+    signal DataWrEn : std_logic;
+    signal DataRdEn : std_logic;
 
     --
     -- ALU
@@ -391,6 +398,10 @@ begin
     -- control bus outputs
     ProgAB <= ProgAddress;
     DataAB <= DataAddress;
+    DataWr <= not DataWrEn;
+    DataRd <= not DataRdEn;
+    DataDB <= RegA when DataWrEn = '1' else
+              (others => 'Z');
 
     ALUOpA <= RegA;
     ALUOpB <= RegB when OpBMux = OpBMux_REG else
@@ -611,8 +622,8 @@ begin
             ProgPrePostSel => ProgPrePostSel,
 
             -- control bus outputs
-            DataWr         => DataWr        ,
-            DataRd         => DataRd
+            DataWrEn       => DataWrEn      ,
+            DataRdEn       => DataRdEn
         );
 
 end architecture structural;
