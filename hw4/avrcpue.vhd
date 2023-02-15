@@ -18,32 +18,37 @@ use ieee.std_logic_1164.all;
 
 package ControlConstants is
 
-   constant RegInMux_ALU : std_logic_vector(1 downto 0) := "00";
-   constant RegInMux_IMM : std_logic_vector(1 downto 0) := "01";
-   constant RegInMux_REG : std_logic_vector(1 downto 0) := "10";
-   constant RegInMux_MEM : std_logic_vector(1 downto 0) := "11";
+    constant CYCLE1 : std_logic_vector(3 downto 0) := "0001";
+    constant CYCLE2 : std_logic_vector(3 downto 0) := "0010";
+    constant CYCLE3 : std_logic_vector(3 downto 0) := "0100";
+    constant CYCLE4 : std_logic_vector(3 downto 0) := "1000";
 
-   constant RegDInMux_SRC : std_logic := '0';
-   constant RegDInMux_ADR : std_logic := '1';
+    constant RegInMux_ALU : std_logic_vector(1 downto 0) := "00";
+    constant RegInMux_IMM : std_logic_vector(1 downto 0) := "01";
+    constant RegInMux_REG : std_logic_vector(1 downto 0) := "10";
+    constant RegInMux_MEM : std_logic_vector(1 downto 0) := "11";
 
-   constant OpBMux_REG : std_logic := '0';
-   constant OpBMux_IMM : std_logic := '1';
+    constant RegDInMux_SRC : std_logic := '0';
+    constant RegDInMux_ADR : std_logic := '1';
 
-   constant StatusInMux_CLR : std_logic_vector(1 downto 0) := "00";
-   constant StatusInMux_SET : std_logic_vector(1 downto 0) := "01";
-   constant StatusInMux_TRN : std_logic_vector(1 downto 0) := "10";
-   constant StatusInMux_ALU : std_logic_vector(1 downto 0) := "11";
+    constant OpBMux_REG : std_logic := '0';
+    constant OpBMux_IMM : std_logic := '1';
 
-   constant C_FLAG: integer := 0;
+    constant StatusInMux_CLR : std_logic_vector(1 downto 0) := "00";
+    constant StatusInMux_SET : std_logic_vector(1 downto 0) := "01";
+    constant StatusInMux_TRN : std_logic_vector(1 downto 0) := "10";
+    constant StatusInMux_ALU : std_logic_vector(1 downto 0) := "11";
 
-   constant DataOffsetSel_ZERO : integer := 0;
-   constant DataOffsetSel_K    : integer := 1;
-   constant DataOffsetSel_KBAR : integer := 2;
-   constant DataOffsetSel_Q    : integer := 3;
+    constant C_FLAG: integer := 0;
 
-   constant DataSrcSel_REG: integer := 0;
-   constant DataSrcSel_SP: integer  := 1;
-   constant DataSrcSel_MEM: integer := 2;
+    constant DataOffsetSel_ZERO : integer := 0;
+    constant DataOffsetSel_K    : integer := 1;
+    constant DataOffsetSel_KBAR : integer := 2;
+    constant DataOffsetSel_Q    : integer := 3;
+
+    constant DataSrcSel_REG: integer := 0;
+    constant DataSrcSel_SP: integer  := 1;
+    constant DataSrcSel_MEM: integer := 2;
 
 end package ControlConstants;
 
@@ -52,6 +57,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.std_match;
 use work.MemUnitConstants.all;
 use work.opcodes.all;
+use work.ControlConstants.all;
 
 entity ControlUnit is
 
@@ -66,6 +72,9 @@ entity ControlUnit is
         Reset  : in  std_logic; -- reset signal (active low)
         INT0   : in  std_logic; -- interrupt signal (active low)
         INT1   : in  std_logic; -- interrupt signal (active low)
+
+        -- PC control signals
+        LastCycle : buffer std_logic;
 
         -- datapath mux controls
         OpBMux      : out std_logic; -- select ALUOpB as reg or imm
@@ -116,13 +125,29 @@ begin
 end entity ControlUnit;
 
 architecture dataflow of ControlUnit is
+    signal nextstate : std_logic_vector(3 downto 0);
+    signal state     : std_logic_vector(3 downto 0);
+
     signal IR: std_logic_vector(15 downto 0);
 begin
+
+    nextstate <= CYCLE1 when LastCycle = '1' else
+                 CYCLE2 when state = CYCLE1  else
+                 CYCLE3 when state = CYCLE2  else
+                 CYCLE4;
+    process (clock)
+    begin
+        if rising_edge(clock) then
+            state <= nextstate;
+        end if;
+    end process;
 
     process (clock)
     begin
         if rising_edge(clock) then
-            IR <= ProgDB;
+            if LastCycle = '1' then
+                IR <= ProgDB;
+            end if;
         end if;
     end process;
 
@@ -138,6 +163,9 @@ begin
         --
         -- assign control signals for a NOP
         --
+
+        -- PC control signals
+        LastCycle <= '1'; -- NOP is only one cycle
 
         -- datapath mux controls
         OpBMux      <= '0';
@@ -242,6 +270,11 @@ architecture structural of AVR_CPU is
     signal BitIdx  : std_logic_vector(2 downto 0); -- T flag bit index
     signal WordImm : std_logic_vector(5 downto 0); -- word immediate (adiw/sbiw)
     signal MemDisp : std_logic_vector(5 downto 0); -- memory displacement q
+
+    --
+    -- PC control signals
+    --
+    signal LastCycle : std_logic;
 
     --
     -- Datapath Mux Controls
@@ -472,7 +505,9 @@ begin
             if Reset = '0' then
                 PC <= (others => '0');
             else
-                PC <= ProgAddrSrcOut;
+                if LastCycle = '1' then
+                    PC <= ProgAddrSrcOut;
+                end if;
             end if;
         end if;
     end process;
@@ -512,6 +547,9 @@ begin
             BitIdx         => BitIdx        ,
             WordImm        => WordImm       ,
             MemDisp        => MemDisp       ,
+
+            -- PC control signals
+            LastCycle      => LastCycle     ,
 
             -- datapath mux controls
             OpBMux         => OpBMux        ,
