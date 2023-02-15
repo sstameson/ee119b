@@ -44,6 +44,9 @@ package ControlConstants is
     constant PCMux_MEM : std_logic_vector(1 downto 0) := "10";
     constant PCMux_NOP : std_logic_vector(1 downto 0) := "11";
 
+    constant SPMux_NXT : std_logic := '0';
+    constant SPMux_NOP : std_logic := '1';
+
     constant I_FLAG: integer := 7;
     constant T_FLAG: integer := 6;
     constant H_FLAG: integer := 5;
@@ -91,6 +94,7 @@ entity ControlUnit is
         RegInMux    : out std_logic_vector(1 downto 0); -- select reg input from datapath
         RegDInMux   : out std_logic; -- select double reg input from datapath
         PCMux       : out std_logic_vector(1 downto 0); -- select next PC
+        SPMux       : out std_logic; -- select next SP
 
         -- decoded values
         DataImm : out std_logic_vector(7 downto 0); -- ALU immediate
@@ -186,6 +190,7 @@ begin
         RegInMux    <= (others => '0');
         RegDInMux   <= '0';
         PCMux       <= PCMux_INC;
+        SPMux       <= SPMux_NOP;
 
         -- ALU controls
         FCmd           <= (others => '0');
@@ -296,6 +301,7 @@ architecture structural of AVR_CPU is
     signal RegInMux    : std_logic_vector(1 downto 0);
     signal RegDInMux   : std_logic;
     signal PCMux       : std_logic_vector(1 downto 0);
+    signal SPMux       : std_logic;
 
     --
     -- ALU
@@ -462,6 +468,11 @@ begin
         if rising_edge(clock) then
             if Reset = '0' then
                 SP <= (others => '1');
+            else
+                case SPMux is
+                    when SPMux_NXT => SP <= DataAddrSrcOut;
+                    when others    => SP <= SP;
+                end case;
             end if;
         end if;
     end process;
@@ -567,6 +578,7 @@ begin
             RegInMux       => RegInMux      ,
             RegDInMux      => RegDInMux     ,
             PCMux          => PCMux         ,
+            SPMux          => SPMux         ,
 
             -- ALU controls
             FCmd           => FCmd          ,
