@@ -107,14 +107,16 @@ entity ControlUnit is
         RegDSel   : out integer  range 15 downto 0; -- double-register to read
 
         -- data memory interface control signals
-        DataSrcSel     : out integer range 2 downto 0;      -- address source select
-        DataOffsetSel  : out integer range 3 downto 0;      -- address offset select
-        DataIncDecSel  : out std_logic;                     -- increment/decrement control
-        DataPrePostSel : out std_logic;                     -- pre/post control
+        DataSrcSel     : out integer range 2 downto 0; -- address source select
+        DataOffsetSel  : out integer range 3 downto 0; -- address offset select
+        DataIncDecSel  : out std_logic;                -- increment/decrement control
+        DataPrePostSel : out std_logic;                -- pre/post control
 
         -- program memory interface control signals
-        ProgAddrOff    : out std_logic_vector(15 downto 0); -- address offset
-        ProgPrePostSel : out std_logic;                     -- pre/post control
+        ProgSrcSel     : out integer range 0 downto 0; -- address source select
+        ProgOffsetSel  : out integer range 0 downto 0; -- address offset select
+        ProgIncDecSel  : out std_logic;                -- increment/decrement control
+        ProgPrePostSel : out std_logic;                -- pre/post control
 
         -- control bus outputs
         DataWr : out std_logic; -- data memory write enable (active low)
@@ -198,8 +200,10 @@ begin
         DataPrePostSel <= '0';
 
         -- Program MemUnit controls
-        ProgAddrOff    <= (others => '0'); -- no PC offset
-        ProgPrePostSel <= MemUnit_POST; -- post increment PC
+        ProgSrcSel     <= 0;
+        ProgOffsetSel  <= 0;
+        ProgIncDecSel  <= MenUnit_INC;
+        ProgPrePostSel <= MemUnit_POST;
 
         -- control bus outputs
         DataWr         <= '1'; -- don't read from memory (active low)
@@ -356,6 +360,9 @@ architecture structural of AVR_CPU is
     -- inputs
     signal ProgAddrSrc    : std_logic_vector(addrsize - 1 downto 0);
     signal ProgAddrOff    : std_logic_vector(addrsize - 1 downto 0);
+    signal ProgSrcSel     : integer range 0 downto 0;
+    signal ProgOffsetSel  : integer range 0 downto 0;
+    signal ProgIncDecSel  : std_logic;
     signal ProgPrePostSel : std_logic;
     -- outputs
     signal ProgAddress    : std_logic_vector(addrsize - 1 downto 0);
@@ -513,6 +520,7 @@ begin
     end process;
 
     ProgAddrSrc <= PC;
+    ProgAddrOff <= (others => '0');
     PROG_MAU: entity work.MemUnit
         generic map (
             srcCnt    => 1,
@@ -521,14 +529,14 @@ begin
         port map (
             -- datapath inputs
             AddrSrc    => ProgAddrSrc   ,
+            AddrOff    => ProgAddrOff   ,
             -- datapath outputs
             Address    => ProgAddress   ,
             AddrSrcOut => ProgAddrSrcOut,
             -- controls
-            SrcSel     => 0             ,
-            AddrOff    => ProgAddrOff   ,
-            OffsetSel  => 0             ,
-            IncDecSel  => MemUnit_INC   ,
+            SrcSel     => ProgSrcSel    ,
+            OffsetSel  => ProgOffsetSel ,
+            IncDecSel  => ProgIncDecSel ,
             IncDecBit  => 0             ,
             PrePostSel => ProgPrePostSel
         );
@@ -582,7 +590,9 @@ begin
             DataPrePostSel => DataPrePostSel,
 
             -- Program MemUnit Controls
-            ProgAddrOff    => ProgAddrOff   ,
+            ProgSrcSel     => ProgSrcSel    ,
+            ProgOffsetSel  => ProgOffsetSel ,
+            ProgIncDecSel  => ProgIncDecSel ,
             ProgPrePostSel => ProgPrePostSel,
 
             -- control bus outputs
