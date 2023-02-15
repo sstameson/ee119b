@@ -223,6 +223,7 @@ begin
         ProgPrePostSel <= MemUnit_POST;
 
         -- control bus outputs
+        -- TODO: Should these be registered?
         DataWrEn       <= '0'; -- don't read from memory
         DataRdEn       <= '0'; -- don't write to memory
 
