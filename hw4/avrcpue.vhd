@@ -400,7 +400,7 @@ begin
     DataAB <= DataAddress;
     DataWr <= not DataWrEn;
     DataRd <= not DataRdEn;
-    DataDB <= RegA when DataWrEn = '1' else
+    DataDB <= RegB when DataWrEn = '1' else
               (others => 'Z');
 
     ALUOpA <= RegA;
