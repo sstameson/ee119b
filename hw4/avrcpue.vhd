@@ -39,6 +39,11 @@ package ControlConstants is
     constant StatusInMux_TRN : std_logic_vector(1 downto 0) := "10";
     constant StatusInMux_ALU : std_logic_vector(1 downto 0) := "11";
 
+    constant PCMux_INC : std_logic_vector(1 downto 0) := "00";
+    constant PCMux_REL : std_logic_vector(1 downto 0) := "01";
+    constant PCMux_MEM : std_logic_vector(1 downto 0) := "10";
+    constant PCMux_NOP : std_logic_vector(1 downto 0) := "11";
+
     constant C_FLAG: integer := 0;
 
     constant DataOffsetSel_ZERO : integer := 0;
@@ -73,14 +78,12 @@ entity ControlUnit is
         INT0   : in  std_logic; -- interrupt signal (active low)
         INT1   : in  std_logic; -- interrupt signal (active low)
 
-        -- PC control signals
-        LastCycle : buffer std_logic;
-
         -- datapath mux controls
         OpBMux      : out std_logic; -- select ALUOpB as reg or imm
         StatusInMux : out std_logic_vector(1 downto 0); -- select StatusIn
         RegInMux    : out std_logic_vector(1 downto 0); -- select reg input from datapath
         RegDInMux   : out std_logic; -- select double reg input from datapath
+        PCMux       : out std_logic_vector(1 downto 0); -- select next PC
 
         -- decoded values
         DataImm : out std_logic_vector(7 downto 0); -- ALU immediate
@@ -127,6 +130,7 @@ begin
 end entity ControlUnit;
 
 architecture dataflow of ControlUnit is
+    signal LastCycle : std_logic;
     signal nextstate : std_logic_vector(3 downto 0);
     signal state     : std_logic_vector(3 downto 0);
 
@@ -166,7 +170,7 @@ begin
         -- assign control signals for a NOP
         --
 
-        -- PC control signals
+        -- state machine control signals
         LastCycle <= '1'; -- NOP is only one cycle
 
         -- datapath mux controls
@@ -174,6 +178,7 @@ begin
         StatusInMux <= (others => '0');
         RegInMux    <= (others => '0');
         RegDInMux   <= '0';
+        PCMux       <= PCMux_INC;
 
         -- ALU controls
         FCmd           <= (others => '0');
@@ -202,7 +207,7 @@ begin
         -- Program MemUnit controls
         ProgSrcSel     <= 0;
         ProgOffsetSel  <= 0;
-        ProgIncDecSel  <= MenUnit_INC;
+        ProgIncDecSel  <= MemUnit_INC;
         ProgPrePostSel <= MemUnit_POST;
 
         -- control bus outputs
@@ -276,11 +281,6 @@ architecture structural of AVR_CPU is
     signal MemDisp : std_logic_vector(5 downto 0); -- memory displacement q
 
     --
-    -- PC control signals
-    --
-    signal LastCycle : std_logic;
-
-    --
     -- Datapath Mux Controls
     --
 
@@ -288,6 +288,7 @@ architecture structural of AVR_CPU is
     signal StatusInMux : std_logic_vector(1 downto 0);
     signal RegInMux    : std_logic_vector(1 downto 0);
     signal RegDInMux   : std_logic;
+    signal PCMux       : std_logic_vector(1 downto 0);
 
     --
     -- ALU
@@ -453,7 +454,7 @@ begin
     begin
         if rising_edge(clock) then
             if Reset = '0' then
-                SP <= (others => '0');
+                SP <= (others => '1');
             end if;
         end if;
     end process;
@@ -499,27 +500,24 @@ begin
             PrePostSel => DataPrePostSel
         );
 
-    -- Prog MAU
-    -- src will always be PC
-    -- PC can be modified with...
-    -- icrement
-    -- relative immediate
-    -- load next word
-
     process (clock)
     begin
         if rising_edge(clock) then
             if Reset = '0' then
                 PC <= (others => '0');
             else
-                if LastCycle = '1' then
-                    PC <= ProgAddrSrcOut;
-                end if;
+                case PCMux is
+                    when PCMux_INC => PC <= ProgAddrSrcOut;
+                    when PCMux_REL => PC <= ProgAddress;
+                    when PCMux_MEM => PC <= ProgDB;
+                    when others    => PC <= PC;
+                end case;
             end if;
         end if;
     end process;
 
     ProgAddrSrc <= PC;
+    -- TODO: need to decode different offsets for PC
     ProgAddrOff <= (others => '0');
     PROG_MAU: entity work.MemUnit
         generic map (
@@ -556,14 +554,12 @@ begin
             WordImm        => WordImm       ,
             MemDisp        => MemDisp       ,
 
-            -- PC control signals
-            LastCycle      => LastCycle     ,
-
             -- datapath mux controls
             OpBMux         => OpBMux        ,
             StatusInMux    => StatusInMux   ,
             RegInMux       => RegInMux      ,
             RegDInMux      => RegDInMux     ,
+            PCMux          => PCMux         ,
 
             -- ALU controls
             FCmd           => FCmd          ,
