@@ -36,14 +36,14 @@ package ControlConstants is
 
    constant C_FLAG: integer := 0;
 
-   constant DataAddrOff_ZERO : integer := 0;
-   constant DataAddrOff_K    : integer := 1;
-   constant DataAddrOff_KBAR : integer := 2;
-   constant DataAddrOff_Q    : integer := 3;
+   constant DataOffsetSel_ZERO : integer := 0;
+   constant DataOffsetSel_K    : integer := 1;
+   constant DataOffsetSel_KBAR : integer := 2;
+   constant DataOffsetSel_Q    : integer := 3;
 
-   constant DataAddr_REG: integer := 0;
-   constant DataAddr_SP: integer  := 1;
-   constant DataAddr_MEM: integer := 2;
+   constant DataSrcSel_REG: integer := 0;
+   constant DataSrcSel_SP: integer  := 1;
+   constant DataSrcSel_MEM: integer := 2;
 
 end package ControlConstants;
 
@@ -140,10 +140,10 @@ begin
         --
 
         -- datapath mux controls
-        OpBMux         <= '0';
-        StatusInMux    <= (others => '0');
-        RegInMux       <= (others => '0');
-        RegDInMux      <= '0';
+        OpBMux      <= '0';
+        StatusInMux <= (others => '0');
+        RegInMux    <= (others => '0');
+        RegDInMux   <= '0';
 
         -- ALU controls
         FCmd           <= (others => '0');
@@ -409,12 +409,24 @@ begin
             clock     => clock
         );
 
-    -- TODO: data memory datapath
-    -- address souce can be...
-        -- RegD   -- X, Y, or Z reg
-        -- SP     -- this will be an internal register
-        -- ProgDB -- second word of instruction (requires an extra cycle, do we need to latch this??)
+    process (clock)
+    begin
+        if rising_edge(clock) then
+            if Reset = '0' then
+                SP <= (others => '0');
+            end if;
+        end if;
+    end process;
 
+    -- X, Y, or Z reg
+    DataAddrSrc(1*addrsize - 1 downto 0*addrsize)
+        <= RegD;
+    -- stack pointer
+    DataAddrSrc(2*addrsize - 1 downto 1*addrsize)
+        <= SP;
+    -- second word of instruction
+    DataAddrSrc(3*addrsize - 1 downto 2*addrsize)
+        <= ProgDB;
     -- zero offset
     DataAddrOff(1*addrsize - 1 downto 0*addrsize)
         <= (others => '0');
