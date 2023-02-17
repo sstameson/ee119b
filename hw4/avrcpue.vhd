@@ -31,6 +31,9 @@ package ControlConstants is
     constant RegDInMux_SRC : std_logic := '0';
     constant RegDInMux_ADR : std_logic := '1';
 
+    constant OpAMux_REG  : std_logic := '0';
+    constant OpAMux_ZERO : std_logic := '1';
+
     constant OpBMux_REG : std_logic := '0';
     constant OpBMux_IMM : std_logic := '1';
 
@@ -56,6 +59,19 @@ package ControlConstants is
     constant Z_FLAG: integer := 1;
     constant C_FLAG: integer := 0;
 
+    constant FCmd_ZERO : std_logic_vector(3 downto 0) := "0000";
+    constant FCmd_ONE  : std_logic_vector(3 downto 0) := "1111";
+    constant FCmd_B    : std_logic_vector(3 downto 0) := "1010";
+    constant FCmd_NOTB : std_logic_vector(3 downto 0) := "0101";
+    constant FCmd_NOTA : std_logic_vector(3 downto 0) := "0011";
+    constant FCmd_AND  : std_logic_vector(3 downto 0) := "1000";
+    constant FCmd_OR   : std_logic_vector(3 downto 0) := "1110";
+    constant FCmd_EOR  : std_logic_vector(3 downto 0) := "0110";
+
+    constant StatusMask_ARITH: std_logic_vector(7 downto 0) := "00111111";
+    constant StatusMask_LOGIC: std_logic_vector(7 downto 0) := "00011110";
+    constant StatusMask_SHIFT: std_logic_vector(7 downto 0) := "00011111";
+
     constant DataOffsetSel_ZERO : integer := 0;
     constant DataOffsetSel_K    : integer := 1;
     constant DataOffsetSel_KBAR : integer := 2;
@@ -69,8 +85,9 @@ end package ControlConstants;
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.std_match;
+use ieee.numeric_std.all;
 use work.MemUnitConstants.all;
+use work.ALUConstants.all;
 use work.opcodes.all;
 use work.ControlConstants.all;
 
@@ -88,7 +105,9 @@ entity ControlUnit is
         INT0   : in  std_logic; -- interrupt signal (active low)
         INT1   : in  std_logic; -- interrupt signal (active low)
 
+
         -- datapath mux controls
+        OpAMux      : out std_logic; -- select ALUOpA as reg or zero
         OpBMux      : out std_logic; -- select ALUOpB as reg or imm
         StatusInMux : out std_logic_vector(1 downto 0); -- select StatusIn
         RegInMux    : out std_logic_vector(1 downto 0); -- select reg input from datapath
@@ -146,6 +165,10 @@ architecture dataflow of ControlUnit is
     signal state     : std_logic_vector(3 downto 0);
 
     signal IR: std_logic_vector(15 downto 0);
+
+    signal R1    : integer range 31 downto 0;
+    signal R1Imm : integer range 31 downto 0; -- bound must include zero for metavalue detection
+    signal R2    : integer range 31 downto 0;
 begin
 
     nextstate <= CYCLE1 when LastCycle = '1' else
@@ -174,6 +197,11 @@ begin
     WordImm <= IR(7 downto 6) & IR(3 downto 0);
     MemDisp <= IR(13) & IR(11 downto 10) & IR(2 downto 0);
 
+    -- decoded register indicies
+    R1    <= to_integer(unsigned(IR(8 downto 4)));
+    R1Imm <= to_integer(unsigned("1" & IR(7 downto 4)));
+    R2    <= to_integer(unsigned(IR(9) & IR(3 downto 0)));
+
     process (all)
     begin
 
@@ -185,12 +213,13 @@ begin
         LastCycle <= '1'; -- NOP is only one cycle
 
         -- datapath mux controls
-        OpBMux      <= '0';
-        StatusInMux <= (others => '0');
-        RegInMux    <= (others => '0');
-        RegDInMux   <= '0';
-        PCMux       <= PCMux_INC;
-        SPMux       <= SPMux_NOP;
+        OpAMux      <= OpAMux_REG;
+        OpBMux      <= OpBMux_REG;
+        StatusInMux <= StatusInMux_ALU;
+        RegInMux    <= RegInMux_ALU;
+        RegDInMux   <= RegDInMux_SRC;
+        PCMux       <= PCMux_INC; -- increment PC
+        SPMux       <= SPMux_NOP; -- don't change SP
 
         -- ALU controls
         FCmd           <= (others => '0');
@@ -202,30 +231,245 @@ begin
         StatusMask     <= (others => '0'); -- don't change status flags
 
         -- RegArray controls
-        RegInSel       <= 0;
+        RegInSel       <= R1;
         RegStore       <= '0'; -- don't change registers
-        RegASel        <= 0;
-        RegBSel        <= 0;
+        RegASel        <= R1;
+        RegBSel        <= R2;
         RegDInSel      <= 0;
         RegDStore      <= '0'; -- don't change double-registers
         RegDSel        <= 0;
 
         -- Data MemUnit controls
-        DataSrcSel     <= 0;
-        DataOffsetSel  <= 0;
-        DataIncDecSel  <= '0';
-        DataPrePostSel <= '0';
+        DataSrcSel     <= DataSrcSel_REG;
+        DataOffsetSel  <= DataOffsetSel_ZERO;
+        DataIncDecSel  <= MemUnit_INC;
+        DataPrePostSel <= MemUnit_POST;
 
         -- Program MemUnit controls
         ProgSrcSel     <= 0;
         ProgOffsetSel  <= 0;
-        ProgIncDecSel  <= MemUnit_INC;
-        ProgPrePostSel <= MemUnit_POST;
+        ProgIncDecSel  <= MemUnit_INC;  -- increment PC
+        ProgPrePostSel <= MemUnit_POST; -- PC must be post-incremented
 
         -- control bus outputs
         -- TODO: Should these be registered?
         DataWrEn       <= '0'; -- don't read from memory
         DataRdEn       <= '0'; -- don't write to memory
+
+        --
+        -- ALU Opcodes
+        --
+
+        if std_match(IR, OpADC) then
+            FCmd       <= FCmd_B;
+            CinCmd     <= CinCmd_CIN;
+            ALUCmd     <= ALUCmd_ADDER;
+            RegStore   <= '1';
+            StatusMask <= StatusMask_ARITH;
+        end if;
+
+        if std_match(IR, OpADD) then
+            FCmd       <= FCmd_B;
+            CinCmd     <= CinCmd_ZERO;
+            ALUCmd     <= ALUCmd_ADDER;
+            RegStore   <= '1';
+            StatusMask <= StatusMask_ARITH;
+        end if;
+
+        if std_match(IR, OpADIW) then
+            -- TODO
+            -- this should probably be two ALU ops (2 total cycles)
+        end if;
+
+        if std_match(IR, OpAND) then
+            FCmd       <= FCmd_AND;
+            ALUCmd     <= ALUCmd_FBLOCK;
+            RegStore   <= '1';
+            StatusMask <= StatusMask_LOGIC;
+        end if;
+
+        if std_match(IR, OpANDI) then
+            OpBMux   <= OpBMux_IMM;
+            RegInSel <= R1Imm;
+            RegASel  <= R1Imm;
+
+            FCmd       <= FCmd_AND;
+            ALUCmd     <= ALUCmd_FBLOCK;
+            RegStore   <= '1';
+            StatusMask <= StatusMask_LOGIC;
+        end if;
+
+        if std_match(IR, OpASR) then
+            SCmd       <= SCmd_ASR;
+            ALUCmd     <= ALUCmd_SHIFT;
+            RegStore   <= '1';
+            StatusMask <= StatusMask_SHIFT;
+        end if;
+
+        if std_match(IR, OpBCLR) then
+            -- TODO
+        end if;
+
+        if std_match(IR, OpBLD) then
+            -- TODO
+        end if;
+
+        if std_match(IR, OpBSET) then
+            -- TODO
+        end if;
+
+        if std_match(IR, OpBST) then
+            -- TODO
+        end if;
+
+        if std_match(IR, OpCOM) then
+            FCmd       <= FCmd_NOTA;
+            ALUCmd     <= ALUCmd_FBLOCK;
+            RegStore   <= '1';
+            StatusMask <= StatusMask_LOGIC;
+        end if;
+
+        if std_match(IR, OpCP) then
+            FCmd       <= FCmd_NOTB;
+            CinCmd     <= CinCmd_ONE;
+            ALUCmd     <= ALUCmd_ADDER;
+            StatusMask <= StatusMask_ARITH;
+        end if;
+
+        if std_match(IR, OpCPC) then
+            FCmd       <= FCmd_NOTB;
+            CinCmd     <= CinCmd_CINBAR;
+            ALUCmd     <= ALUCmd_ADDER;
+            StatusMask <= StatusMask_ARITH;
+        end if;
+
+        if std_match(IR, OpCPI) then
+            OpBMux   <= OpBMux_IMM;
+            RegInSel <= R1Imm;
+            RegASel  <= R1Imm;
+
+            FCmd       <= FCmd_NOTB;
+            CinCmd     <= CinCmd_ONE;
+            ALUCmd     <= ALUCmd_ADDER;
+            StatusMask <= StatusMask_ARITH;
+        end if;
+
+        if std_match(IR, OpDEC) then
+            FCmd       <= FCmd_ONE;
+            CinCmd     <= CinCmd_ZERO;
+            ALUCmd     <= ALUCmd_ADDER;
+            RegStore   <= '1';
+            StatusMask <= StatusMask_ARITH;
+        end if;
+
+        if std_match(IR, OpEOR) then
+            FCmd       <= FCmd_EOR;
+            ALUCmd     <= ALUCmd_FBLOCK;
+            RegStore   <= '1';
+            StatusMask <= StatusMask_LOGIC;
+        end if;
+
+        if std_match(IR, OpINC) then
+            FCmd       <= FCmd_ZERO;
+            CinCmd     <= CinCmd_ONE;
+            ALUCmd     <= ALUCmd_ADDER;
+            RegStore   <= '1';
+            StatusMask <= StatusMask_ARITH;
+        end if;
+
+        if std_match(IR, OpLSR) then
+            SCmd       <= SCmd_LSR;
+            ALUCmd     <= ALUCmd_SHIFT;
+            RegStore   <= '1';
+            StatusMask <= StatusMask_SHIFT;
+        end if;
+
+        if std_match(IR, OpNEG) then
+            OpAMux    <= OpAMux_ZERO;
+            RegBSel   <= R1;
+
+            FCmd       <= FCmd_NOTB;
+            CinCmd     <= CinCmd_ONE;
+            ALUCmd     <= ALUCmd_ADDER;
+            RegStore   <= '1';
+            StatusMask <= StatusMask_ARITH;
+        end if;
+
+        if std_match(IR, OpOR) then
+            FCmd       <= FCmd_OR;
+            ALUCmd     <= ALUCmd_FBLOCK;
+            RegStore   <= '1';
+            StatusMask <= StatusMask_LOGIC;
+        end if;
+
+        if std_match(IR, OpORI) then
+            OpBMux   <= OpBMux_IMM;
+            RegInSel <= R1Imm;
+            RegASel  <= R1Imm;
+
+            FCmd       <= FCmd_OR;
+            ALUCmd     <= ALUCmd_FBLOCK;
+            RegStore   <= '1';
+            StatusMask <= StatusMask_LOGIC;
+        end if;
+
+        if std_match(IR, OpROR) then
+            SCmd       <= SCmd_ROR;
+            ALUCmd     <= ALUCmd_SHIFT;
+            RegStore   <= '1';
+            StatusMask <= StatusMask_SHIFT;
+        end if;
+
+        if std_match(IR, OpSBC) then
+            FCmd       <= FCmd_NOTB;
+            CinCmd     <= CinCmd_CINBAR;
+            ALUCmd     <= ALUCmd_ADDER;
+            RegStore   <= '1';
+            StatusMask <= StatusMask_ARITH;
+        end if;
+
+        if std_match(IR, OpSBCI) then
+            OpBMux   <= OpBMux_IMM;
+            RegInSel <= R1Imm;
+            RegASel  <= R1Imm;
+
+            FCmd       <= FCmd_NOTB;
+            CinCmd     <= CinCmd_CINBAR;
+            ALUCmd     <= ALUCmd_ADDER;
+            RegStore   <= '1';
+            StatusMask <= StatusMask_ARITH;
+        end if;
+
+        if std_match(IR, OpSBIW) then
+            -- TODO
+        end if;
+
+        if std_match(IR, OpSUB) then
+            FCmd       <= FCmd_NOTB;
+            CinCmd     <= CinCmd_ONE;
+            ALUCmd     <= ALUCmd_ADDER;
+            RegStore   <= '1';
+            StatusMask <= StatusMask_ARITH;
+        end if;
+
+        if std_match(IR, OpSUBI) then
+            OpBMux   <= OpBMux_IMM;
+            RegInSel <= R1Imm;
+            RegASel  <= R1Imm;
+
+            FCmd       <= FCmd_NOTB;
+            CinCmd     <= CinCmd_ONE;
+            ALUCmd     <= ALUCmd_ADDER;
+            RegStore   <= '1';
+            StatusMask <= StatusMask_ARITH;
+        end if;
+
+        if std_match(IR, OpSWAP) then
+            SCmd       <= SCmd_SWAP;
+            ALUCmd     <= ALUCmd_SHIFT;
+            RegStore   <= '1';
+            StatusMask <= StatusMask_SHIFT;
+        end if;
 
     end process;
 
@@ -297,6 +541,7 @@ architecture structural of AVR_CPU is
     -- Datapath Mux Controls
     --
 
+    signal OpAMux      : std_logic;
     signal OpBMux      : std_logic;
     signal StatusInMux : std_logic_vector(1 downto 0);
     signal RegInMux    : std_logic_vector(1 downto 0);
@@ -401,10 +646,11 @@ begin
     DataAB <= DataAddress;
     DataWr <= not DataWrEn;
     DataRd <= not DataRdEn;
-    DataDB <= RegB when DataWrEn = '1' else
+    DataDB <= RegA when DataWrEn = '1' else
               (others => 'Z');
 
-    ALUOpA <= RegA;
+    ALUOpA <= RegA when OpAMux = OpAMux_REG else
+              (others => '0');
     ALUOpB <= RegB when OpBMux = OpBMux_REG else
               DataImm;
     Cin    <= StatusOut(C_FLAG);
@@ -585,6 +831,7 @@ begin
             MemDisp        => MemDisp       ,
 
             -- datapath mux controls
+            OpAMux         => OpAMux        ,
             OpBMux         => OpBMux        ,
             StatusInMux    => StatusInMux   ,
             RegInMux       => RegInMux      ,
