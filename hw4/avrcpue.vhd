@@ -169,11 +169,14 @@ architecture dataflow of ControlUnit is
     signal IR: std_logic_vector(15 downto 0);
 
     signal R1    : integer range 31 downto 0;
-    signal R1Imm : integer range 31 downto 0; -- bound must include zero for metavalue detection
     signal R2    : integer range 31 downto 0;
 
     signal ChangeStatusIdx : integer range 7 downto 0;
 begin
+
+    --
+    -- State Machine
+    --
 
     nextstate <= CYCLE1 when LastCycle = '1' else
                  CYCLE2 when state = CYCLE1  else
@@ -186,6 +189,10 @@ begin
         end if;
     end process;
 
+    --
+    -- Instruction Register
+    --
+
     process (clock)
     begin
         if rising_edge(clock) then
@@ -195,19 +202,41 @@ begin
         end if;
     end process;
 
+    --
+    -- Decoder
+    --
+
     -- decoded immediates
-    DataImm <= IR(11 downto 8) & IR(3 downto 0);
+    DataImm <= "00" & IR(7 downto 6) & IR(3 downto 0)
+                   when std_match(IR, OpADIW) or
+                        std_match(IR, OpSBIW) else
+               IR(11 downto 8) & IR(3 downto 0);
     WordImm <= IR(7 downto 6) & IR(3 downto 0);
     MemDisp <= IR(13) & IR(11 downto 10) & IR(2 downto 0);
     BitIdx  <= to_integer(unsigned(IR(2 downto 0)));
 
     -- decoded register indicies
-    R1    <= to_integer(unsigned(IR(8 downto 4)));
-    R1Imm <= to_integer(unsigned("1" & IR(7 downto 4)));
-    R2    <= to_integer(unsigned(IR(9) & IR(3 downto 0)));
+    R1 <= to_integer(unsigned("1" & IR(7 downto 4)))
+             when std_match(IR, OpANDI) or
+                  std_match(IR, OpCPI)  or
+                  std_match(IR, OpORI)  or
+                  std_match(IR, OpSBCI) or
+                  std_match(IR, OpSUBI) else
+          to_integer(unsigned("11" & IR(5 downto 4) & "0"))
+             when (std_match(IR, OpADIW) and state = CYCLE1) or
+                  (std_match(IR, OpSBIW) and state = CYCLE1) else
+          to_integer(unsigned("11" & IR(5 downto 4) & "1"))
+             when std_match(IR, OpADIW) or
+                  std_match(IR, OpSBIW) else
+          to_integer(unsigned(IR(8 downto 4)));
+    R2 <= to_integer(unsigned(IR(9) & IR(3 downto 0)));
 
     -- decoded status reg index
     ChangeStatusIdx <= to_integer(unsigned(IR(6 downto 4)));
+
+    --
+    -- Control Signal Generator
+    --
 
     process (all)
     begin
@@ -287,8 +316,27 @@ begin
         end if;
 
         if std_match(IR, OpADIW) then
-            -- TODO
-            -- this should probably be two ALU ops (2 total cycles)
+
+            if state = CYCLE1 then
+                LastCycle  <= '0';
+                PCMux      <= PCMux_NOP;
+
+                OpBMux     <= OpBMux_IMM;
+                FCmd       <= FCmd_B;
+                CinCmd     <= CinCmd_ZERO;
+                ALUCmd     <= ALUCmd_ADDER;
+                RegStore   <= '1';
+                StatusMask <= StatusMask_SHIFT; -- adiw/sbiw have same mask as shift
+            end if;
+
+            if state = CYCLE2 then
+                FCmd       <= FCmd_ZERO;
+                CinCmd     <= CinCmd_CIN;
+                ALUCmd     <= ALUCmd_ADDER;
+                RegStore   <= '1';
+                StatusMask <= StatusMask_SHIFT; -- adiw/sbiw have same mask as shift
+            end if;
+
         end if;
 
         if std_match(IR, OpAND) then
@@ -299,10 +347,7 @@ begin
         end if;
 
         if std_match(IR, OpANDI) then
-            OpBMux   <= OpBMux_IMM;
-            RegInSel <= R1Imm;
-            RegASel  <= R1Imm;
-
+            OpBMux     <= OpBMux_IMM;
             FCmd       <= FCmd_AND;
             ALUCmd     <= ALUCmd_FBLOCK;
             RegStore   <= '1';
@@ -360,10 +405,7 @@ begin
         end if;
 
         if std_match(IR, OpCPI) then
-            OpBMux   <= OpBMux_IMM;
-            RegInSel <= R1Imm;
-            RegASel  <= R1Imm;
-
+            OpBMux     <= OpBMux_IMM;
             FCmd       <= FCmd_NOTB;
             CinCmd     <= CinCmd_ONE;
             ALUCmd     <= ALUCmd_ADDER;
@@ -419,10 +461,7 @@ begin
         end if;
 
         if std_match(IR, OpORI) then
-            OpBMux   <= OpBMux_IMM;
-            RegInSel <= R1Imm;
-            RegASel  <= R1Imm;
-
+            OpBMux     <= OpBMux_IMM;
             FCmd       <= FCmd_OR;
             ALUCmd     <= ALUCmd_FBLOCK;
             RegStore   <= '1';
@@ -445,10 +484,7 @@ begin
         end if;
 
         if std_match(IR, OpSBCI) then
-            OpBMux   <= OpBMux_IMM;
-            RegInSel <= R1Imm;
-            RegASel  <= R1Imm;
-
+            OpBMux     <= OpBMux_IMM;
             FCmd       <= FCmd_NOTB;
             CinCmd     <= CinCmd_CINBAR;
             ALUCmd     <= ALUCmd_ADDER;
@@ -457,7 +493,27 @@ begin
         end if;
 
         if std_match(IR, OpSBIW) then
-            -- TODO
+
+            if state = CYCLE1 then
+                LastCycle  <= '0';
+                PCMux      <= PCMux_NOP;
+
+                OpBMux     <= OpBMux_IMM;
+                FCmd       <= FCmd_NOTB;
+                CinCmd     <= CinCmd_ONE;
+                ALUCmd     <= ALUCmd_ADDER;
+                RegStore   <= '1';
+                StatusMask <= StatusMask_SHIFT; -- adiw/sbiw have same mask as shift
+            end if;
+
+            if state = CYCLE2 then
+                FCmd       <= FCmd_ONE;
+                CinCmd     <= CinCmd_CIN;
+                ALUCmd     <= ALUCmd_ADDER;
+                RegStore   <= '1';
+                StatusMask <= StatusMask_SHIFT; -- adiw/sbiw have same mask as shift
+            end if;
+
         end if;
 
         if std_match(IR, OpSUB) then
@@ -469,10 +525,7 @@ begin
         end if;
 
         if std_match(IR, OpSUBI) then
-            OpBMux   <= OpBMux_IMM;
-            RegInSel <= R1Imm;
-            RegASel  <= R1Imm;
-
+            OpBMux     <= OpBMux_IMM;
             FCmd       <= FCmd_NOTB;
             CinCmd     <= CinCmd_ONE;
             ALUCmd     <= ALUCmd_ADDER;
