@@ -68,6 +68,7 @@ package ControlConstants is
     constant FCmd_OR   : std_logic_vector(3 downto 0) := "1110";
     constant FCmd_EOR  : std_logic_vector(3 downto 0) := "0110";
 
+    constant StatusMask_ZERO : std_logic_vector(7 downto 0) := "00000000";
     constant StatusMask_ARITH: std_logic_vector(7 downto 0) := "00111111";
     constant StatusMask_LOGIC: std_logic_vector(7 downto 0) := "00011110";
     constant StatusMask_SHIFT: std_logic_vector(7 downto 0) := "00011111";
@@ -169,6 +170,8 @@ architecture dataflow of ControlUnit is
     signal R1    : integer range 31 downto 0;
     signal R1Imm : integer range 31 downto 0; -- bound must include zero for metavalue detection
     signal R2    : integer range 31 downto 0;
+
+    signal ChangeStatusIdx : integer range 7 downto 0;
 begin
 
     nextstate <= CYCLE1 when LastCycle = '1' else
@@ -202,12 +205,18 @@ begin
     R1Imm <= to_integer(unsigned("1" & IR(7 downto 4)));
     R2    <= to_integer(unsigned(IR(9) & IR(3 downto 0)));
 
+    -- decoded status reg index
+    ChangeStatusIdx <= to_integer(unsigned(IR(6 downto 4)));
+
     process (all)
     begin
 
         --
         -- assign control signals for a NOP
         --
+
+        -- default datapath is for a register-register ALU Op
+        -- this simplifies the control logic for ALU ops
 
         -- state machine control signals
         LastCycle <= '1'; -- NOP is only one cycle
@@ -228,7 +237,7 @@ begin
         ALUCmd         <= (others => '0');
 
         -- StatusReg controls
-        StatusMask     <= (others => '0'); -- don't change status flags
+        StatusMask     <= StatusMask_ZERO; -- don't change status flags
 
         -- RegArray controls
         RegInSel       <= R1;
@@ -307,7 +316,8 @@ begin
         end if;
 
         if std_match(IR, OpBCLR) then
-            -- TODO
+            StatusInMux                 <= StatusInMux_CLR;
+            StatusMask(ChangeStatusIdx) <= '1';
         end if;
 
         if std_match(IR, OpBLD) then
@@ -319,7 +329,8 @@ begin
         end if;
 
         if std_match(IR, OpBST) then
-            -- TODO
+            StatusInMux                 <= StatusInMux_SET;
+            StatusMask(ChangeStatusIdx) <= '1';
         end if;
 
         if std_match(IR, OpCOM) then
