@@ -34,8 +34,9 @@ package ControlConstants is
     constant OpAMux_REG  : std_logic := '0';
     constant OpAMux_ZERO : std_logic := '1';
 
-    constant OpBMux_REG : std_logic := '0';
-    constant OpBMux_IMM : std_logic := '1';
+    constant OpBMux_REG : std_logic_vector(1 downto 0) := "00";
+    constant OpBMux_IMM : std_logic_vector(1 downto 0) := "01";
+    constant OpBMux_TRN : std_logic_vector(1 downto 0) := "10";
 
     constant StatusInMux_CLR : std_logic_vector(1 downto 0) := "00";
     constant StatusInMux_SET : std_logic_vector(1 downto 0) := "01";
@@ -109,7 +110,7 @@ entity ControlUnit is
 
         -- datapath mux controls
         OpAMux      : out std_logic; -- select ALUOpA as reg or zero
-        OpBMux      : out std_logic; -- select ALUOpB as reg or imm
+        OpBMux      : out std_logic_vector(1 downto 0); -- select ALUOpB as reg or imm or T Flag
         StatusInMux : out std_logic_vector(1 downto 0); -- select StatusIn
         RegInMux    : out std_logic_vector(1 downto 0); -- select reg input from datapath
         RegDInMux   : out std_logic; -- select double reg input from datapath
@@ -118,9 +119,9 @@ entity ControlUnit is
 
         -- decoded values
         DataImm : out std_logic_vector(7 downto 0); -- ALU immediate
-        BitIdx  : out std_logic_vector(2 downto 0); -- T flag bit index
         WordImm : out std_logic_vector(5 downto 0); -- word immediate (adiw/sbiw)
         MemDisp : out std_logic_vector(5 downto 0); -- memory displacement q
+        BitIdx  : out integer range 7 downto 0; -- bottom 3 bit index
 
         -- ALU control signals
         FCmd   : out std_logic_vector(3 downto 0); -- F-Block operation
@@ -196,9 +197,9 @@ begin
 
     -- decoded immediates
     DataImm <= IR(11 downto 8) & IR(3 downto 0);
-    BitIdx  <= IR(2 downto 0);
     WordImm <= IR(7 downto 6) & IR(3 downto 0);
     MemDisp <= IR(13) & IR(11 downto 10) & IR(2 downto 0);
+    BitIdx  <= to_integer(unsigned(IR(2 downto 0)));
 
     -- decoded register indicies
     R1    <= to_integer(unsigned(IR(8 downto 4)));
@@ -321,16 +322,20 @@ begin
         end if;
 
         if std_match(IR, OpBLD) then
-            -- TODO
+            OpBMux     <= OpBMux_TRN;
+            FCmd       <= FCmd_AND;
+            ALUCmd     <= ALUCmd_FBLOCK;
+            RegStore   <= '1';
         end if;
 
         if std_match(IR, OpBSET) then
-            -- TODO
+            StatusInMux                 <= StatusInMux_SET;
+            StatusMask(ChangeStatusIdx) <= '1';
         end if;
 
         if std_match(IR, OpBST) then
-            StatusInMux                 <= StatusInMux_SET;
-            StatusMask(ChangeStatusIdx) <= '1';
+            StatusInMux        <= StatusInMux_TRN;
+            StatusMask(T_FLAG) <= '1';
         end if;
 
         if std_match(IR, OpCOM) then
@@ -544,16 +549,16 @@ architecture structural of AVR_CPU is
     -- Decoded Immediates
     --
     signal DataImm : std_logic_vector(wordsize - 1 downto 0); -- ALU immediate value
-    signal BitIdx  : std_logic_vector(2 downto 0); -- T flag bit index
     signal WordImm : std_logic_vector(5 downto 0); -- word immediate (adiw/sbiw)
     signal MemDisp : std_logic_vector(5 downto 0); -- memory displacement q
+    signal BitIdx  : integer range 7 downto 0; -- bottom 3 bit index
 
     --
     -- Datapath Mux Controls
     --
 
     signal OpAMux      : std_logic;
-    signal OpBMux      : std_logic;
+    signal OpBMux      : std_logic_vector(1 downto 0);
     signal StatusInMux : std_logic_vector(1 downto 0);
     signal RegInMux    : std_logic_vector(1 downto 0);
     signal RegDInMux   : std_logic;
@@ -662,8 +667,11 @@ begin
 
     ALUOpA <= RegA when OpAMux = OpAMux_REG else
               (others => '0');
-    ALUOpB <= RegB when OpBMux = OpBMux_REG else
-              DataImm;
+    ALUOpB <= RegB    when OpBMux = OpBMux_REG else
+              DataImm when OpBMux = OpBMux_IMM else
+              (wordsize - 1 downto BitIdx + 1 => '1') &
+              (BitIdx                         => StatusOut(T_FLAG)) &
+              (BitIdx - 1   downto 0          => '1');
     Cin    <= StatusOut(C_FLAG);
     ALU: entity work.ALU
         port map (
@@ -687,7 +695,7 @@ begin
 
     StatusIn <= (others => '0') when StatusInMux = StatusInMux_CLR else
                 (others => '1') when StatusInMux = StatusInMux_SET else
-                "0" & RegA(to_integer(unsigned(BitIdx))) & "000000"
+                "0" & RegA(BitIdx) & "000000"
                                 when StatusInMux = StatusInMux_TRN else
                 "00" & HalfCout &
                 (Sign xor Overflow) &
