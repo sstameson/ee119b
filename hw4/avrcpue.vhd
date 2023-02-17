@@ -31,12 +31,13 @@ package ControlConstants is
     constant RegDInMux_SRC : std_logic := '0';
     constant RegDInMux_ADR : std_logic := '1';
 
-    constant OpAMux_REG  : std_logic := '0';
+    constant OpAMux_REGA : std_logic := '0';
     constant OpAMux_ZERO : std_logic := '1';
 
-    constant OpBMux_REG : std_logic_vector(1 downto 0) := "00";
-    constant OpBMux_IMM : std_logic_vector(1 downto 0) := "01";
-    constant OpBMux_TRN : std_logic_vector(1 downto 0) := "10";
+    constant OpBMux_REGA : std_logic_vector(1 downto 0) := "00";
+    constant OpBMux_REGB : std_logic_vector(1 downto 0) := "01";
+    constant OpBMux_IMM  : std_logic_vector(1 downto 0) := "10";
+    constant OpBMux_TRN  : std_logic_vector(1 downto 0) := "11";
 
     constant StatusInMux_CLR : std_logic_vector(1 downto 0) := "00";
     constant StatusInMux_SET : std_logic_vector(1 downto 0) := "01";
@@ -252,8 +253,8 @@ begin
         LastCycle <= '1'; -- NOP is only one cycle
 
         -- datapath mux controls
-        OpAMux      <= OpAMux_REG;
-        OpBMux      <= OpBMux_REG;
+        OpAMux      <= OpAMux_REGA;
+        OpBMux      <= OpBMux_REGB;
         StatusInMux <= StatusInMux_ALU;
         RegInMux    <= RegInMux_ALU;
         RegDInMux   <= RegDInMux_SRC;
@@ -443,9 +444,8 @@ begin
         end if;
 
         if std_match(IR, OpNEG) then
-            OpAMux    <= OpAMux_ZERO;
-            RegBSel   <= R1;
-
+            OpAMux     <= OpAMux_ZERO;
+            OpBMux     <= OpBMux_REGA;
             FCmd       <= FCmd_NOTB;
             CinCmd     <= CinCmd_ONE;
             ALUCmd     <= ALUCmd_ADDER;
@@ -718,9 +718,10 @@ begin
     DataDB <= RegA when DataWrEn = '1' else
               (others => 'Z');
 
-    ALUOpA <= RegA when OpAMux = OpAMux_REG else
+    ALUOpA <= RegA when OpAMux = OpAMux_REGA else
               (others => '0');
-    ALUOpB <= RegB    when OpBMux = OpBMux_REG else
+    ALUOpB <= RegA    when OpBMux = OpBMux_REGA else
+              RegB    when OpBMux = OpBMux_REGB else
               DataImm when OpBMux = OpBMux_IMM else
               (wordsize - 1 downto BitIdx + 1 => '1') &
               (BitIdx                         => StatusOut(T_FLAG)) &
