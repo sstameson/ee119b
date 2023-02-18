@@ -79,6 +79,10 @@ package ControlConstants is
     constant DataOffsetSel_ZERO : integer := 0;
     constant DataOffsetSel_DISP : integer := 1;
 
+    constant ProgOffsetSel_ZERO   : integer := 0;
+    constant ProgOffsetSel_JUMP   : integer := 1;
+    constant ProgOffsetSel_BRANCH : integer := 2;
+
 end package ControlConstants;
 
 library ieee;
@@ -116,6 +120,8 @@ entity ControlUnit is
         DataImm     : out std_logic_vector(7 downto 0); -- ALU immediate
         DataMemDisp : out std_logic_vector(5 downto 0); -- data memory displacement q
         BitIdx      : out integer range 7 downto 0; -- bottom 3 bit index
+        ProgJump    : out std_logic_vector(11 downto 0); -- jump offset
+        ProgBranch  : out std_logic_vector(6 downto 0); -- branch offset
 
         -- ALU control signals
         FCmd   : out std_logic_vector(3 downto 0); -- F-Block operation
@@ -143,7 +149,7 @@ entity ControlUnit is
 
         -- program memory interface control signals
         ProgSrcSel     : out integer range 0 downto 0; -- address source select
-        ProgOffsetSel  : out integer range 0 downto 0; -- address offset select
+        ProgOffsetSel  : out integer range 2 downto 0; -- address offset select
         ProgIncDecSel  : out std_logic;                -- increment/decrement control
         ProgPrePostSel : out std_logic;                -- pre/post control
 
@@ -207,6 +213,8 @@ begin
                    IR(11 downto 8) & IR(3 downto 0);
     DataMemDisp <= IR(13) & IR(11 downto 10) & IR(2 downto 0);
     BitIdx      <= to_integer(unsigned(IR(2 downto 0)));
+    ProgJump    <= IR(11 downto 0);
+    ProgBranch  <= IR(9 downto 3);
 
     -- decoded register indicies
     R1 <= to_integer(unsigned("1" & IR(7 downto 4)))
@@ -595,6 +603,8 @@ architecture structural of AVR_CPU is
     signal DataImm     : std_logic_vector(wordsize - 1 downto 0); -- ALU immediate value
     signal DataMemDisp : std_logic_vector(5 downto 0); -- memory displacement q
     signal BitIdx      : integer range 7 downto 0; -- bottom 3 bit index
+    signal ProgJump    : std_logic_vector(11 downto 0); -- jump offset
+    signal ProgBranch  : std_logic_vector(6 downto 0); -- branch offset
 
     --
     -- Datapath Mux Controls
@@ -684,9 +694,9 @@ architecture structural of AVR_CPU is
 
     -- inputs
     signal ProgAddrSrc    : std_logic_vector(addrsize - 1 downto 0);
-    signal ProgAddrOff    : std_logic_vector(addrsize - 1 downto 0);
+    signal ProgAddrOff    : std_logic_vector(3*addrsize - 1 downto 0);
     signal ProgSrcSel     : integer range 0 downto 0;
-    signal ProgOffsetSel  : integer range 0 downto 0;
+    signal ProgOffsetSel  : integer range 2 downto 0;
     signal ProgIncDecSel  : std_logic;
     signal ProgPrePostSel : std_logic;
     -- outputs
@@ -848,12 +858,21 @@ begin
     end process;
 
     ProgAddrSrc <= PC;
-    -- TODO: need to decode different offsets for PC
-    ProgAddrOff <= (others => '0');
+    -- zero offset
+    ProgAddrOff(1*addrsize - 1 downto 0*addrsize)
+        <= (others => '0');
+    -- jump offset
+    ProgAddrOff(2*addrsize - 1 downto 1*addrsize)
+        <= (addrsize - 1 downto ProgJump'length
+            => ProgJump(ProgJump'high)) & ProgJump;
+    -- branch offset
+    ProgAddrOff(3*addrsize - 1 downto 2*addrsize)
+        <= (addrsize - 1 downto ProgBranch'length
+            => ProgBranch(ProgBranch'high)) & ProgBranch;
     PROG_MAU: entity work.MemUnit
         generic map (
             srcCnt    => 1,
-            offsetCnt => 1
+            offsetCnt => 3
         )
         port map (
             -- datapath inputs
@@ -883,6 +902,8 @@ begin
             DataImm        => DataImm       ,
             BitIdx         => BitIdx        ,
             DataMemDisp    => DataMemDisp   ,
+            ProgJump       => ProgJump      ,
+            ProgBranch     => ProgBranch    ,
 
             -- datapath mux controls
             OpAMux         => OpAMux        ,
