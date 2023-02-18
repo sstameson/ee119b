@@ -75,14 +75,12 @@ package ControlConstants is
     constant StatusMask_LOGIC: std_logic_vector(7 downto 0) := "00011110";
     constant StatusMask_SHIFT: std_logic_vector(7 downto 0) := "00011111";
 
-    constant DataOffsetSel_ZERO : integer := 0;
-    constant DataOffsetSel_K    : integer := 1;
-    constant DataOffsetSel_KBAR : integer := 2;
-    constant DataOffsetSel_Q    : integer := 3;
-
     constant DataSrcSel_REG: integer := 0;
     constant DataSrcSel_SP: integer  := 1;
     constant DataSrcSel_MEM: integer := 2;
+
+    constant DataOffsetSel_ZERO : integer := 0;
+    constant DataOffsetSel_DISP : integer := 1;
 
 end package ControlConstants;
 
@@ -119,10 +117,9 @@ entity ControlUnit is
         SPMux       : out std_logic; -- select next SP
 
         -- decoded values
-        DataImm : out std_logic_vector(7 downto 0); -- ALU immediate
-        WordImm : out std_logic_vector(5 downto 0); -- word immediate (adiw/sbiw)
-        MemDisp : out std_logic_vector(5 downto 0); -- memory displacement q
-        BitIdx  : out integer range 7 downto 0; -- bottom 3 bit index
+        DataImm     : out std_logic_vector(7 downto 0); -- ALU immediate
+        DataMemDisp : out std_logic_vector(5 downto 0); -- data memory displacement q
+        BitIdx      : out integer range 7 downto 0; -- bottom 3 bit index
 
         -- ALU control signals
         FCmd   : out std_logic_vector(3 downto 0); -- F-Block operation
@@ -144,7 +141,7 @@ entity ControlUnit is
 
         -- data memory interface control signals
         DataSrcSel     : out integer range 2 downto 0; -- address source select
-        DataOffsetSel  : out integer range 3 downto 0; -- address offset select
+        DataOffsetSel  : out integer range 1 downto 0; -- address offset select
         DataIncDecSel  : out std_logic;                -- increment/decrement control
         DataPrePostSel : out std_logic;                -- pre/post control
 
@@ -208,13 +205,12 @@ begin
     --
 
     -- decoded immediates
-    DataImm <= "00" & IR(7 downto 6) & IR(3 downto 0)
-                   when std_match(IR, OpADIW) or
-                        std_match(IR, OpSBIW) else
-               IR(11 downto 8) & IR(3 downto 0);
-    WordImm <= IR(7 downto 6) & IR(3 downto 0);
-    MemDisp <= IR(13) & IR(11 downto 10) & IR(2 downto 0);
-    BitIdx  <= to_integer(unsigned(IR(2 downto 0)));
+    DataImm     <= "00" & IR(7 downto 6) & IR(3 downto 0)
+                       when std_match(IR, OpADIW) or
+                            std_match(IR, OpSBIW) else
+                   IR(11 downto 8) & IR(3 downto 0);
+    DataMemDisp <= IR(13) & IR(11 downto 10) & IR(2 downto 0);
+    BitIdx      <= to_integer(unsigned(IR(2 downto 0)));
 
     -- decoded register indicies
     R1 <= to_integer(unsigned("1" & IR(7 downto 4)))
@@ -601,10 +597,9 @@ architecture structural of AVR_CPU is
     --
     -- Decoded Immediates
     --
-    signal DataImm : std_logic_vector(wordsize - 1 downto 0); -- ALU immediate value
-    signal WordImm : std_logic_vector(5 downto 0); -- word immediate (adiw/sbiw)
-    signal MemDisp : std_logic_vector(5 downto 0); -- memory displacement q
-    signal BitIdx  : integer range 7 downto 0; -- bottom 3 bit index
+    signal DataImm     : std_logic_vector(wordsize - 1 downto 0); -- ALU immediate value
+    signal DataMemDisp : std_logic_vector(5 downto 0); -- memory displacement q
+    signal BitIdx      : integer range 7 downto 0; -- bottom 3 bit index
 
     --
     -- Datapath Mux Controls
@@ -680,9 +675,9 @@ architecture structural of AVR_CPU is
 
     -- inputs
     signal DataAddrSrc    : std_logic_vector(3*addrsize - 1 downto 0);
-    signal DataAddrOff    : std_logic_vector(4*addrsize - 1 downto 0);
+    signal DataAddrOff    : std_logic_vector(2*addrsize - 1 downto 0);
     signal DataSrcSel     : integer range 2 downto 0;
-    signal DataOffsetSel  : integer range 3 downto 0;
+    signal DataOffsetSel  : integer range 1 downto 0;
     signal DataIncDecSel  : std_logic;
     signal DataPrePostSel : std_logic;
     -- outputs
@@ -820,19 +815,13 @@ begin
     -- zero offset
     DataAddrOff(1*addrsize - 1 downto 0*addrsize)
         <= (others => '0');
-    -- word immediate for adiw
-    DataAddrOff(2*addrsize - 1 downto 1*addrsize)
-        <= (addrsize - 1 downto WordImm'length => '0') & WordImm;
-    -- word immediate for sbiw
-    DataAddrOff(3*addrsize - 1 downto 2*addrsize)
-        <= not DataAddrOff(2*addrsize - 1 downto 1*addrsize);
     -- memory displacement for ldd and std
-    DataAddrOff(4*addrsize - 1 downto 3*addrsize)
-        <= (addrsize - 1 downto MemDisp'length => '0') & MemDisp;
+    DataAddrOff(2*addrsize - 1 downto 1*addrsize)
+        <= (addrsize - 1 downto DataMemDisp'length => '0') & DataMemDisp;
     DATA_MAU: entity work.MemUnit
         generic map (
             srcCnt    => 3,
-            offsetCnt => 4
+            offsetCnt => 2
         )
         port map (
             -- datapath inputs
@@ -900,8 +889,7 @@ begin
             -- decoded immediates
             DataImm        => DataImm       ,
             BitIdx         => BitIdx        ,
-            WordImm        => WordImm       ,
-            MemDisp        => MemDisp       ,
+            DataMemDisp    => DataMemDisp   ,
 
             -- datapath mux controls
             OpAMux         => OpAMux        ,
