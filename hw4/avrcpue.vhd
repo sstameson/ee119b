@@ -18,15 +18,18 @@ use ieee.std_logic_1164.all;
 
 package ControlConstants is
 
+    --
+    -- state machine
+    --
+
     constant CYCLE1 : std_logic_vector(3 downto 0) := "0001";
     constant CYCLE2 : std_logic_vector(3 downto 0) := "0010";
     constant CYCLE3 : std_logic_vector(3 downto 0) := "0100";
     constant CYCLE4 : std_logic_vector(3 downto 0) := "1000";
 
-    constant RegInMux_ALU : std_logic_vector(1 downto 0) := "00";
-    constant RegInMux_IMM : std_logic_vector(1 downto 0) := "01";
-    constant RegInMux_REG : std_logic_vector(1 downto 0) := "10";
-    constant RegInMux_MEM : std_logic_vector(1 downto 0) := "11";
+    --
+    -- datapath multiplexing
+    --
 
     constant OpAMux_REGA : std_logic := '0';
     constant OpAMux_ZERO : std_logic := '1';
@@ -41,6 +44,11 @@ package ControlConstants is
     constant StatusInMux_TRN : std_logic_vector(1 downto 0) := "10";
     constant StatusInMux_ALU : std_logic_vector(1 downto 0) := "11";
 
+    constant RegInMux_ALU : std_logic_vector(1 downto 0) := "00";
+    constant RegInMux_IMM : std_logic_vector(1 downto 0) := "01";
+    constant RegInMux_REG : std_logic_vector(1 downto 0) := "10";
+    constant RegInMux_MEM : std_logic_vector(1 downto 0) := "11";
+
     constant PCMux_INC : std_logic_vector(1 downto 0) := "00";
     constant PCMux_REL : std_logic_vector(1 downto 0) := "01";
     constant PCMux_MEM : std_logic_vector(1 downto 0) := "10";
@@ -48,6 +56,30 @@ package ControlConstants is
 
     constant SPMux_NXT : std_logic := '0';
     constant SPMux_NOP : std_logic := '1';
+
+    --
+    -- memory interfacing
+    --
+
+    constant DataSrcSel_REG: integer := 0;
+    constant DataSrcSel_SP: integer  := 1;
+    constant DataSrcSel_MEM: integer := 2;
+
+    constant DataOffsetSel_ZERO : integer := 0;
+    constant DataOffsetSel_DISP : integer := 1;
+
+    constant ProgOffsetSel_ZERO   : integer := 0;
+    constant ProgOffsetSel_JUMP   : integer := 1;
+    constant ProgOffsetSel_BRANCH : integer := 2;
+
+    --
+    -- ALU operation
+    --
+
+    constant StatusMask_ZERO : std_logic_vector(7 downto 0) := "00000000";
+    constant StatusMask_ARITH: std_logic_vector(7 downto 0) := "00111111";
+    constant StatusMask_LOGIC: std_logic_vector(7 downto 0) := "00011110";
+    constant StatusMask_SHIFT: std_logic_vector(7 downto 0) := "00011111";
 
     constant I_FLAG: integer := 7;
     constant T_FLAG: integer := 6;
@@ -67,23 +99,8 @@ package ControlConstants is
     constant FCmd_OR   : std_logic_vector(3 downto 0) := "1110";
     constant FCmd_EOR  : std_logic_vector(3 downto 0) := "0110";
 
-    constant StatusMask_ZERO : std_logic_vector(7 downto 0) := "00000000";
-    constant StatusMask_ARITH: std_logic_vector(7 downto 0) := "00111111";
-    constant StatusMask_LOGIC: std_logic_vector(7 downto 0) := "00011110";
-    constant StatusMask_SHIFT: std_logic_vector(7 downto 0) := "00011111";
-
-    constant DataSrcSel_REG: integer := 0;
-    constant DataSrcSel_SP: integer  := 1;
-    constant DataSrcSel_MEM: integer := 2;
-
-    constant DataOffsetSel_ZERO : integer := 0;
-    constant DataOffsetSel_DISP : integer := 1;
-
-    constant ProgOffsetSel_ZERO   : integer := 0;
-    constant ProgOffsetSel_JUMP   : integer := 1;
-    constant ProgOffsetSel_BRANCH : integer := 2;
-
 end package ControlConstants;
+
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -286,7 +303,7 @@ begin
 
         -- Program MemUnit controls
         ProgSrcSel     <= 0;
-        ProgOffsetSel  <= 0;
+        ProgOffsetSel  <= ProgOffsetSel_ZERO;
         ProgIncDecSel  <= MemUnit_INC;  -- increment PC
         ProgPrePostSel <= MemUnit_POST; -- PC must be post-incremented
 
