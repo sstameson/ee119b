@@ -28,9 +28,6 @@ package ControlConstants is
     constant RegInMux_REG : std_logic_vector(1 downto 0) := "10";
     constant RegInMux_MEM : std_logic_vector(1 downto 0) := "11";
 
-    constant RegDInMux_SRC : std_logic := '0';
-    constant RegDInMux_ADR : std_logic := '1';
-
     constant OpAMux_REGA : std_logic := '0';
     constant OpAMux_ZERO : std_logic := '1';
 
@@ -112,7 +109,6 @@ entity ControlUnit is
         OpBMux      : out std_logic_vector(1 downto 0); -- select ALUOpB as reg or imm or T Flag
         StatusInMux : out std_logic_vector(1 downto 0); -- select StatusIn
         RegInMux    : out std_logic_vector(1 downto 0); -- select reg input from datapath
-        RegDInMux   : out std_logic; -- select double reg input from datapath
         PCMux       : out std_logic_vector(1 downto 0); -- select next PC
         SPMux       : out std_logic; -- select next SP
 
@@ -253,7 +249,6 @@ begin
         OpBMux      <= OpBMux_REGB;
         StatusInMux <= StatusInMux_ALU;
         RegInMux    <= RegInMux_ALU;
-        RegDInMux   <= RegDInMux_SRC;
         PCMux       <= PCMux_INC; -- increment PC
         SPMux       <= SPMux_NOP; -- don't change SP
 
@@ -609,7 +604,6 @@ architecture structural of AVR_CPU is
     signal OpBMux      : std_logic_vector(1 downto 0);
     signal StatusInMux : std_logic_vector(1 downto 0);
     signal RegInMux    : std_logic_vector(1 downto 0);
-    signal RegDInMux   : std_logic;
     signal PCMux       : std_logic_vector(1 downto 0);
     signal SPMux       : std_logic;
 
@@ -767,8 +761,7 @@ begin
               DataImm when RegInMux = RegInMux_IMM else
               RegB    when RegInMux = RegInMux_REG else
               DataDB;
-    RegDIn <= DataAddrSrcOut when RegDInMux = RegDInMux_SRC else
-              DataAddress;
+    RegDIn <= DataAddrSrcOut;
     REGS: entity work.RegArray
         port map (
             -- datapath inputs
@@ -896,7 +889,6 @@ begin
             OpBMux         => OpBMux        ,
             StatusInMux    => StatusInMux   ,
             RegInMux       => RegInMux      ,
-            RegDInMux      => RegDInMux     ,
             PCMux          => PCMux         ,
             SPMux          => SPMux         ,
 
