@@ -88,14 +88,14 @@ package ControlConstants is
     constant StatusMask_LOGIC : std_logic_vector(7 downto 0) := "00011110";
     constant StatusMask_SHIFT : std_logic_vector(7 downto 0) := "00011111";
 
-    constant I_FLAG: integer := 7;
-    constant T_FLAG: integer := 6;
-    constant H_FLAG: integer := 5;
-    constant S_FLAG: integer := 4;
-    constant V_FLAG: integer := 3;
-    constant N_FLAG: integer := 2;
-    constant Z_FLAG: integer := 1;
-    constant C_FLAG: integer := 0;
+    constant I_FLAG : integer := 7;
+    constant T_FLAG : integer := 6;
+    constant H_FLAG : integer := 5;
+    constant S_FLAG : integer := 4;
+    constant V_FLAG : integer := 3;
+    constant N_FLAG : integer := 2;
+    constant Z_FLAG : integer := 1;
+    constant C_FLAG : integer := 0;
 
     constant FCmd_ZERO : std_logic_vector(3 downto 0) := "0000";
     constant FCmd_ONE  : std_logic_vector(3 downto 0) := "1111";
