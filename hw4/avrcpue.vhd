@@ -49,10 +49,10 @@ package ControlConstants is
     constant RegInMux_REG : std_logic_vector(1 downto 0) := "10";
     constant RegInMux_MEM : std_logic_vector(1 downto 0) := "11";
 
-    constant PCMux_INC : std_logic_vector(1 downto 0) := "00";
-    constant PCMux_REL : std_logic_vector(1 downto 0) := "01";
-    constant PCMux_MEM : std_logic_vector(1 downto 0) := "10";
-    constant PCMux_NOP : std_logic_vector(1 downto 0) := "11";
+    constant PCMux_INC     : std_logic_vector(1 downto 0) := "00";
+    constant PCMux_REL     : std_logic_vector(1 downto 0) := "01";
+    constant PCMux_PROGMEM : std_logic_vector(1 downto 0) := "10";
+    constant PCMux_NOP     : std_logic_vector(1 downto 0) := "11";
 
     constant SPMux_NXT : std_logic := '0';
     constant SPMux_NOP : std_logic := '1';
@@ -996,6 +996,71 @@ begin
 
         end if;
 
+        --
+        -- Jump Opcodes
+        --
+
+        if std_match(IR, OpJMP) then
+
+            if state = CYCLE1 then
+                LastCycle <= '0';
+                -- increment PC to get 16-bit address from program memory
+            end if;
+
+            if state = CYCLE2 then
+                LastCycle <= '0';
+                PCMux     <= PCMux_NOP;
+            end if;
+
+            if state = CYCLE3 then
+                DataRdEn  <= '1';
+                PCMux     <= PCMux_PROGMEM;
+            end if;
+
+        end if;
+
+        if std_match(IR, OpRJMP) then
+
+            -- NOTE: the current value in the PC register is 1 ahead of the
+            -- instruction register due to pipelining. Thus, we already store
+            -- the value PC + 1. To get PC <= PC + 1 + j, we should indeed
+            -- post-increment the stored PC value, since it is alread 1 ahead.
+
+            ProgOffsetSel <= ProgOffsetSel_JUMP;
+
+            if state = CYCLE1 then
+                LastCycle <= '0';
+                PCMux     <= PCMux_NOP;
+            end if;
+
+            if state = CYCLE2 then
+                PCMux     <= PCMux_REL;
+            end if;
+
+        end if;
+
+        if std_match(IR, OpIJMP) then
+
+            -- NOTE: pre-incremented value in PC register is PC + 1.
+            -- See above note (in OpRJMP) for a more detailed explanation.
+
+        end if;
+
+        if std_match(IR, OpCALL) then
+        end if;
+
+        if std_match(IR, OpRCALL) then
+        end if;
+
+        if std_match(IR, OpICALL) then
+        end if;
+
+        if std_match(IR, OpRET) then
+        end if;
+
+        if std_match(IR, OpRETI) then
+        end if;
+
     end process;
 
 end architecture dataflow;
@@ -1305,10 +1370,10 @@ begin
                 PC <= (others => '0');
             else
                 case PCMux is
-                    when PCMux_INC => PC <= ProgAddrSrcOut;
-                    when PCMux_REL => PC <= ProgAddress;
-                    when PCMux_MEM => PC <= ProgDB;
-                    when others    => PC <= PC;
+                    when PCMux_INC     => PC <= ProgAddrSrcOut;
+                    when PCMux_REL     => PC <= ProgAddress;
+                    when PCMux_PROGMEM => PC <= ProgDB;
+                    when others        => PC <= PC;
                 end case;
             end if;
         end if;
