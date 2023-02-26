@@ -778,39 +778,222 @@ begin
         end if;
 
         if std_match(IR, OpSTX) then
+
+            RegDSel        <= RegDSel_X;
+            RegDInSel      <= RegDSel_X;
+
+            if state = CYCLE1 then
+                LastCycle <= '0';
+                PCMux     <= PCMux_NOP;
+            end if;
+
+            if state = CYCLE2 then
+                -- don't change RegD
+                DataWrEn  <= '1';
+            end if;
+
         end if;
 
         if std_match(IR, OpSTXI) then
+
+            RegDSel        <= RegDSel_X;
+            RegDInSel      <= RegDSel_X;
+
+            if state = CYCLE1 then
+                LastCycle <= '0';
+                PCMux     <= PCMux_NOP;
+            end if;
+
+            if state = CYCLE2 then
+                RegDStore <= '1';
+                DataWrEn  <= '1';
+            end if;
+
         end if;
 
         if std_match(IR, OpSTXD) then
+
+            RegDSel        <= RegDSel_X;
+            RegDInSel      <= RegDSel_X;
+            DataIncDecSel  <= MemUnit_DEC;
+            DataPrePostSel <= MemUnit_PRE;
+
+            if state = CYCLE1 then
+                LastCycle <= '0';
+                PCMux     <= PCMux_NOP;
+            end if;
+
+            if state = CYCLE2 then
+                RegDStore <= '1';
+                DataWrEn  <= '1';
+            end if;
+
         end if;
 
         if std_match(IR, OpSTYI) then
+
+            RegDSel        <= RegDSel_Y;
+            RegDInSel      <= RegDSel_Y;
+
+            if state = CYCLE1 then
+                LastCycle <= '0';
+                PCMux     <= PCMux_NOP;
+            end if;
+
+            if state = CYCLE2 then
+                RegDStore <= '1';
+                DataWrEn  <= '1';
+            end if;
+
         end if;
 
         if std_match(IR, OpSTYD) then
+
+            RegDSel        <= RegDSel_Y;
+            RegDInSel      <= RegDSel_Y;
+            DataIncDecSel  <= MemUnit_DEC;
+            DataPrePostSel <= MemUnit_PRE;
+
+            if state = CYCLE1 then
+                LastCycle <= '0';
+                PCMux     <= PCMux_NOP;
+            end if;
+
+            if state = CYCLE2 then
+                RegDStore <= '1';
+                DataWrEn  <= '1';
+            end if;
+
         end if;
 
         if std_match(IR, OpSTZI) then
+
+            RegDSel        <= RegDSel_Z;
+            RegDInSel      <= RegDSel_Z;
+
+            if state = CYCLE1 then
+                LastCycle <= '0';
+                PCMux     <= PCMux_NOP;
+            end if;
+
+            if state = CYCLE2 then
+                RegDStore <= '1';
+                DataWrEn  <= '1';
+            end if;
+
         end if;
 
         if std_match(IR, OpSTZD) then
+
+            RegDSel        <= RegDSel_Z;
+            RegDInSel      <= RegDSel_Z;
+            DataIncDecSel  <= MemUnit_DEC;
+            DataPrePostSel <= MemUnit_PRE;
+
+            if state = CYCLE1 then
+                LastCycle <= '0';
+                PCMux     <= PCMux_NOP;
+            end if;
+
+            if state = CYCLE2 then
+                RegDStore <= '1';
+                DataWrEn  <= '1';
+            end if;
+
         end if;
 
         if std_match(IR, OpSTDY) then
+
+            RegDSel        <= RegDSel_Y;
+            RegDInSel      <= RegDSel_Y;
+            DataOffsetSel  <= DataOffsetSel_DISP;
+
+            if state = CYCLE1 then
+                LastCycle <= '0';
+                PCMux     <= PCMux_NOP;
+            end if;
+
+            if state = CYCLE2 then
+                -- don't change RegD
+                DataWrEn  <= '1';
+            end if;
+
         end if;
 
         if std_match(IR, OpSTDZ) then
+
+            RegDSel        <= RegDSel_Z;
+            RegDInSel      <= RegDSel_Z;
+            DataOffsetSel  <= DataOffsetSel_DISP;
+
+            if state = CYCLE1 then
+                LastCycle <= '0';
+                PCMux     <= PCMux_NOP;
+            end if;
+
+            if state = CYCLE2 then
+                -- don't change RegD
+                DataWrEn  <= '1';
+            end if;
+
         end if;
 
         if std_match(IR, OpSTS) then
+
+            DataSrcSel <= DataSrcSel_MEM;
+
+            if state = CYCLE1 then
+                LastCycle <= '0';
+                -- increment PC to get 16-bit address from program memory
+            end if;
+
+            if state = CYCLE2 then
+                LastCycle <= '0';
+                PCMux     <= PCMux_NOP;
+            end if;
+
+            if state = CYCLE3 then
+                DataWrEn <= '1';
+            end if;
+
         end if;
 
         if std_match(IR, OpPOP) then
+
+            RegInMux       <= RegInMux_MEM;
+            DataSrcSel     <= DataSrcSel_SP;
+            DataIncDecSel  <= MemUnit_INC;
+            DataPrePostSel <= MemUnit_PRE;
+
+            if state = CYCLE1 then
+                LastCycle <= '0';
+                PCMux     <= PCMux_NOP;
+            end if;
+
+            if state = CYCLE2 then
+                SPMux    <= SPMux_NXT;
+                RegStore <= '1';
+                DataRdEn <= '1';
+            end if;
+
         end if;
 
         if std_match(IR, OpPUSH) then
+
+            DataSrcSel     <= DataSrcSel_SP;
+            DataIncDecSel  <= MemUnit_DEC;
+            DataPrePostSel <= MemUnit_POST;
+
+            if state = CYCLE1 then
+                LastCycle <= '0';
+                PCMux     <= PCMux_NOP;
+            end if;
+
+            if state = CYCLE2 then
+                SPMux    <= SPMux_NXT;
+                DataWrEn <= '1';
+            end if;
+
         end if;
 
     end process;
