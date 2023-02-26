@@ -103,9 +103,9 @@ package ControlConstants is
     -- RegArray Operation
     --
 
-    constant RegDSel_X : integer 15 downto 0 := 13;
-    constant RegDSel_Y : integer 15 downto 0 := 14;
-    constant RegDSel_Z : integer 15 downto 0 := 15;
+    constant RegDSel_X : integer range 15 downto 0 := 13;
+    constant RegDSel_Y : integer range 15 downto 0 := 14;
+    constant RegDSel_Z : integer range 15 downto 0 := 15;
 
 end package ControlConstants;
 
