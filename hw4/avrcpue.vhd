@@ -68,9 +68,9 @@ package ControlConstants is
     -- memory interfacing
     --
 
-    constant DataSrcSel_REG: integer := 0;
-    constant DataSrcSel_SP: integer  := 1;
-    constant DataSrcSel_MEM: integer := 2;
+    constant DataSrcSel_REG : integer := 0;
+    constant DataSrcSel_SP  : integer := 1;
+    constant DataSrcSel_MEM : integer := 2;
 
     constant DataOffsetSel_ZERO : integer := 0;
     constant DataOffsetSel_DISP : integer := 1;
@@ -83,10 +83,10 @@ package ControlConstants is
     -- ALU operation
     --
 
-    constant StatusMask_ZERO : std_logic_vector(7 downto 0) := "00000000";
-    constant StatusMask_ARITH: std_logic_vector(7 downto 0) := "00111111";
-    constant StatusMask_LOGIC: std_logic_vector(7 downto 0) := "00011110";
-    constant StatusMask_SHIFT: std_logic_vector(7 downto 0) := "00011111";
+    constant StatusMask_ZERO  : std_logic_vector(7 downto 0) := "00000000";
+    constant StatusMask_ARITH : std_logic_vector(7 downto 0) := "00111111";
+    constant StatusMask_LOGIC : std_logic_vector(7 downto 0) := "00011110";
+    constant StatusMask_SHIFT : std_logic_vector(7 downto 0) := "00011111";
 
     constant I_FLAG: integer := 7;
     constant T_FLAG: integer := 6;
@@ -139,6 +139,13 @@ entity ControlUnit is
         INT0   : in  std_logic; -- interrupt signal (active low)
         INT1   : in  std_logic; -- interrupt signal (active low)
 
+        -- decoded values
+        DataImm     : out std_logic_vector(7 downto 0); -- ALU immediate
+        DataMemDisp : out std_logic_vector(5 downto 0); -- data memory displacement q
+        BitIdx      : out integer range 7 downto 0; -- bottom 3 bit index
+        ProgJump    : out std_logic_vector(11 downto 0); -- jump offset
+        ProgBranch  : out std_logic_vector(6 downto 0); -- branch offset
+
         -- datapath mux controls
         OpAMux      : out std_logic; -- select ALUOpA as reg or zero
         OpBMux      : out std_logic_vector(1 downto 0); -- select ALUOpB as reg or imm or T Flag
@@ -147,13 +154,6 @@ entity ControlUnit is
         PCMux       : out std_logic_vector(2 downto 0); -- select next PC
         SPMux       : out std_logic; -- select next SP
         DataDBMux   : out std_logic_vector(1 downto 0); -- select data bus out
-
-        -- decoded values
-        DataImm     : out std_logic_vector(7 downto 0); -- ALU immediate
-        DataMemDisp : out std_logic_vector(5 downto 0); -- data memory displacement q
-        BitIdx      : out integer range 7 downto 0; -- bottom 3 bit index
-        ProgJump    : out std_logic_vector(11 downto 0); -- jump offset
-        ProgBranch  : out std_logic_vector(6 downto 0); -- branch offset
 
         -- ALU control signals
         FCmd   : out std_logic_vector(3 downto 0); -- F-Block operation
@@ -198,10 +198,10 @@ architecture dataflow of ControlUnit is
     signal nextstate : std_logic_vector(3 downto 0);
     signal state     : std_logic_vector(3 downto 0);
 
-    signal IR: std_logic_vector(15 downto 0);
+    signal IR : std_logic_vector(15 downto 0);
 
-    signal R1    : integer range 31 downto 0;
-    signal R2    : integer range 31 downto 0;
+    signal R1 : integer range 31 downto 0;
+    signal R2 : integer range 31 downto 0;
 
     signal ChangeStatusIdx : integer range 7 downto 0;
 begin
@@ -285,13 +285,13 @@ begin
         LastCycle <= '1'; -- NOP is only one cycle
 
         -- datapath mux controls
-        OpAMux      <= OpAMux_REGA;
-        OpBMux      <= OpBMux_REGB;
-        StatusInMux <= StatusInMux_ALU;
-        RegInMux    <= RegInMux_ALU;
-        PCMux       <= PCMux_INC; -- increment PC
-        SPMux       <= SPMux_NOP; -- don't change SP
-        DataDBMux   <= DataDBMux_REG;
+        OpAMux         <= OpAMux_REGA;
+        OpBMux         <= OpBMux_REGB;
+        StatusInMux    <= StatusInMux_ALU;
+        RegInMux       <= RegInMux_ALU;
+        PCMux          <= PCMux_INC; -- increment PC
+        SPMux          <= SPMux_NOP; -- don't change SP
+        DataDBMux      <= DataDBMux_REG;
 
         -- ALU controls
         FCmd           <= (others => '0');
