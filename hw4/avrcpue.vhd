@@ -49,13 +49,20 @@ package ControlConstants is
     constant RegInMux_REG : std_logic_vector(1 downto 0) := "10";
     constant RegInMux_MEM : std_logic_vector(1 downto 0) := "11";
 
-    constant PCMux_INC     : std_logic_vector(1 downto 0) := "00";
-    constant PCMux_REL     : std_logic_vector(1 downto 0) := "01";
-    constant PCMux_PROGMEM : std_logic_vector(1 downto 0) := "10";
-    constant PCMux_NOP     : std_logic_vector(1 downto 0) := "11";
+    constant PCMux_INC         : std_logic_vector(2 downto 0) := "000";
+    constant PCMux_RELATIVE    : std_logic_vector(2 downto 0) := "001";
+    constant PCMux_REG         : std_logic_vector(2 downto 0) := "010";
+    constant PCMux_PROGMEM     : std_logic_vector(2 downto 0) := "011";
+    constant PCMux_DATAMEM_UPR : std_logic_vector(2 downto 0) := "100";
+    constant PCMux_DATAMEM_LWR : std_logic_vector(2 downto 0) := "101";
+    constant PCMux_NOP         : std_logic_vector(2 downto 0) := "110";
 
-    constant SPMux_NXT : std_logic := '0';
-    constant SPMux_NOP : std_logic := '1';
+    constant SPMux_SRCOUT : std_logic := '0';
+    constant SPMux_NOP    : std_logic := '1';
+
+    constant DataDBMux_REG    : std_logic_vector(1 downto 0) := "00";
+    constant DataDBMux_PC_UPR : std_logic_vector(1 downto 0) := "01";
+    constant DataDBMux_PC_LWR : std_logic_vector(1 downto 0) := "10";
 
     --
     -- memory interfacing
@@ -137,8 +144,9 @@ entity ControlUnit is
         OpBMux      : out std_logic_vector(1 downto 0); -- select ALUOpB as reg or imm or T Flag
         StatusInMux : out std_logic_vector(1 downto 0); -- select StatusIn
         RegInMux    : out std_logic_vector(1 downto 0); -- select reg input from datapath
-        PCMux       : out std_logic_vector(1 downto 0); -- select next PC
+        PCMux       : out std_logic_vector(2 downto 0); -- select next PC
         SPMux       : out std_logic; -- select next SP
+        DataDBMux   : out std_logic_vector(1 downto 0); -- select data bus out
 
         -- decoded values
         DataImm     : out std_logic_vector(7 downto 0); -- ALU immediate
@@ -283,6 +291,7 @@ begin
         RegInMux    <= RegInMux_ALU;
         PCMux       <= PCMux_INC; -- increment PC
         SPMux       <= SPMux_NOP; -- don't change SP
+        DataDBMux   <= DataDBMux_REG;
 
         -- ALU controls
         FCmd           <= (others => '0');
@@ -971,7 +980,7 @@ begin
             end if;
 
             if state = CYCLE2 then
-                SPMux    <= SPMux_NXT;
+                SPMux    <= SPMux_SRCOUT;
                 RegStore <= '1';
                 DataRdEn <= '1';
             end if;
@@ -990,7 +999,7 @@ begin
             end if;
 
             if state = CYCLE2 then
-                SPMux    <= SPMux_NXT;
+                SPMux    <= SPMux_SRCOUT;
                 DataWrEn <= '1';
             end if;
 
@@ -1034,7 +1043,7 @@ begin
             end if;
 
             if state = CYCLE2 then
-                PCMux     <= PCMux_REL;
+                PCMux     <= PCMux_RELATIVE;
             end if;
 
         end if;
@@ -1136,8 +1145,9 @@ architecture structural of AVR_CPU is
     signal OpBMux      : std_logic_vector(1 downto 0);
     signal StatusInMux : std_logic_vector(1 downto 0);
     signal RegInMux    : std_logic_vector(1 downto 0);
-    signal PCMux       : std_logic_vector(1 downto 0);
+    signal PCMux       : std_logic_vector(2 downto 0);
     signal SPMux       : std_logic;
+    signal DataDBMux   : std_logic_vector(1 downto 0);
 
     --
     -- Control Bus Outputs
@@ -1230,14 +1240,21 @@ architecture structural of AVR_CPU is
 
     -- program counter
     signal PC: std_logic_vector(addrsize - 1 downto 0);
+
+    -- data bus output value
+    signal DataDBOut: std_logic_vector(wordsize - 1 downto 0);
 begin
     -- control bus outputs
     ProgAB <= ProgAddress;
     DataAB <= DataAddress;
     DataWr <= not DataWrEn;
     DataRd <= not DataRdEn;
-    DataDB <= RegA when DataWrEn = '1' else
+    DataDB <= DataDBOut when DataWrEn = '1' else
               (others => 'Z');
+
+    DataDBOut <= RegA            when DataDBMux = DataDBMux_REG    else
+                 PC(15 downto 8) when DataDBMux = DataDBMux_PC_UPR else
+                 PC(7  downto 0);
 
     ALUOpA <= RegA when OpAMux = OpAMux_REGA else
               (others => '0');
@@ -1321,8 +1338,8 @@ begin
                 SP <= (others => '1');
             else
                 case SPMux is
-                    when SPMux_NXT => SP <= DataAddrSrcOut;
-                    when others    => SP <= SP;
+                    when SPMux_SRCOUT => SP <= DataAddrSrcOut;
+                    when others       => SP <= SP;
                 end case;
             end if;
         end if;
@@ -1370,10 +1387,13 @@ begin
                 PC <= (others => '0');
             else
                 case PCMux is
-                    when PCMux_INC     => PC <= ProgAddrSrcOut;
-                    when PCMux_REL     => PC <= ProgAddress;
-                    when PCMux_PROGMEM => PC <= ProgDB;
-                    when others        => PC <= PC;
+                    when PCMux_INC         => PC <= ProgAddrSrcOut;
+                    when PCMux_RELATIVE    => PC <= ProgAddress;
+                    when PCMux_REG         => PC <= RegD;
+                    when PCMux_PROGMEM     => PC <= ProgDB;
+                    when PCMux_DATAMEM_UPR => PC(15 downto 8) <= DataDB;
+                    when PCMux_DATAMEM_LWR => PC(7  downto 0) <= DataDB;
+                    when others            => PC <= PC;
                 end case;
             end if;
         end if;
@@ -1434,6 +1454,7 @@ begin
             RegInMux       => RegInMux      ,
             PCMux          => PCMux         ,
             SPMux          => SPMux         ,
+            DataDBMux      => DataDBMux     ,
 
             -- ALU controls
             FCmd           => FCmd          ,
