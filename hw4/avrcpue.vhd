@@ -324,8 +324,8 @@ begin
         ProgPrePostSel <= MemUnit_POST; -- PC must be post-incremented
 
         -- control bus outputs
-        DataWrEn       <= '0'; -- don't read from memory
-        DataRdEn       <= '0'; -- don't write to memory
+        DataWrEn       <= '0'; -- don't read data from memory
+        DataRdEn       <= '0'; -- don't write to data memory
 
         --
         -- ALU Opcodes
@@ -766,17 +766,19 @@ begin
 
             if state = CYCLE1 then
                 LastCycle <= '0';
-                -- increment PC to get 16-bit address from program memory
+                -- don't increment PC (points to data memory address)
+                PCMux     <= PCMux_NOP;
             end if;
 
             if state = CYCLE2 then
                 LastCycle <= '0';
-                PCMux     <= PCMux_NOP;
+                -- increment PC to get next instruction
+                RegStore <= '1';
+                DataRdEn <= '1';
             end if;
 
             if state = CYCLE3 then
-                RegStore <= '1';
-                DataRdEn <= '1';
+                -- same as NOP (increment PC and fetch next instruction)
             end if;
 
         end if;
@@ -953,16 +955,18 @@ begin
 
             if state = CYCLE1 then
                 LastCycle <= '0';
-                -- increment PC to get 16-bit address from program memory
+                -- don't increment PC (points to data memory address)
+                PCMux     <= PCMux_NOP;
             end if;
 
             if state = CYCLE2 then
                 LastCycle <= '0';
-                PCMux     <= PCMux_NOP;
+                -- increment PC to get next instruction
+                DataWrEn  <= '1';
             end if;
 
             if state = CYCLE3 then
-                DataWrEn <= '1';
+                -- same as NOP (increment PC and fetch next instruction
             end if;
 
         end if;
@@ -1013,16 +1017,17 @@ begin
 
             if state = CYCLE1 then
                 LastCycle <= '0';
-                -- increment PC to get 16-bit address from program memory
+                -- don't increment PC (points to program memory address)
+                PCMux     <= PCMux_NOP;
             end if;
 
             if state = CYCLE2 then
                 LastCycle <= '0';
+                -- don't increment PC (points to program memory address)
                 PCMux     <= PCMux_NOP;
             end if;
 
             if state = CYCLE3 then
-                DataRdEn  <= '1';
                 PCMux     <= PCMux_PROGMEM;
             end if;
 
@@ -1053,21 +1058,187 @@ begin
             -- NOTE: pre-incremented value in PC register is PC + 1.
             -- See above note (in OpRJMP) for a more detailed explanation.
 
+            RegDSel <= RegDSel_Z;
+
+            if state = CYCLE1 then
+                LastCycle <= '0';
+                PCMux     <= PCMux_NOP;
+            end if;
+
+            if state = CYCLE2 then
+                PCMux     <= PCMux_REG;
+            end if;
+
         end if;
 
         if std_match(IR, OpCALL) then
+
+            DataSrcSel     <= DataSrcSel_SP;
+            DataIncDecSel  <= MemUnit_DEC;
+            DataPrePostSel <= MemUnit_POST;
+
+            if state = CYCLE1 then
+                LastCycle <= '0';
+                PCMux     <= PCMux_NOP;
+            end if;
+
+            if state = CYCLE2 then
+                LastCycle <= '0';
+                PCMux     <= PCMux_NOP;
+                -- push upper bits of PC + 2
+                ProgIncDecSel  <= MemUnit_INC;
+                ProgPrePostSel <= MemUnit_PRE;
+                DataDBMux <= DataDBMux_PC_UPR;
+                SPMux     <= SPMux_SRCOUT;
+                DataWrEn  <= '1';
+            end if;
+
+            if state = CYCLE3 then
+                LastCycle <= '0';
+                PCMux     <= PCMux_NOP;
+                -- push lower bits of PC + 2
+                ProgIncDecSel  <= MemUnit_INC;
+                ProgPrePostSel <= MemUnit_PRE;
+                DataDBMux <= DataDBMux_PC_LWR;
+                SPMux     <= SPMux_SRCOUT;
+                DataWrEn  <= '1';
+            end if;
+
+            if state = CYCLE4 then
+                PCMux     <= PCMux_PROGMEM;
+            end if;
+
         end if;
 
         if std_match(IR, OpRCALL) then
+
+            DataSrcSel     <= DataSrcSel_SP;
+            DataIncDecSel  <= MemUnit_DEC;
+            DataPrePostSel <= MemUnit_POST;
+
+            if state = CYCLE1 then
+                LastCycle <= '0';
+                PCMux     <= PCMux_NOP;
+                -- push upper bits of PC + 1
+                DataDBMux <= DataDBMux_PC_UPR;
+                SPMux     <= SPMux_SRCOUT;
+                DataWrEn  <= '1';
+            end if;
+
+            if state = CYCLE2 then
+                LastCycle <= '0';
+                PCMux     <= PCMux_NOP;
+                -- push lower bits of PC + 1
+                DataDBMux <= DataDBMux_PC_LWR;
+                SPMux     <= SPMux_SRCOUT;
+                DataWrEn  <= '1';
+            end if;
+
+            if state = CYCLE3 then
+                ProgOffsetSel <= ProgOffsetSel_JUMP;
+                PCMux         <= PCMux_RELATIVE;
+            end if;
+
         end if;
 
         if std_match(IR, OpICALL) then
+
+            DataSrcSel     <= DataSrcSel_SP;
+            DataIncDecSel  <= MemUnit_DEC;
+            DataPrePostSel <= MemUnit_POST;
+            RegDSel        <= RegDSel_Z;
+
+            if state = CYCLE1 then
+                LastCycle <= '0';
+                PCMux     <= PCMux_NOP;
+                -- push upper bits of PC + 1
+                DataDBMux <= DataDBMux_PC_UPR;
+                SPMux     <= SPMux_SRCOUT;
+                DataWrEn  <= '1';
+            end if;
+
+            if state = CYCLE2 then
+                LastCycle <= '0';
+                PCMux     <= PCMux_NOP;
+                -- push lower bits of PC + 1
+                DataDBMux <= DataDBMux_PC_LWR;
+                SPMux     <= SPMux_SRCOUT;
+                DataWrEn  <= '1';
+            end if;
+
+            if state = CYCLE3 then
+                PCMux     <= PCMux_REG;
+            end if;
+
         end if;
 
         if std_match(IR, OpRET) then
+
+            DataSrcSel     <= DataSrcSel_SP;
+            DataIncDecSel  <= MemUnit_INC;
+            DataPrePostSel <= MemUnit_PRE;
+
+            if state = CYCLE1 then
+                LastCycle <= '0';
+                PCMux     <= PCMux_NOP;
+            end if;
+
+            if state = CYCLE2 then
+                LastCycle <= '0';
+                -- pop lower bits of PC
+                PCMux    <= PCMux_DATAMEM_LWR;
+                SPMux    <= SPMux_SRCOUT;
+                DataWrEn <= '1';
+            end if;
+
+            if state = CYCLE3 then
+                LastCycle <= '0';
+                PCMux     <= PCMux_NOP;
+            end if;
+
+            if state = CYCLE4 then
+                -- pop upper bits of PC
+                PCMux    <= PCMux_DATAMEM_UPR;
+                SPMux    <= SPMux_SRCOUT;
+                DataWrEn <= '1';
+            end if;
+
         end if;
 
         if std_match(IR, OpRETI) then
+
+            DataSrcSel     <= DataSrcSel_SP;
+            DataIncDecSel  <= MemUnit_INC;
+            DataPrePostSel <= MemUnit_PRE;
+
+            if state = CYCLE1 then
+                LastCycle <= '0';
+                PCMux     <= PCMux_NOP;
+            end if;
+
+            if state = CYCLE2 then
+                LastCycle <= '0';
+                -- pop lower bits of PC
+                PCMux    <= PCMux_DATAMEM_LWR;
+                SPMux    <= SPMux_SRCOUT;
+                DataWrEn <= '1';
+            end if;
+
+            if state = CYCLE3 then
+                LastCycle <= '0';
+                PCMux     <= PCMux_NOP;
+            end if;
+
+            if state = CYCLE4 then
+                -- pop upper bits of PC
+                PCMux    <= PCMux_DATAMEM_UPR;
+                SPMux    <= SPMux_SRCOUT;
+                DataWrEn <= '1';
+                -- set I flag
+                StatusInMux        <= StatusInMux_SET;
+                StatusMask(I_FLAG) <= '1';
+            end if;
+
         end if;
 
     end process;
@@ -1252,9 +1423,9 @@ begin
     DataDB <= DataDBOut when DataWrEn = '1' else
               (others => 'Z');
 
-    DataDBOut <= RegA            when DataDBMux = DataDBMux_REG    else
-                 PC(15 downto 8) when DataDBMux = DataDBMux_PC_UPR else
-                 PC(7  downto 0);
+    DataDBOut <= RegA                     when DataDBMux = DataDBMux_REG    else
+                 ProgAddress(15 downto 8) when DataDBMux = DataDBMux_PC_UPR else
+                 ProgAddress(7  downto 0);
 
     ALUOpA <= RegA when OpAMux = OpAMux_REGA else
               (others => '0');
